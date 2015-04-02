@@ -1,0 +1,3 @@
+[submodule "myplotspec"]
+	path = myplotspec
+	url = https://github.com/KarlTDebiec/myplotspec.git
