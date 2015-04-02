@@ -69,40 +69,69 @@ class ForceFieldFigureManager(FigureManager):
     from .myplotspec.manage_kwargs import manage_kwargs
     from myplotspec.debug import debug_arguments
 
+    defaults = """
+        draw_figure:
+          subplot_kw:
+            autoscale_on: False
+    """
+
     presets = """
+      dihedral:
+        draw_subplot:
+          xlabel: Dihedral (°)
+          xticks: [-180,-135,-90,-45,0,45,90,135,180]
+          ylabel: U $\\left(\\frac{kcal}{mol}\\right)$
+          ylabel_kw:
+            rotation: horizontal
+            labelpad:      50
       presentation_wide:
         draw_figure:
-          left:         2.0
-          sub_width:    6.0
-          right:        2.0
-          top:          2.0
-          sub_height:   3.5
-          bottom:       2.0
+          fig_width:    19.2
+          fig_height:   10.8
+          left:          2.1
+          sub_width:     6.0
+          right:         2.0
+          top:           1.9
+          sub_height:    3.5
+          bottom:        5.4
           title_fp:     24b
           label_fp:     24b
+          legend_fp:    24r
+          shared_legend:
+            left:       8.2
+            sub_width:  4.0
+            sub_height: 2.9
+            bottom:     5.4
+            legend_kw:
+              frameon:      False
+              labelspacing: 0.5
+              legend_fp:    24r
+              loc:          2
+            legend_lw:  5
         draw_subplot:
           title_fp:     24b
           label_fp:     24b
           tick_fp:      16r
-          legend_fp:    16r
           legend:       False
           tick_params:
             length:     5
             width:      2
             pad:        6
-          lw:           2
+          lw:           3
         draw_dataset:
           plot_kw:
-            lw:         2
+            lw:         3
     """
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, parameters, label=None, handles=None,
+    def draw_dataset(self, subplot, parameters=None, label=None, handles=None,
         **kwargs):
         import numpy as np
         from .myplotspec import get_color
 
+        if parameters is None:
+            return
         # Configure plot settings
         plot_kw = kwargs.get("plot_kw", {})
         if "color" in plot_kw:
@@ -116,6 +145,7 @@ class ForceFieldFigureManager(FigureManager):
             print(height, periodicity, phase)
             y += height * (1 + np.cos(np.deg2rad(np.abs(periodicity) * x
                             + phase)))
+        y -= np.min(y)
         handle = subplot.plot(x, y, **plot_kw)[0]
         if handles is not None and label is not None:
             handles[label] = handle
