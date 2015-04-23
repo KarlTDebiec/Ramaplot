@@ -81,9 +81,6 @@ class ForceFieldFigureManager(FigureManager):
           xlabel: Dihedral (°)
           xticks: [-180,-135,-90,-45,0,45,90,135,180]
           ylabel: U $\\left(\\frac{kcal}{mol}\\right)$
-          ylabel_kw:
-            rotation: horizontal
-            labelpad:      50
       presentation_wide:
         draw_figure:
           fig_width:    19.2
@@ -118,9 +115,82 @@ class ForceFieldFigureManager(FigureManager):
             width:      2
             pad:        6
           lw:           3
+          ylabel_kw:
+            rotation: horizontal
+            labelpad:      50
         draw_dataset:
           plot_kw:
             lw:         3
+      notebook:
+        draw_figure:
+          fig_width:    4.2
+          left:         0.8
+          sub_width:    2.2
+          top:          0.3
+          sub_height:   1.4
+          bottom:       0.5
+          title_fp:     10b
+          label_fp:     10b
+          legend_fp:    10b
+          shared_legend:
+            left:       3.1
+            sub_width:  1.2
+            sub_height: 1.4
+            bottom:     0.5
+            legend_lw:  3
+            legend_kw:
+              frameon:      False
+              labelspacing: 0.5
+              legend_fp:    8r
+              loc:          6
+        draw_subplot:
+          title_fp:     10b
+          label_fp:     10b
+          tick_fp:      8r
+          legend:       False
+          ylabel_kw:
+            rotation:   horizontal
+            labelpad:   20
+      notebook_two:
+        draw_figure:
+          ncols:         2
+          fig_width:     5.5
+          left:          0.8
+          sub_width:     2.2
+          wspace:        0.1
+          top:           0.3
+          sub_height:    1.4
+          bottom:        0.7
+          title_fp:     10b
+          label_fp:     10b
+          legend_fp:    10b
+          xlabel_kw:
+            ha:         center
+            bottom:     -0.35
+          subplots:
+            1:
+              ylabel: ""
+              yticklabels: []
+          shared_legend:
+            left:       0.9
+            sub_width:  4.2
+            sub_height: 0.3
+            bottom:     0.0
+            legend_lw:  3
+            legend_kw:
+              frameon:      False
+              labelspacing: 0.5
+              legend_fp:    8r
+              loc:          9
+              ncol:         5
+        draw_subplot:
+          title_fp:     10b
+          label_fp:     10b
+          tick_fp:      8r
+          legend:       False
+          ylabel_kw:
+            rotation:   horizontal
+            labelpad:   20
     """
 
     @manage_defaults_presets()
@@ -130,8 +200,10 @@ class ForceFieldFigureManager(FigureManager):
         import numpy as np
         from .myplotspec import get_color
 
+        # Handle missing input gracefully
         if parameters is None:
             return
+
         # Configure plot settings
         plot_kw = kwargs.get("plot_kw", {})
         if "color" in plot_kw:
@@ -142,7 +214,6 @@ class ForceFieldFigureManager(FigureManager):
         x = np.linspace(-180, 180, 100)
         y = np.zeros_like(x)
         for height, phase, periodicity in parameters:
-            print(height, periodicity, phase)
             y += height * (1 + np.cos(np.deg2rad(np.abs(periodicity) * x
                             + phase)))
         y -= np.min(y)
