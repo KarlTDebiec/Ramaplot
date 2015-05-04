@@ -160,7 +160,7 @@ class ForceFieldFigureManager(FigureManager):
           wspace:        0.1
           top:           0.3
           sub_height:    1.4
-          bottom:        0.7
+          bottom:        1.0
           title_fp:     10b
           label_fp:     10b
           legend_fp:    10b
@@ -174,7 +174,7 @@ class ForceFieldFigureManager(FigureManager):
           shared_legend:
             left:       0.9
             sub_width:  4.2
-            sub_height: 0.3
+            sub_height: 0.6
             bottom:     0.0
             legend_lw:  3
             legend_kw:
@@ -182,7 +182,7 @@ class ForceFieldFigureManager(FigureManager):
               labelspacing: 0.5
               legend_fp:    8r
               loc:          9
-              ncol:         5
+              ncol:         3
         draw_subplot:
           title_fp:     10b
           label_fp:     10b
