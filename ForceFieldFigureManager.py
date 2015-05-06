@@ -73,14 +73,52 @@ class ForceFieldFigureManager(FigureManager):
         draw_figure:
           subplot_kw:
             autoscale_on: False
+        draw_subplot:
+          xticks:       [-180,-135,-90,-45,0,45,90,135,180]
+          xlabel:       Dihedral (°)
+          yticks:       [0,1,2,3,4,5]
+          ylabel:       'U\n\n(kcal/mol)'
+          ylabel_kw:
+            va:         center
     """
 
     presets = """
-      dihedral:
+      presentation:
+        draw_figure:
+          fig_width:    10.24
+          fig_height:    7.68
+          left:          1.60
+          sub_width:     3.20
+          sub_height:    2.00
+          bottom:        4.00
+          shared_legend:
+            left:       4.85
+            sub_width:  4.00
+            sub_height: 2.00
+            bottom:     4.00
+            legend_kw:
+              frameon:      False
+              labelspacing: 0.5
+              legend_fp:    14r
+              loc:          2
+            legend_lw:  5
         draw_subplot:
-          xlabel: Dihedral (°)
-          xticks: [-180,-135,-90,-45,0,45,90,135,180]
-          ylabel: U $\\left(\\frac{kcal}{mol}\\right)$
+          xticks: [-180,-90,0,90,180]
+          title_fp:     18r
+          label_fp:     18r
+          tick_fp:      14r
+          legend:       False
+          tick_params:
+            length:     3
+            width:      1
+            pad:        6
+          lw:           2
+          ylabel_kw:
+            rotation:   horizontal
+            labelpad:   48
+        draw_dataset:
+          plot_kw:
+            lw:         2
       presentation_wide:
         draw_figure:
           fig_width:    19.2
