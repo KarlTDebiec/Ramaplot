@@ -417,13 +417,13 @@ class MDGXFigureManager(FigureManager):
 #          color="white", lw=1.5, zorder=1.5)
         subplot.plot([x-0.05, x+0.05],
           [np.percentile(error, 25), np.percentile(error, 25)],
-          color="white", lw=0.5, ls="-", zorder=1.5)
+          color="white", lw=1.0, ls="-", zorder=1.5)
         subplot.plot([x-0.05, x+0.05],
           [np.percentile(error, 50), np.percentile(error, 50)],
-          color="white", lw=1.5, zorder=1.5)
+          color="white", lw=3.0, zorder=1.5)
         subplot.plot([x-0.05, x+0.05],
           [np.percentile(error, 75), np.percentile(error, 75)],
-          color="white", lw=0.5, ls="-", zorder=1.5)
+          color="white", lw=1.0, ls="-", zorder=1.5)
         violin = subplot.violinplot(np.array(error), [x],
           points=1000, widths=0.1, showmeans=False, showextrema=False)
         for body in violin["bodies"]:
