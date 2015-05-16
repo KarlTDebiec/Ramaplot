@@ -8,8 +8,8 @@
 #   This software may be modified and distributed under the terms of the
 #   BSD license. See the LICENSE file for details.
 """
-Generates one or more umbrella sampling/WHAM to specifications provided
-in a YAML file.
+Generates one or more WHAM figures to specifications provided in a YAML
+file.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
@@ -22,7 +22,7 @@ from myplotspec.FigureManager import FigureManager
 ################################### CLASSES ###################################
 class WHAMFigureManager(FigureManager):
     """
-    Manages the generation of umbrella sampling/WHAM figures.
+    Manages the generation of WHAM figures.
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs
@@ -94,8 +94,6 @@ class WHAMFigureManager(FigureManager):
     @manage_defaults_presets()
     @manage_kwargs()
     def draw_dataset(self, subplot, infile=None, nan_to_max=True, **kwargs):
-        """
-        """
         import numpy as np
         from .myplotspec import get_color
         from .WHAMDataset import WHAMDataset

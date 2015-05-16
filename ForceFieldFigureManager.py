@@ -9,7 +9,7 @@
 #   BSD license. See the LICENSE file for details.
 """
 Generates one or more force field figures to specifications provided in
-a YAML file.
+a YAML file. Currently hardcoded for dihedrals.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
@@ -22,7 +22,7 @@ from myplotspec.FigureManager import FigureManager
 ################################### CLASSES ###################################
 class ForceFieldFigureManager(FigureManager):
     """
-    Manages the generation of ForceFieldFigureManager figures.
+    Manages the generation of force field figures.
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs

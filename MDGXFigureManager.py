@@ -39,6 +39,18 @@ class MDGXFigureManager(FigureManager):
           ylabel:       '$\\left|{U_{QM}-U_{MM}}\\right|$\n\n(kcal/mol)'
           ylabel_kw:
             va:         center
+        draw_dataset:
+          violin_kw:
+            points:         1000
+            widths:         0.1
+            showmeans:      False
+            showextrema:    False
+          median_kw:
+            color:          white
+            lw:             2.0
+          percentile_kw:
+            color:          white
+            lw:             1.0
     """
 
     presets = """
@@ -217,27 +229,31 @@ class MDGXFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, infile=None, bandwidth=0.1, grid=None,
-        label=None, handles=None, contains=None, **kwargs):
+    def draw_dataset(self, subplot, infile=None, label=None, handles=None,
+        contains=None, **kwargs):
         import numpy as np
-        from sklearn.neighbors import KernelDensity
         from .myplotspec import get_color
         from .MDGXDataset import MDGXDataset
+
+        verbose = kwargs.get("verbose", 0)
+        debug = kwargs.get("debug", 0)
 
         # Handle missing input gracefully
         if infile is None:
             return
 
-        # Configure analysis settings
-        if grid is None:
-            grid = np.linspace(0, 10, 1000)
-
         # Configure plot settings
-        plot_kw = kwargs.get("plot_kw", {})
-        if "color" in plot_kw:
-            plot_kw["color"] = get_color(plot_kw.pop("color"))
+        violin_kw = kwargs.get("violin_kw", kwargs.get("plot_kw", {}))
+        percentile_kw = kwargs.get("percentile_kw", {})
+        median_kw = kwargs.get("median_kw", {})
+        if "color" in violin_kw:
+            color = get_color(violin_kw.pop("color"))
         elif "color" in kwargs:
-            plot_kw["color"] = get_color(kwargs.pop("color"))
+            color = get_color(kwargs.pop("color"))
+        if "color" in percentile_kw:
+            percentile_kw["color"] = get_color(percentile_kw.pop("color"))
+        if "color" in median_kw:
+            median_kw["color"] = get_color(median_kw.pop("color"))
 
         # Load data
         dataset = MDGXDataset(infile=infile, **kwargs)
@@ -245,39 +261,43 @@ class MDGXFigureManager(FigureManager):
         if contains is not None:
             data = dataset.data[dataset.data["restart"].str.contains(
               contains)]
-#            print(sorted(list(set(data["restart"]))))
         error = np.abs(data["QM energy"] - data["MM energy"])
-        print(np.percentile(error, 25),
-        np.percentile(error, 50),
-        np.percentile(error, 75),
-        np.mean(error))
+        percentiles = {
+          "0": np.min(error),
+          "25": np.percentile(error, 25),
+          "50": np.percentile(error, 50),
+          "75": np.percentile(error, 75),
+          "100": np.max(error)}
+        mean = np.mean(error)
+        if verbose >= 1:
+            print("  min: {0:05.2f}".format(percentiles["0"]) +
+                  "  25%: {0:05.2f}".format(percentiles["25"]) +
+                  "  50%: {0:05.2f}".format(percentiles["50"]) +
+                  "  75%: {0:05.2f}".format(percentiles["75"]) +
+                  "  max: {0:05.2f}".format(percentiles["100"]) +
+                  "  mean: {0:05.2f}".format(mean))
 
         # Plot
         x = kwargs.get("x")
-        violin = subplot.violinplot(np.array(error), [x],
-          points=1000, widths=0.1, showmeans=False, showextrema=False)
+        violin = subplot.violinplot(np.array(error), [x], **violin_kw)
         for body in violin["bodies"]:
-            body.set_facecolors(plot_kw["color"])
-            body.set_edgecolors('none')
+            body.set_facecolors(color)
+            body.set_edgecolors("none")
             body.set_alpha(1)
             body.set_zorder(1)
-        subplot.plot([x-0.05, x+0.05],
-          [np.percentile(error, 25), np.percentile(error, 25)],
-          color="white", lw=2.0, ls="-", zorder=1.5)
-        subplot.plot([x-0.05, x+0.05],
-          [np.percentile(error, 50), np.percentile(error, 50)],
-          color="white", lw=4.0, zorder=1.5)
-        subplot.plot([x-0.05, x+0.05],
-          [np.percentile(error, 75), np.percentile(error, 75)],
-          color="white", lw=2.0, ls="-", zorder=1.5)
-        violin = subplot.violinplot(np.array(error), [x],
-          points=1000, widths=0.1, showmeans=False, showextrema=False)
+        subplot.plot([x-0.05, x+0.05], [percentiles["25"], percentiles["25"]],
+          zorder=1.5, **percentile_kw)
+        subplot.plot([x-0.05, x+0.05], [percentiles["50"], percentiles["50"]],
+          zorder=1.5, **median_kw)
+        subplot.plot([x-0.05, x+0.05], [percentiles["75"], percentiles["75"]],
+          zorder=1.5, **percentile_kw)
+        violin = subplot.violinplot(np.array(error), [x], **violin_kw)
         for body in violin["bodies"]:
-            body.set_facecolors('none')
-            body.set_edgecolors(plot_kw["color"])
+            body.set_facecolors("none")
+            body.set_edgecolors(color)
             body.set_alpha(1)
             body.set_zorder(2)
-        handle = subplot.plot(-1, -1, **plot_kw)[0]
+        handle = subplot.plot(-1, -1, color = color)[0]
         if handles is not None and label is not None:
             handles[label] = handle
 
