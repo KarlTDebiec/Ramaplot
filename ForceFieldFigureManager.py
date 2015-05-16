@@ -23,47 +23,6 @@ from myplotspec.FigureManager import FigureManager
 class ForceFieldFigureManager(FigureManager):
     """
     Manages the generation of ForceFieldFigureManager figures.
-
-    Attributes:
-      defaults (str, dict): Default arguments to :func:`draw_report`,
-        :func:`draw_figure`, :func:`draw_subplot`, and
-        :func:`draw_dataset` functions, in yaml format. Outer level (of
-        indentation or keys) provides function names, and inner level
-        provides default arguments to each function::
-
-          defaults = \"\"\"
-              method_1:
-                method_1_arg_1: 1000
-                method_1_arg_2: abcd
-              method_2
-                method_2_arg_1: 2000
-                method_2_arg_2: efgh
-              ...
-          \"\"\"
-
-      presets (str, dict): Available sets of preset arguments to
-        :func:`draw_report`, :func:`draw_figure`, :func:`draw_subplot`,
-        and :func:`draw_dataset` functions, in yaml format. Outer level
-        (of indentation or keys) provides preset names, middle level
-        provides function names, and inner level provides arguments to
-        pass to each function when preset is active::
-
-          presets = \"\"\"
-            preset_1:
-              method_1:
-                method_1_arg_1: 1001
-                method_1_arg_2: abcde
-              method_2
-                method_2_arg_1: 2001
-                method_2_arg_2: efghi
-            preset_2:
-              method_1:
-                method_1_arg_1: 1002
-                method_1_arg_2: abcdef
-              method_2
-                method_2_arg_1: 2002
-                method_2_arg_2: efghij
-          \"\"\"
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs
@@ -83,6 +42,41 @@ class ForceFieldFigureManager(FigureManager):
     """
 
     presets = """
+      poster:
+        draw_figure:
+          fig_width:    15.00
+          left:          3.20
+          sub_width:     4.15
+          right:         1.00
+          bottom:        1.20
+          sub_height:    2.40
+          top:           0.20
+          shared_legend:
+            left:       7.50
+            sub_width:  3.00
+            sub_height: 2.40
+            bottom:     1.20
+            legend_kw:
+              frameon:      False
+              legend_fp:    25r
+              loc:          6
+            legend_lw:  10
+        draw_subplot:
+          xticks: [-180,-90,0,90,180]
+          title_fp:     36r
+          label_fp:     36r
+          ylabel_kw:
+            rotation:   horizontal
+            labelpad:   100
+          tick_fp:      24r
+          tick_params:
+            length:     3
+            width:      1
+            pad:        10
+          lw:           2
+        draw_dataset:
+          plot_kw:
+            lw:         2
       presentation:
         draw_figure:
           fig_width:    10.24
