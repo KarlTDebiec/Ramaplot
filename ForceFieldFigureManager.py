@@ -155,17 +155,17 @@ class ForceFieldFigureManager(FigureManager):
             lw:         3
       notebook:
         draw_figure:
-          fig_width:    4.2
-          left:         0.8
-          sub_width:    2.2
-          top:          0.3
-          sub_height:   1.4
-          bottom:       0.5
+          left:          1.0
+          sub_width:     2.1
+          right:         1.0
+          top:           0.3
+          sub_height:    1.3
+          bottom:        0.5
           title_fp:     10b
           label_fp:     10b
           legend_fp:    10b
           shared_legend:
-            left:       3.1
+            left:       3.2
             sub_width:  1.2
             sub_height: 1.4
             bottom:     0.5
@@ -182,16 +182,16 @@ class ForceFieldFigureManager(FigureManager):
           legend:       False
           ylabel_kw:
             rotation:   horizontal
-            labelpad:   20
+            labelpad:   30
       notebook_two:
         draw_figure:
-          ncols:         2
+          ncols:        2
           fig_width:     5.5
-          left:          0.8
-          sub_width:     2.2
+          left:          1.0
+          sub_width:     2.1
           wspace:        0.1
           top:           0.3
-          sub_height:    1.4
+          sub_height:    1.3
           bottom:        1.0
           title_fp:     10b
           label_fp:     10b
@@ -200,12 +200,15 @@ class ForceFieldFigureManager(FigureManager):
             ha:         center
             bottom:     -0.35
           subplots:
+            0:
+              xticklabels:  [-180,-135,-90,-45,0,45,90,135]
             1:
-              ylabel: ""
-              yticklabels: []
+              ylabel:       ""
+              yticklabels:  []
+              xticklabels:  ["",-135,-90,-45,0,45,90,135,180]
           shared_legend:
-            left:       0.9
-            sub_width:  4.2
+            left:       1.0
+            sub_width:  4.3
             sub_height: 0.6
             bottom:     0.0
             legend_lw:  3
@@ -222,7 +225,7 @@ class ForceFieldFigureManager(FigureManager):
           legend:       False
           ylabel_kw:
             rotation:   horizontal
-            labelpad:   20
+            labelpad:   30
     """
 
     @manage_defaults_presets()
