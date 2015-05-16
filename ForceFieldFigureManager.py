@@ -155,20 +155,20 @@ class ForceFieldFigureManager(FigureManager):
             lw:         3
       notebook:
         draw_figure:
-          left:          1.0
-          sub_width:     2.1
-          right:         1.0
-          top:           0.3
-          sub_height:    1.3
-          bottom:        0.5
+          left:          1.00
+          sub_width:     2.10
+          right:         1.00
+          top:           0.30
+          sub_height:    1.30
+          bottom:        0.50
           title_fp:     10b
           label_fp:     10b
           legend_fp:    10b
           shared_legend:
-            left:       3.2
-            sub_width:  1.2
-            sub_height: 1.4
-            bottom:     0.5
+            left:        3.20
+            sub_width:   1.20
+            sub_height:  1.30
+            bottom:      0.50
             legend_lw:  3
             legend_kw:
               frameon:      False
@@ -186,19 +186,19 @@ class ForceFieldFigureManager(FigureManager):
       notebook_two:
         draw_figure:
           ncols:        2
-          fig_width:     5.5
-          left:          1.0
-          sub_width:     2.1
-          wspace:        0.1
-          top:           0.3
-          sub_height:    1.3
-          bottom:        1.0
+          fig_width:     5.50
+          left:          1.00
+          sub_width:     2.10
+          wspace:        0.10
+          top:           0.30
+          sub_height:    1.30
+          bottom:        0.90
           title_fp:     10b
           label_fp:     10b
           legend_fp:    10b
           xlabel_kw:
             ha:         center
-            bottom:     -0.35
+            bottom:     -0.33
           subplots:
             0:
               xticklabels:  [-180,-135,-90,-45,0,45,90,135]
@@ -207,10 +207,10 @@ class ForceFieldFigureManager(FigureManager):
               yticklabels:  []
               xticklabels:  ["",-135,-90,-45,0,45,90,135,180]
           shared_legend:
-            left:       1.0
-            sub_width:  4.3
-            sub_height: 0.6
-            bottom:     0.0
+            left:        1.00
+            sub_width:   4.30
+            sub_height:  0.50
+            bottom:      0.00
             legend_lw:  3
             legend_kw:
               frameon:      False

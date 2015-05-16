@@ -197,20 +197,20 @@ class MDGXFigureManager(FigureManager):
           nsubplots:    3
       notebook:
         draw_figure:
-          fig_width:    4.2
-          left:         1.0
-          sub_width:    2.2
-          top:          0.3
-          sub_height:   1.4
-          bottom:       0.5
+          left:          1.00
+          sub_width:     2.10
+          right:         1.00
+          top:           0.30
+          sub_height:    1.30
+          bottom:        0.20
           title_fp:     10b
           label_fp:     10b
           legend_fp:    10b
           shared_legend:
-            left:       3.3
-            sub_width:  1.2
-            sub_height: 1.4
-            bottom:     0.5
+            left:        3.20
+            sub_width:   1.20
+            sub_height:  1.30
+            bottom:      0.50
             legend_lw:  3
             legend_kw:
               frameon:      False
@@ -224,7 +224,44 @@ class MDGXFigureManager(FigureManager):
           legend:       False
           ylabel_kw:
             rotation:   horizontal
-            labelpad:   20
+            labelpad:   30
+      notebook_two:
+        draw_figure:
+          ncols:        2
+          fig_width:     5.50
+          left:          1.00
+          sub_width:     2.10
+          wspace:        0.10
+          top:           0.30
+          sub_height:    1.30
+          bottom:        0.55
+          title_fp:     10b
+          label_fp:     10b
+          legend_fp:    10b
+          shared_legend:
+            left:        1.00
+            sub_width:   4.30
+            sub_height:  0.50
+            bottom:      0.00
+            legend_lw:  3
+            legend_kw:
+              frameon:      False
+              labelspacing: 0.5
+              legend_fp:    8r
+              loc:          9
+              ncol:         3
+          subplots:
+            1:
+              ylabel:       ""
+              yticklabels:  []
+        draw_subplot:
+          title_fp:     10b
+          label_fp:     10b
+          tick_fp:      8r
+          legend:       False
+          ylabel_kw:
+            rotation:   horizontal
+            labelpad:   30
     """
 
     @manage_defaults_presets()
