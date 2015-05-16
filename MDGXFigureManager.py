@@ -230,13 +230,12 @@ class MDGXFigureManager(FigureManager):
     @manage_defaults_presets()
     @manage_kwargs()
     def draw_dataset(self, subplot, infile=None, label=None, handles=None,
-        contains=None, **kwargs):
+        **kwargs):
         import numpy as np
         from .myplotspec import get_color
         from .MDGXDataset import MDGXDataset
 
         verbose = kwargs.get("verbose", 0)
-        debug = kwargs.get("debug", 0)
 
         # Handle missing input gracefully
         if infile is None:
@@ -258,9 +257,6 @@ class MDGXFigureManager(FigureManager):
         # Load data
         dataset = MDGXDataset(infile=infile, **kwargs)
         data = dataset.data
-        if contains is not None:
-            data = dataset.data[dataset.data["restart"].str.contains(
-              contains)]
         error = np.abs(data["QM energy"] - data["MM energy"])
         percentiles = {
           "0": np.min(error),
@@ -270,12 +266,12 @@ class MDGXFigureManager(FigureManager):
           "100": np.max(error)}
         mean = np.mean(error)
         if verbose >= 1:
-            print("  min: {0:05.2f}".format(percentiles["0"]) +
-                  "  25%: {0:05.2f}".format(percentiles["25"]) +
-                  "  50%: {0:05.2f}".format(percentiles["50"]) +
-                  "  75%: {0:05.2f}".format(percentiles["75"]) +
-                  "  max: {0:05.2f}".format(percentiles["100"]) +
-                  "  mean: {0:05.2f}".format(mean))
+            print("min: {0:05.2f} ".format(percentiles["0"]) +
+                  "25%: {0:05.2f} ".format(percentiles["25"]) +
+                  "50%: {0:05.2f} ".format(percentiles["50"]) +
+                  "75%: {0:05.2f} ".format(percentiles["75"]) +
+                  "max: {0:05.2f} ".format(percentiles["100"]) +
+                  "mean: {0:05.2f}".format(mean))
 
         # Plot
         x = kwargs.get("x")
