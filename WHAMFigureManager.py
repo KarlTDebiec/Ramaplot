@@ -73,12 +73,12 @@ class WHAMFigureManager(FigureManager):
             rotation:   horizontal
       notebook:
         draw_figure:
-          left:         0.5
-          sub_width:    3.0
-          right:        0.5
-          top:          0.5
-          sub_height:   3.0
-          bottom:       0.5
+          left:          0.50
+          sub_width:     3.00
+          right:         0.20
+          top:           0.30
+          sub_height:    3.00
+          bottom:        0.40
           title_fp:     10b
           label_fp:     10b
           legend_fp:    10b
@@ -110,14 +110,14 @@ class WHAMFigureManager(FigureManager):
         contour_kw = kwargs.get("contour_kw", {})
         if "levels" in kwargs:
             contour_kw["levels"] = kwargs.pop("color")
-        elif not "levels" in contour_kw:
+        elif "levels" not in contour_kw:
             contour_kw["levels"] = range(0,
               int(np.ceil(np.nanmax(dataset.free_energy))))
         imshow_kw = kwargs.get("imshow_kw", {})
         if "extent" in kwargs:
             imshow_kw["extent"] = kwargs.pop("extent")
-        elif not "extent" in imshow_kw:
-            extent = kwargs.get("extent",
+        elif "extent" not in imshow_kw:
+            imshow_kw["extent"] = kwargs.get("extent",
                       [np.min(dataset.x_bins), np.max(dataset.x_bins),
                        np.max(dataset.y_bins), np.min(dataset.y_bins)])
 

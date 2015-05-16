@@ -228,10 +228,10 @@ class MDGXFigureManager(FigureManager):
       notebook_two:
         draw_figure:
           ncols:        2
-          fig_width:     5.50
           left:          1.00
           sub_width:     2.10
           wspace:        0.10
+          right:         0.20
           top:           0.30
           sub_height:    1.30
           bottom:        0.55
