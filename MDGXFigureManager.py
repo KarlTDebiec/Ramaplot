@@ -55,8 +55,12 @@ class MDGXFigureManager(FigureManager):
 
     presets = """
       report_topology:
-        place: holder
-      poster_two:
+        help: Generate a report comparing results for all topologies present
+              in first dataset; to be used alongside a single plot preset such
+              as 'notebook'
+      poster_2:
+        help: Two adjacent plots for poster (width = 15.0", height = 3.9")
+        inherits: poster
         draw_figure:
           ncols:        2
           fig_width:    15.00
@@ -81,25 +85,15 @@ class MDGXFigureManager(FigureManager):
               loc:          6
             legend_lw:  10
         draw_subplot:
-          title_fp:     36r
-          label_fp:     36r
           ylabel_kw:
             rotation:   horizontal
             labelpad:   100
-          tick_fp:      24r
-          tick_params:
-            length:     3
-            width:      1
-            pad:        10
-          lw:           2
-        draw_dataset:
-          plot_kw:
-            lw:         2
-      presentation_two:
+      presentation_2:
+        help: Two adjacent plots for 4:3 presentation (width = 10.24",
+              height = 7.68")
+        inherits: presentation
         draw_figure:
           ncols:        2
-          fig_width:    10.24
-          fig_height:    7.68
           left:          1.70
           sub_width:     3.30
           wspace:        0.20
@@ -121,31 +115,29 @@ class MDGXFigureManager(FigureManager):
               loc:          6
             legend_lw:  5
         draw_subplot:
-          title_fp:     18r
-          label_fp:     18r
-          tick_fp:      14r
           legend:       False
-          tick_params:
-            length:     3
-            width:      1
-            pad:        6
-          lw:           2
           ylabel_kw:
             rotation:   horizontal
             labelpad:   50
         draw_dataset:
-          plot_kw:
-            lw:         2
-      presentation_one_of_two:
+          median_kw:
+            color:          white
+            lw:             4.0
+          percentile_kw:
+            color:          white
+            lw:             2.0
+      presentation_2.1:
+        help: Left subplot disabled
+        extends: presentation_2
         draw_figure:
           ncols:         1
           left:          5.20
-      presentation_four:
+      presentation_4:
+        help: Four plots for 4:3 presentation (width = 10.24", height = 7.68")
+        inherits: presentation
         draw_figure:
           ncols:        2
           nrows:        2
-          fig_width:    10.24
-          fig_height:    7.68
           left:          1.70
           sub_width:     3.30
           wspace:        0.20
@@ -171,33 +163,37 @@ class MDGXFigureManager(FigureManager):
               loc:          6
             legend_lw:  5
         draw_subplot:
-          title_fp:     18r
-          label_fp:     18r
-          tick_fp:      14r
           legend:       False
-          tick_params:
-            length:     3
-            width:      1
-            pad:        6
-          lw:           2
           ylabel_kw:
             rotation:   horizontal
             labelpad:   50
         draw_dataset:
-          plot_kw:
-            lw:         2
-      presentation_one_of_four:
+          median_kw:
+            color:          white
+            lw:             4.0
+          percentile_kw:
+            color:          white
+            lw:             2.0
+      presentation_4.1:
+        help: Right and bottom subplots disabled
+        extends: presentation_4
         draw_figure:
           nsubplots:    1
           shared_legend:
             left:       5.04
-      presentation_two_of_four:
+      presentation_4.2:
+        help: Bottom subplots disabled
+        extends: presentation_4
         draw_figure:
           nsubplots:    2
-      presentation_three_of_four:
+      presentation_4.3:
+        help: Bottom-right subplot disabled
+        extends: presentation_4
         draw_figure:
           nsubplots:    3
       notebook:
+        help: Single plot for notebook (width ≤ 6.5", height ≤ 8")
+        inherits: notebook
         draw_figure:
           left:          1.00
           sub_width:     2.10
@@ -205,9 +201,6 @@ class MDGXFigureManager(FigureManager):
           top:           0.30
           sub_height:    1.30
           bottom:        0.20
-          title_fp:     10b
-          label_fp:     10b
-          legend_fp:    10b
           shared_legend:
             left:        3.20
             sub_width:   1.20
@@ -220,51 +213,31 @@ class MDGXFigureManager(FigureManager):
               legend_fp:    8r
               loc:          6
         draw_subplot:
-          title_fp:     10b
-          label_fp:     10b
-          tick_fp:      8r
           legend:       False
           ylabel_kw:
             rotation:   horizontal
             labelpad:   30
-      notebook_two:
+      notebook_2:
+        help: Two adjacent plots
+        extends: notebook
         draw_figure:
           ncols:        2
-          left:          1.00
-          sub_width:     2.10
           wspace:        0.10
           right:         0.20
-          top:           0.30
-          sub_height:    1.30
           bottom:        0.55
-          title_fp:     10b
-          label_fp:     10b
-          legend_fp:    10b
           shared_legend:
             left:        1.00
             sub_width:   4.30
             sub_height:  0.50
             bottom:      0.00
-            legend_lw:  3
             legend_kw:
-              frameon:      False
-              labelspacing: 0.5
-              legend_fp:    8r
               loc:          9
               ncol:         3
           subplots:
             1:
               ylabel:       ""
               yticklabels:  []
-        draw_subplot:
-          title_fp:     10b
-          label_fp:     10b
-          tick_fp:      8r
-          legend:       False
-          ylabel_kw:
-            rotation:   horizontal
-            labelpad:   30
-    """
+        """
 
     @manage_defaults_presets()
     @manage_kwargs()

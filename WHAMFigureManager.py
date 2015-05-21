@@ -39,6 +39,7 @@ class WHAMFigureManager(FigureManager):
 
     presets = """
       ramachandran:
+        help: Ramachandran (Backbone Φ/Ψ) plot, contours at 0-5 kcal/mol
         draw_subplot:
           xlabel:           '$\\Phi$'
           xticks:           [-180, -90, 0, 90, 180]
@@ -56,6 +57,8 @@ class WHAMFigureManager(FigureManager):
             vmin:           0
             vmax:           5
       poster:
+        help: Single plot for poster (width = 4.6", height = 4.3")
+        inherits: poster
         draw_figure:
           left:         1.2
           sub_width:    3.0
@@ -64,15 +67,11 @@ class WHAMFigureManager(FigureManager):
           sub_height:   3.0
           bottom:       1.0
         draw_subplot:
-          title_fp:     36r
-          label_fp:     36r
-          tick_fp:      24r
-          tick_params:
-            pad:        10
-          lw:           2
           ylabel_kw:
             rotation:   horizontal
       notebook:
+        help: Single plot for notebook (width ≤ 6.5", height ≤ 8")
+        inherits: notebook
         draw_figure:
           left:          0.50
           sub_width:     3.00
@@ -80,13 +79,7 @@ class WHAMFigureManager(FigureManager):
           top:           0.30
           sub_height:    3.00
           bottom:        0.40
-          title_fp:     10b
-          label_fp:     10b
-          legend_fp:    10b
         draw_subplot:
-          title_fp:     10b
-          label_fp:     10b
-          tick_fp:      8r
           legend:       False
           ylabel_kw:
             rotation:   horizontal

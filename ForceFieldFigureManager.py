@@ -43,6 +43,8 @@ class ForceFieldFigureManager(FigureManager):
 
     presets = """
       poster:
+        help: Single plot for poster (width = 15.0", height = 3.8")
+        inherits: poster
         draw_figure:
           fig_width:    15.00
           left:          3.20
@@ -58,29 +60,18 @@ class ForceFieldFigureManager(FigureManager):
             bottom:     1.20
             legend_kw:
               frameon:      False
-              legend_fp:    25r
+              legend_fp:    24r
               loc:          6
             legend_lw:  10
         draw_subplot:
           xticks: [-180,-90,0,90,180]
-          title_fp:     36r
-          label_fp:     36r
           ylabel_kw:
             rotation:   horizontal
             labelpad:   100
-          tick_fp:      24r
-          tick_params:
-            length:     3
-            width:      1
-            pad:        10
-          lw:           2
-        draw_dataset:
-          plot_kw:
-            lw:         2
       presentation:
+        help: Single plot for 4:3 presentation (width = 10.24", height = 7.68")
+        inherits: presentation
         draw_figure:
-          fig_width:    10.24
-          fig_height:    7.68
           left:          1.60
           sub_width:     3.20
           sub_height:    2.00
@@ -98,22 +89,13 @@ class ForceFieldFigureManager(FigureManager):
             legend_lw:  5
         draw_subplot:
           xticks: [-180,-90,0,90,180]
-          title_fp:     18r
-          label_fp:     18r
-          tick_fp:      14r
-          legend:       False
-          tick_params:
-            length:     3
-            width:      1
-            pad:        6
-          lw:           2
           ylabel_kw:
             rotation:   horizontal
             labelpad:   48
-        draw_dataset:
-          plot_kw:
-            lw:         2
+          legend:       False
       presentation_wide:
+        help: 16:9 presentation (width = 19.20", height = 10.80")
+        inherits: presentation_wide
         draw_figure:
           fig_width:    19.2
           fig_height:   10.8
@@ -123,9 +105,6 @@ class ForceFieldFigureManager(FigureManager):
           top:           1.9
           sub_height:    3.5
           bottom:        5.4
-          title_fp:     24b
-          label_fp:     24b
-          legend_fp:    24r
           shared_legend:
             left:       8.2
             sub_width:  4.0
@@ -138,22 +117,13 @@ class ForceFieldFigureManager(FigureManager):
               loc:          2
             legend_lw:  5
         draw_subplot:
-          title_fp:     24b
-          label_fp:     24b
-          tick_fp:      16r
           legend:       False
-          tick_params:
-            length:     5
-            width:      2
-            pad:        6
-          lw:           3
           ylabel_kw:
             rotation: horizontal
             labelpad:      50
-        draw_dataset:
-          plot_kw:
-            lw:         3
       notebook:
+        help: Single plot for notebook (width ≤ 6.5", height ≤ 8")
+        inherits: notebook
         draw_figure:
           left:          1.00
           sub_width:     2.10
@@ -161,9 +131,6 @@ class ForceFieldFigureManager(FigureManager):
           top:           0.30
           sub_height:    1.30
           bottom:        0.50
-          title_fp:     10b
-          label_fp:     10b
-          legend_fp:    10b
           shared_legend:
             left:        3.20
             sub_width:   1.20
@@ -176,26 +143,18 @@ class ForceFieldFigureManager(FigureManager):
               legend_fp:    8r
               loc:          6
         draw_subplot:
-          title_fp:     10b
-          label_fp:     10b
-          tick_fp:      8r
           legend:       False
           ylabel_kw:
             rotation:   horizontal
             labelpad:   30
-      notebook_two:
+      notebook_2:
+        help: Two adjacent plots
+        extends: notebook
         draw_figure:
           ncols:        2
-          left:          1.00
-          sub_width:     2.10
           wspace:        0.10
           right:         0.20
-          top:           0.30
-          sub_height:    1.30
           bottom:        0.90
-          title_fp:     10b
-          label_fp:     10b
-          legend_fp:    10b
           xlabel_kw:
             ha:         center
             bottom:     -0.33
@@ -211,21 +170,9 @@ class ForceFieldFigureManager(FigureManager):
             sub_width:   4.30
             sub_height:  0.50
             bottom:      0.00
-            legend_lw:  3
             legend_kw:
-              frameon:      False
-              labelspacing: 0.5
-              legend_fp:    8r
               loc:          9
               ncol:         3
-        draw_subplot:
-          title_fp:     10b
-          label_fp:     10b
-          tick_fp:      8r
-          legend:       False
-          ylabel_kw:
-            rotation:   horizontal
-            labelpad:   30
     """
 
     @manage_defaults_presets()
@@ -240,7 +187,7 @@ class ForceFieldFigureManager(FigureManager):
             return
 
         # Configure plot settings
-        plot_kw = kwargs.get("plot_kw", {})
+        plot_kw = kwargs.get("plot_kw", {}).copy()
         if "color" in plot_kw:
             plot_kw["color"] = get_color(plot_kw.pop("color"))
         elif "color" in kwargs:
