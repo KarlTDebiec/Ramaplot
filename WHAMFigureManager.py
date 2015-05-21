@@ -45,15 +45,16 @@ class WHAMFigureManager(FigureManager):
           ylabel:           '$\\Psi$'
           yticks:           [-180, -90, 0, 90, 180]
         draw_dataset:
+          nan_to_max:       True
           contour_kw:
             colors:         '0.25'
-            levels:         [0, 1, 2, 3, 4, 5, 6]
+            levels:         [0, 1, 2, 3, 4, 5]
           imshow_kw:
             cmap:           'hot_r'
             extent:         [-180, 180, 180, -180]
             interpolation:  'none'
             vmin:           0
-            vmax:           6
+            vmax:           5
       poster:
         draw_figure:
           left:         1.2

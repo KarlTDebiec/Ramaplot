@@ -54,6 +54,8 @@ class MDGXFigureManager(FigureManager):
     """
 
     presets = """
+      report_topology:
+        place: holder
       poster_two:
         draw_figure:
           ncols:        2
@@ -210,7 +212,7 @@ class MDGXFigureManager(FigureManager):
             left:        3.20
             sub_width:   1.20
             sub_height:  1.30
-            bottom:      0.50
+            bottom:      0.20
             legend_lw:  3
             legend_kw:
               frameon:      False
@@ -263,6 +265,37 @@ class MDGXFigureManager(FigureManager):
             rotation:   horizontal
             labelpad:   30
     """
+
+    @manage_defaults_presets()
+    @manage_kwargs()
+    def draw_report(self, **in_kwargs):
+        """
+        Draws a series of figures based on provided specifications.
+        """
+        preset = in_kwargs.get("preset")[:]
+        figure_specs = in_kwargs.pop("figures", {})
+        if "report_topology" in preset:
+            from .myplotspec import merge_dicts
+            from .MDGXDataset import MDGXDataset
+            datasets = figure_specs["all"]["subplots"]["all"]["datasets"]
+            first_infile = datasets[sorted([i for i in datasets.keys() if
+              str(i).isdigit()])[0]]["infile"]
+            data = MDGXDataset(infile=first_infile).data
+            topologies = sorted(set(data["topology"]))
+            for i, topology in enumerate(topologies):
+                figure_specs[i] = merge_dicts(
+                  figure_specs.get(i, {}),
+                  {"subplots":
+                    {0:
+                      {"title": "{0} ({1:,} Structures)".format(
+                        topology.split("/")[0],
+                        data.loc[data["topology"] == topology].shape[0]),
+                       "datasets":
+                        {"all":{
+                          "contains":
+                            topology}}}}})
+        super(MDGXFigureManager, self).draw_report(figures=figure_specs,
+          **in_kwargs)
 
     @manage_defaults_presets()
     @manage_kwargs()
