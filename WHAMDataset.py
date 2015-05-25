@@ -7,14 +7,20 @@
 #   This software may be modified and distributed under the terms of the
 #   BSD license. See the LICENSE file for details.
 """
-Manages WHAM datasets
+Manages weighted histogram analysis method datasets.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
 ################################### CLASSES ###################################
 class WHAMDataset(object):
     """
-    Manages WHAM datasets
+    Manages weighted histogram analysis method datasets.
+
+    Parses and organizes weighted histogram analysis method Ramachandran
+    (backbone Φ/Ψ) distributions from umbrella sampling simulations,
+    calculated using:
+      Grossfield, Alan, WHAM: the weighted histogram analysis method,
+      version 2.0.9, <http://membrane.urmc.rochester.edu/content/wham>_
     """
 
     def __init__(self, infile, **kwargs):
@@ -22,7 +28,8 @@ class WHAMDataset(object):
         Initializes dataset.
 
         Arguments:
-            infile (str): Path to text infile
+          infile (str): Path to text input file, may contain environment
+            variables
         """
         from os.path import expandvars
         import pandas
@@ -32,6 +39,7 @@ class WHAMDataset(object):
                       header=0, names=["x", "y", "free energy", "probability"],
                       na_values=[9999999.000000])
 
+        # Organize data
         self.x_centers = np.unique(self.data["x"])
         self.y_centers = np.unique(self.data["y"])
         self.x_width = np.mean(self.x_centers[1:] - self.x_centers[:-1])
@@ -55,3 +63,27 @@ class WHAMDataset(object):
                 x_index = np.where(self.y_centers == y)[0][0]
                 self.free_energy[x_index, y_index] = free_energy
                 self.probability[x_index, y_index] = probability
+        self.free_energy -= np.nanmin(self.free_energy)
+
+        # Format contour settings
+        self.contour_x_centers = np.zeros(self.x_centers.size + 2, np.float)
+        self.contour_x_centers[1:-1] = self.x_centers
+        self.contour_x_centers[0]  = self.contour_x_centers[1]  - self.x_width
+        self.contour_x_centers[-1] = self.contour_x_centers[-2] + self.x_width
+        self.contour_y_centers = np.zeros(self.y_centers.size + 2, np.float)
+        self.contour_y_centers[1:-1] = self.y_centers
+        self.contour_y_centers[0]  = self.contour_y_centers[1]  - self.y_width
+        self.contour_y_centers[-1] = self.contour_y_centers[-2] + self.y_width
+        self.contour_free_energy = np.zeros((self.x_centers.size + 2,
+                                             self.y_centers.size + 2),
+                                             np.float)
+        self.contour_free_energy[:] = np.nan
+        self.contour_free_energy[1:-1,1:-1] = self.free_energy
+        self.contour_free_energy[1:-1,-1] = self.free_energy[:,0]
+        self.contour_free_energy[-1,1:-1] = self.free_energy[0,:]
+        self.contour_free_energy[1:-1,0] = self.free_energy[:,-1]
+        self.contour_free_energy[0,1:-1] = self.free_energy[-1,:]
+        self.contour_free_energy[0,0] = self.free_energy[-1,-1]
+        self.contour_free_energy[-1,-1] = self.free_energy[0,0]
+        self.contour_free_energy[0,-1] = self.free_energy[-1,0]
+        self.contour_free_energy[-1,0] = self.free_energy[0,-1]

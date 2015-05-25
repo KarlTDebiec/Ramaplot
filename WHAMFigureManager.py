@@ -26,7 +26,6 @@ class WHAMFigureManager(FigureManager):
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs
-    from myplotspec.debug import debug_arguments
 
     defaults = """
         draw_figure:
@@ -39,7 +38,7 @@ class WHAMFigureManager(FigureManager):
 
     presets = """
       ramachandran:
-        help: Ramachandran (Backbone Φ/Ψ) plot, contours at 0-5 kcal/mol
+        help: Ramachandran (backbone Φ/Ψ) plot, contours at 0-5 kcal/mol
         draw_subplot:
           xlabel:           '$\\Phi$'
           xticks:           [-180, -90, 0, 90, 180]
@@ -87,38 +86,65 @@ class WHAMFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, infile=None, nan_to_max=True, **kwargs):
+    def draw_dataset(self, subplot, infile=None, kind="WHAM",nan_to_max=True,
+        **kwargs):
         import numpy as np
         from .myplotspec import get_color
         from .WHAMDataset import WHAMDataset
+        from .NDRDDataset import NDRDDataset
 
         # Load data; handle missing data gracefully
         if infile is None:
             return
-        dataset = WHAMDataset(infile=infile, **kwargs)
+
+        if kind == "WHAM":
+            dataset = WHAMDataset(infile=infile, **kwargs)
+        elif kind == "NDRD":
+            dataset = NDRDDataset(infile=infile, **kwargs)
         if nan_to_max:
             dataset.free_energy[np.isnan(dataset.free_energy)] = np.nanmax(
               dataset.free_energy)
 
-        # Configure plot settings
+        # Configure contour settings
         contour_kw = kwargs.get("contour_kw", {})
+        if hasattr(dataset, "contour_x_centers"):
+            contour_x_centers = dataset.contour_x_centers
+        else:
+            contour_x_centers = dataset.x_centers
+        if hasattr(dataset, "contour_y_centers"):
+            contour_y_centers = dataset.contour_y_centers
+        else:
+            contour_y_centers = dataset.y_centers
+        if hasattr(dataset, "contour_free_energy"):
+            contour_free_energy = dataset.contour_free_energy
+        else:
+            contour_free_energy = dataset.free_energy
         if "levels" in kwargs:
             contour_kw["levels"] = kwargs.pop("color")
         elif "levels" not in contour_kw:
             contour_kw["levels"] = range(0,
               int(np.ceil(np.nanmax(dataset.free_energy))))
+
+        # Configure heatmap settings
         imshow_kw = kwargs.get("imshow_kw", {})
         if "extent" in kwargs:
             imshow_kw["extent"] = kwargs.pop("extent")
         elif "extent" not in imshow_kw:
-            imshow_kw["extent"] = kwargs.get("extent",
-                      [np.min(dataset.x_bins), np.max(dataset.x_bins),
-                       np.max(dataset.y_bins), np.min(dataset.y_bins)])
+            if hasattr(dataset, "imshow_extent"):
+                imshow_kw["extent"] = dataset.imshow_extent
+            else:
+                imshow_kw["extent"] = kwargs.get("extent",
+                  [np.min(dataset.x_bins), np.max(dataset.x_bins),
+                   np.max(dataset.y_bins), np.min(dataset.y_bins)])
+        if hasattr(dataset, "imshow_free_energy"):
+            imshow_free_energy = dataset.imshow_free_energy
+        else:
+            imshow_free_energy = dataset.free_energy
 
         # Plot
-        subplot.contour(dataset.x_centers, dataset.y_centers,
-          dataset.free_energy, **contour_kw)
-        subplot.imshow(dataset.free_energy, **imshow_kw)
+        subplot.contour(contour_x_centers, contour_y_centers,
+          contour_free_energy, **contour_kw)
+        subplot.imshow(imshow_free_energy, **imshow_kw)
 
 #################################### MAIN #####################################
 if __name__ == "__main__":
