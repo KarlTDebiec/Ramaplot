@@ -82,6 +82,16 @@ class WHAMFigureManager(FigureManager):
           legend:       False
           ylabel_kw:
             rotation:   horizontal
+      notebook_2:
+        help: Two adjacent plots
+        extends: notebook
+        draw_figure:
+          ncols:        2
+          wspace:       0.5
+        draw_subplot:
+          legend:       False
+          ylabel_kw:
+            rotation:   horizontal
     """
 
     @manage_defaults_presets()

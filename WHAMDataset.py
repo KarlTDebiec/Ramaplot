@@ -23,7 +23,7 @@ class WHAMDataset(object):
       version 2.0.9, <http://membrane.urmc.rochester.edu/content/wham>_
     """
 
-    def __init__(self, infile, **kwargs):
+    def __init__(self, infile, verbose=1, **kwargs):
         """
         Initializes dataset.
 
@@ -35,6 +35,8 @@ class WHAMDataset(object):
         import pandas
         import numpy as np
 
+        if verbose > 0:
+            print("loading from '{0}'".format(infile))
         self.data = pandas.read_csv(expandvars(infile), delim_whitespace=True,
                       header=0, names=["x", "y", "free energy", "probability"],
                       na_values=[9999999.000000])
