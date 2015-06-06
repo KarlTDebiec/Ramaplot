@@ -50,7 +50,7 @@ class WHAMFigureManager(FigureManager):
             colors:         '0.25'
             levels:         [0, 1, 2, 3, 4, 5]
           imshow_kw:
-            cmap:           'hot_r'
+            cmap:           'hot'
             extent:         [-180, 180, 180, -180]
             interpolation:  'none'
             vmin:           0
@@ -73,10 +73,10 @@ class WHAMFigureManager(FigureManager):
         inherits: notebook
         draw_figure:
           left:          0.50
-          sub_width:     3.00
+          sub_width:     2.80
           right:         0.20
           top:           0.30
-          sub_height:    3.00
+          sub_height:    2.80
           bottom:        0.40
         draw_subplot:
           legend:       False
@@ -87,7 +87,11 @@ class WHAMFigureManager(FigureManager):
         extends: notebook
         draw_figure:
           ncols:        2
-          wspace:       0.5
+          wspace:       0.3
+          subplots:
+            1:
+              ylabel:       ""
+              yticklabels:  []
         draw_subplot:
           legend:       False
           ylabel_kw:
