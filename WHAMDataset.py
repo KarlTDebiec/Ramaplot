@@ -23,13 +23,16 @@ class WHAMDataset(object):
       version 2.0.9, <http://membrane.urmc.rochester.edu/content/wham>_
     """
 
-    def __init__(self, infile, verbose=1, **kwargs):
+    def __init__(self, infile, wrap=True, verbose=1,
+        debug=1, **kwargs):
         """
         Initializes dataset.
 
         Arguments:
           infile (str): Path to text input file, may contain environment
             variables
+          wrap (bool): Wrap x and y coordinates between 180 and 360 to
+            between -180 and 0
         """
         from os.path import expandvars
         import pandas
@@ -40,6 +43,9 @@ class WHAMDataset(object):
         self.data = pandas.read_csv(expandvars(infile), delim_whitespace=True,
                       header=0, names=["x", "y", "free energy", "probability"],
                       na_values=[9999999.000000])
+        if wrap:
+            self.data["x"][self.data["x"]>180] -= 360
+            self.data["y"][self.data["y"]>180] -= 360
 
         # Organize data
         self.x_centers = np.unique(self.data["x"])
