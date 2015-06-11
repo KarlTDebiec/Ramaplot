@@ -254,7 +254,9 @@ class NDRDDataset(object):
         self.contour_free_energy[0:-1,-1]   = self.free_energy[:,0]
         self.contour_free_energy[-1,0:-1]   = self.free_energy[0,:]
         self.contour_free_energy[-1,-1]     = self.free_energy[0,0]
+        self.x_bins = np.append(self.x_bins, self.x_bins[-1] + self.x_width)
+        self.y_bins = np.append(self.y_bins, self.y_bins[-1] + self.y_width)
 
         # Format heatmap settings
         self.imshow_free_energy = self.contour_free_energy
-        self.imshow_extent = [-182.5, 182.5, -182.5, 182.5]
+        self.imshow_extent = [-182.5, 182.5, 182.5, -182.5]
