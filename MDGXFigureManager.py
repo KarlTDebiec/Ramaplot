@@ -93,12 +93,12 @@ class MDGXFigureManager(FigureManager):
               height = 7.68")
         inherits: presentation
         draw_figure:
-          ncols:        2
-          left:          1.70
-          sub_width:     3.30
-          wspace:        0.20
-          sub_height:    2.50
-          bottom:        3.00
+          ncols: 2
+          left:       1.70
+          sub_width:  3.30
+          wspace:     0.20
+          sub_height: 2.50
+          bottom:     3.00
           subplots:
             1:
               ylabel: ""
@@ -109,29 +109,29 @@ class MDGXFigureManager(FigureManager):
             sub_height: 2.50
             bottom:     3.00
             legend_kw:
-              frameon:      False
+              frameon: False
               labelspacing: 0.5
-              legend_fp:    14r
-              loc:          6
-            legend_lw:  5
+              legend_fp: 14r
+              loc: 6
+            legend_lw: 5
         draw_subplot:
-          legend:       False
+          legend: False
           ylabel_kw:
-            rotation:   horizontal
-            labelpad:   50
+            rotation: horizontal
+            labelpad: 50
         draw_dataset:
           median_kw:
-            color:          white
-            lw:             4.0
+            color: white
+            lw: 4.0
           percentile_kw:
-            color:          white
-            lw:             2.0
+            color: white
+            lw: 2.0
       presentation_2.1:
         help: Left subplot disabled
         extends: presentation_2
         draw_figure:
-          ncols:         1
-          left:          5.20
+          ncols: 1
+          left: 5.20
       presentation_4:
         help: Four plots for 4:3 presentation (width = 10.24", height = 7.68")
         inherits: presentation
@@ -237,6 +237,110 @@ class MDGXFigureManager(FigureManager):
             1:
               ylabel:       ""
               yticklabels:  []
+      presentation_wide_2:
+        help: Two adjacent plots for 16:9 presentation (width = 19.20",
+              height = 10.80")
+        inherits: presentation_wide
+        draw_figure:
+          ncols: 2
+          left:       2.70
+          sub_width:  6.30
+          wspace:     0.30
+          sub_height: 4.00
+          bottom:     4.20
+          subplots:
+            1:
+              ylabel: ""
+              yticklabels: []
+          shared_legend:
+            left:       15.70
+            sub_width:   4.00
+            sub_height:  4.00
+            bottom:      4.20
+            legend_kw:
+              frameon: False
+              labelspacing: 0.5
+              legend_fp: 24r
+              loc: 2
+            legend_lw: 10
+        draw_subplot:
+          legend: False
+          ylabel_kw:
+            rotation: horizontal
+            labelpad: 75
+        draw_dataset:
+          median_kw:
+            color: white
+            lw: 10.0
+          percentile_kw:
+            color: white
+            lw: 5.0
+      presentation_wide_2.1:
+        help: Left subplot disabled
+        extends: presentation_wide_2
+        draw_figure:
+          ncols: 1
+          left: 9.30
+      presentation_wide_4:
+        help: Four plots for 16:9 presentation (width = 19.20", height =
+              10.80")
+        inherits: presentation_wide
+        draw_figure:
+          ncols: 2
+          nrows: 2
+          left:       3.95
+          sub_width:  5.50
+          wspace:     0.30
+          sub_height: 3.50
+          hspace:     0.30
+          bottom:     1.20
+          subplots:
+            1:
+              ylabel: ""
+              yticklabels: []
+            3:
+              ylabel: ""
+              yticklabels: []
+          shared_legend:
+            left:       15.40
+            sub_width:   4.00
+            sub_height:  4.00
+            bottom:      4.75
+            legend_kw:
+              frameon: False
+              labelspacing: 0.5
+              legend_fp: 24r
+              loc: 2
+            legend_lw: 10
+        draw_subplot:
+          legend: False
+          ylabel_kw:
+            rotation: horizontal
+            labelpad: 75
+        draw_dataset:
+          median_kw:
+            color: white
+            lw: 10.0
+          percentile_kw:
+            color: white
+            lw: 5.0
+      presentation_wide_4.1:
+        help: Right and bottom subplots disabled
+        extends: presentation_wide_4
+        draw_figure:
+          nsubplots: 1
+          shared_legend:
+            left: 9.60
+      presentation_wide_4.2:
+        help: Bottom subplots disabled
+        extends: presentation_wide_4
+        draw_figure:
+          nsubplots: 2
+      presentation_wide_4.3:
+        help: Bottom-right subplot disabled
+        extends: presentation_wide_4
+        draw_figure:
+          nsubplots: 3
         """
 
     @manage_defaults_presets()
@@ -336,6 +440,7 @@ class MDGXFigureManager(FigureManager):
             body.set_edgecolors(color)
             body.set_alpha(1)
             body.set_zorder(2)
+            body.set_linewidth(5)
         handle = subplot.plot(-1, -1, color = color)[0]
         if handles is not None and label is not None:
             handles[label] = handle
