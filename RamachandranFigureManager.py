@@ -103,6 +103,105 @@ class RamachandranFigureManager(FigureManager):
           legend: False
           ylabel_kw:
             rotation: horizontal
+      presentation_wide_6:
+        help: Six plots for 16:9 presentation (width = 19.20", height =
+              10.80")
+        inherits: presentation_wide
+        draw_figure:
+          ncols: 3
+          nrows: 2
+          left:       1.50
+          sub_width:  3.40
+          wspace:     0.30
+          sub_height: 3.40
+          hspace:     0.30
+          bottom:     1.20
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            4:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            5:
+              ylabel: ""
+              yticklabels: []
+        draw_subplot:
+          legend: False
+          ylabel_kw:
+            rotation: horizontal
+            labelpad: 10
+      presentation_wide_6.1:
+        help: Right and bottom subplots disabled
+        extends: presentation_wide_6
+        draw_figure:
+          nsubplots: 1
+          subplots:
+            0:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90,180]
+      presentation_wide_6.2:
+        help: Right and bottom subplots disabled
+        extends: presentation_wide_6
+        draw_figure:
+          nsubplots: 2
+          subplots:
+            0:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90]
+            1:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90,180]
+      presentation_wide_6.3:
+        help: Bottom subplots disabled
+        extends: presentation_wide_6
+        draw_figure:
+          nsubplots: 3
+          subplots:
+            0:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90]
+            1:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90]
+            2:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90,180]
+      presentation_wide_6.4:
+        help: Bottom-right subplots disabled
+        extends: presentation_wide_6
+        draw_figure:
+          nsubplots: 4
+          subplots:
+            1:
+              xlabel: '$\\Phi$'
+              xticklabels: ["",-90,0,90]
+            2:
+              xlabel: '$\\Phi$'
+              xticklabels: [-180,-90,0,90,180]
+      presentation_wide_6.5:
+        help: Bottom-right subplot disabled
+        extends: presentation_wide_6
+        draw_figure:
+          nsubplots: 5
+          subplots:
+            2:
+              xlabel: '$\\Phi$'
+              xticklabels: ["",-90,0,90,180]
     """
 
     @manage_defaults_presets()
