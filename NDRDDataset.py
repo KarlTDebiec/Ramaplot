@@ -27,7 +27,8 @@ class NDRDDataset(object):
     <http://dunbrack.fccc.edu/ndrd>_
     """
 
-    def __init__(self, infile, selection="ALA", **kwargs):
+    def __init__(self, infile, selection="ALA", loop_edges=True, max_fe=None,
+        **kwargs):
         """
         Initializes dataset.
 
@@ -218,45 +219,56 @@ class NDRDDataset(object):
         self.data = dist
         self.x_centers = np.unique(self.data["x"])
         self.y_centers = np.unique(self.data["y"])
+        self.free_energy = np.zeros((self.x_centers.size, self.y_centers.size),
+                                    np.float) * np.nan
+        self.probability = np.zeros((self.x_centers.size, self.y_centers.size),
+                                    np.float) * np.nan
+        for index, x, y, probability, free_energy in self.data.itertuples():
+            x_index = np.where(self.x_centers == x)[0][0]
+            y_index = np.where(self.y_centers == y)[0][0]
+            self.free_energy[x_index, y_index] = free_energy
+            self.probability[x_index, y_index] = probability
+        self.free_energy -= np.nanmin(self.free_energy)
+
         self.x_width = np.mean(self.x_centers[1:] - self.x_centers[:-1])
         self.y_width = np.mean(self.y_centers[1:] - self.y_centers[:-1])
+
+        # Loop data to allow contour lines to be drawn to edges
+        if loop_edges:
+            self.x_centers = np.concatenate(
+                               ([self.x_centers[0]-self.x_width],
+                                 self.x_centers,
+                                [self.x_centers[-1]+self.x_width]))
+            self.y_centers = np.concatenate(
+                               ([self.y_centers[0]-self.y_width],
+                                 self.y_centers,
+                                [self.y_centers[-1]+self.y_width]))
+            temp = np.zeros((self.x_centers.size, self.y_centers.size))*np.nan
+            temp[1:-1,1:-1]  = self.free_energy
+            temp[1:-1,-1]    = self.free_energy[:,0]
+            temp[-1,1:-1]    = self.free_energy[0,:]
+            temp[1:-1,0]     = self.free_energy[:,-1]
+            temp[0,1:-1]     = self.free_energy[-1,:]
+            temp[0,0]        = self.free_energy[-1,-1]
+            temp[-1,-1]      = self.free_energy[0,0]
+            temp[0,-1]       = self.free_energy[-1,0]
+            temp[-1,0]       = self.free_energy[0,-1]
+            self.free_energy = temp
+
         self.x_bins  = np.linspace(self.x_centers[0]  - self.x_width/2,
                                    self.x_centers[-1] + self.x_width/2,
                                    self.x_centers.size + 1)
         self.y_bins  = np.linspace(self.y_centers[0]  - self.y_width/2,
                                    self.y_centers[-1] + self.y_width/2,
                                    self.y_centers.size + 1)
-        self.free_energy = np.zeros((self.x_centers.size, self.y_centers.size),
-                                    np.float)
-        self.probability = np.zeros((self.x_centers.size, self.y_centers.size),
-                                    np.float)
-        self.free_energy[:] = np.nan
-        self.probability[:] = np.nan
-        for index, x, y, probability, free_energy in self.data.itertuples():
-            y_index = np.where(self.x_centers == x)[0][0]
-            x_index = np.where(self.y_centers == y)[0][0]
-            self.free_energy[x_index, y_index] = free_energy
-            self.probability[x_index, y_index] = probability
-        self.free_energy -= np.nanmin(self.free_energy)
 
-        # Format contour settings
-        self.contour_x_centers = np.zeros(self.x_centers.size + 1, np.float)
-        self.contour_x_centers[0:-1] = self.x_centers
-        self.contour_x_centers[-1] = self.contour_x_centers[-2] + self.x_width
-        self.contour_y_centers = np.zeros(self.y_centers.size + 1, np.float)
-        self.contour_y_centers[0:-1] = self.y_centers
-        self.contour_y_centers[-1] = self.contour_y_centers[-2] + self.y_width
-        self.contour_free_energy = np.zeros((self.x_centers.size + 1,
-                                             self.y_centers.size + 1),
-                                             np.float)
-        self.contour_free_energy[:] = np.nan
-        self.contour_free_energy[0:-1,0:-1] = self.free_energy
-        self.contour_free_energy[0:-1,-1]   = self.free_energy[:,0]
-        self.contour_free_energy[-1,0:-1]   = self.free_energy[0,:]
-        self.contour_free_energy[-1,-1]     = self.free_energy[0,0]
-        self.x_bins = np.append(self.x_bins, self.x_bins[-1] + self.x_width)
-        self.y_bins = np.append(self.y_bins, self.y_bins[-1] + self.y_width)
-
-        # Format heatmap settings
-        self.imshow_free_energy = self.contour_free_energy
-        self.imshow_extent = [-182.5, 182.5, 182.5, -182.5]
+        # Prepare mask
+        if max_fe is not None:
+            self.mask = np.ma.masked_where(np.logical_and(
+              self.free_energy <= max_fe,
+              np.logical_not(np.isnan(self.free_energy))),
+              np.ones_like(self.free_energy))
+        else:
+            self.mask = np.ma.masked_where(
+              np.logical_not(np.isnan(self.free_energy)),
+              np.ones_like(self.free_energy))

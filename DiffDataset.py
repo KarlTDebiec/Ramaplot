@@ -18,8 +18,7 @@ class DiffDataset(object):
 
     """
 
-    def __init__(self, dataset_1, dataset_2, max_fe=5, verbose=1,
-        debug=1, **kwargs):
+    def __init__(self, dataset_1, dataset_2, verbose=1, debug=1, **kwargs):
         """
         Initializes dataset.
 
@@ -53,32 +52,21 @@ class DiffDataset(object):
         self.x_bins = dataset_1.x_bins
         self.y_bins = dataset_1.y_bins
         self.free_energy = dataset_1.free_energy - dataset_2.free_energy
-        if max_fe is not None:
-            self.free_energy[dataset_1.free_energy >= max_fe] = np.nan
         self.probability = dataset_1.probability - dataset_2.probability
 
-        # Format contour settings
-        if hasattr(dataset_1, "contour_x_centers"):
-            self.contour_x_centers = dataset_1.contour_x_centers
-        if hasattr(dataset_1, "contour_y_centers"):
-            self.contour_y_centers = dataset_1.contour_y_centers
-        if (hasattr(dataset_1, "contour_free_energy")
-        and hasattr(dataset_2, "contour_free_energy")):
-            self.contour_free_energy = (dataset_1.contour_free_energy
-                                     -  dataset_2.contour_free_energy)
-            if max_fe is not None:
-                self.contour_free_energy[np.logical_and(
-                  dataset_1.contour_free_energy >= max_fe,
-                  dataset_2.contour_free_energy >= max_fe)] = np.nan
-
-        # Format heatmap settings
-        if (hasattr(dataset_1, "imshow_free_energy")
-        and hasattr(dataset_2, "imshow_free_energy")):
-            self.imshow_free_energy = (dataset_1.imshow_free_energy
-                                    -  dataset_2.imshow_free_energy)
-            if max_fe is not None:
-                self.imshow_free_energy[np.logical_and(
-                  dataset_1.imshow_free_energy >= max_fe,
-                  dataset_2.imshow_free_energy >= max_fe)] = np.nan
-        if hasattr(dataset_1, "imshow_extent"):
-            self.imshow_extent = dataset_1.imshow_extent
+        # Prepare mask
+        #   Values that are NaN are all masked, as are values that are
+        #   masked in both source datasets; two boolean arrays are
+        #   prepared manually; np.logical_and() and np.logical_or()
+        #   yield the same result when passed masked arrays, and are
+        #   either broken or not intended to be used for this purpose,
+        #   and np.ma.mask_or() does not appear to be usable either.
+        temp1 = np.zeros_like(dataset_1.free_energy)
+        temp2 = np.zeros_like(dataset_2.free_energy)
+        temp1[dataset_1.mask != 1] = 1
+        temp2[dataset_2.mask != 1] = 1
+        self.mask = np.ma.masked_where(
+          np.logical_and(
+            np.logical_not(np.isnan(self.free_energy)),
+            np.logical_or(temp1, temp2)),
+          np.ones_like(self.free_energy))

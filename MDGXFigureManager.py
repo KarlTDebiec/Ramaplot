@@ -440,7 +440,7 @@ class MDGXFigureManager(FigureManager):
             body.set_edgecolors(color)
             body.set_alpha(1)
             body.set_zorder(2)
-            body.set_linewidth(5)
+            body.set_linewidth(1)
         handle = subplot.plot(-1, -1, color = color)[0]
         if handles is not None and label is not None:
             handles[label] = handle
