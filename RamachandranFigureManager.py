@@ -79,7 +79,6 @@ class RamachandranFigureManager(FigureManager):
           y2ticks: [-180,-90,0,90,180]
           y2ticklabels: []
           y2label_kw:
-            labelpad: 20
             rotation: 270
       poster:
         help: Single plot for poster (width = 4.6", height = 4.3")
@@ -88,9 +87,9 @@ class RamachandranFigureManager(FigureManager):
           left:       1.20
           sub_width:  3.00
           right:      0.40
-          top:        0.30
-          sub_height: 3.00
           bottom:     1.00
+          sub_height: 3.00
+          top:        0.30
         draw_subplot:
           ylabel_kw:
             rotation: horizontal
@@ -101,15 +100,15 @@ class RamachandranFigureManager(FigureManager):
           left:       0.50
           sub_width:  2.80
           right:      0.20
-          top:        0.30
-          sub_height: 2.80
           bottom:     0.40
+          sub_height: 2.80
+          top:        0.30
         draw_subplot:
           legend: False
           ylabel_kw:
             rotation: horizontal
       notebook_2:
-        help: Two adjacent plots
+        help: Two plots
         extends: notebook
         draw_figure:
           ncols: 2
@@ -122,6 +121,110 @@ class RamachandranFigureManager(FigureManager):
           legend: False
           ylabel_kw:
             rotation: horizontal
+      notebook_6:
+        help: Six plots
+        extends: notebook
+        draw_figure:
+          ncols: 3
+          nrows: 2
+          left:       0.50
+          sub_width:  1.80
+          wspace:     0.10
+          right:      0.25
+          sub_height: 1.60
+          hspace:     0.10
+          bottom:     0.40
+          top:        0.25
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            4:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            5:
+              ylabel: ""
+              yticklabels: []
+        draw_subplot:
+          legend: False
+          ylabel_kw:
+            rotation: horizontal
+            labelpad: 5
+          y2label_kw:
+            labelpad: 6
+      notebook_9:
+        help: Nine plots
+        extends: notebook
+        draw_figure:
+          ncols: 3
+          nrows: 3
+          left:       0.50
+          sub_width:  1.80
+          wspace:     0.10
+          right:      0.25
+          sub_height: 1.60
+          hspace:     0.10
+          bottom:     0.40
+          top:        0.25
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            4:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            5:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            6:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            7:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            8:
+              ylabel: ""
+              yticklabels: []
+        draw_subplot:
+          legend: False
+          ylabel_kw:
+            rotation: horizontal
+            labelpad: 5
+          y2label_kw:
+            labelpad: 6
       presentation_wide_6:
         help: Six plots for 16:9 presentation (width = 19.20", height =
               10.80")
@@ -164,6 +267,8 @@ class RamachandranFigureManager(FigureManager):
           ylabel_kw:
             rotation: horizontal
             labelpad: 10
+          y2label_kw:
+            labelpad: 20
       presentation_wide_6.1:
         help: Right and bottom subplots disabled
         extends: presentation_wide_6
