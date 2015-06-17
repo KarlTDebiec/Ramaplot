@@ -45,14 +45,14 @@ class DiffDataset(object):
             raise
 
         # Prepare data
-        self.x_centers = dataset_1.x_centers
-        self.y_centers = dataset_1.y_centers
-        self.x_width = dataset_1.x_width
-        self.y_width = dataset_1.y_width
-        self.x_bins = dataset_1.x_bins
-        self.y_bins = dataset_1.y_bins
-        self.free_energy = dataset_1.free_energy - dataset_2.free_energy
-        self.probability = dataset_1.probability - dataset_2.probability
+        self.x_centers = dataset_1.x_centers.copy()
+        self.y_centers = dataset_1.y_centers.copy()
+        self.x_width = dataset_1.x_width.copy()
+        self.y_width = dataset_1.y_width.copy()
+        self.x_bins = dataset_1.x_bins.copy()
+        self.y_bins = dataset_1.y_bins.copy()
+        self.free_energy = dataset_1.free_energy.copy() - dataset_2.free_energy
+        self.probability = dataset_1.probability.copy() - dataset_2.probability
 
         # Prepare mask
         #   Values that are NaN are all masked, as are values that are

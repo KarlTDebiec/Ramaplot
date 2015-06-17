@@ -57,6 +57,16 @@ class RamachandranFigureManager(FigureManager):
             vmax: 1
           outline_kw:
             color: black
+          label_kw:
+            x: 165
+            y: -170
+            text_kw:
+              ha: right
+              va: bottom
+              bbox:
+                facecolor: white
+                alpha: 0.8
+                lw: 0
     """
 
     presets = """
@@ -94,11 +104,12 @@ class RamachandranFigureManager(FigureManager):
           ylabel_kw:
             rotation: horizontal
       notebook:
-        help: Single plot for notebook (width ≤ 6.5", height ≤ 8")
+        help: Single plot for notebook (width ≤ 6.5", height ≤ 9")
         inherits: notebook
         draw_figure:
           left:       0.50
           sub_width:  2.80
+          wspace:     0.30
           right:      0.20
           bottom:     0.40
           sub_height: 2.80
@@ -108,33 +119,53 @@ class RamachandranFigureManager(FigureManager):
           ylabel_kw:
             rotation: horizontal
       notebook_2:
-        help: Two plots
+        help: Two adjacent plots
         extends: notebook
         draw_figure:
           ncols: 2
-          wspace: 0.3
           subplots:
             1:
+              ylabel: ""
+              yticklabels: []
+      notebook_3:
+        help: Three adjacent plots for notebook (width ≤ 6.5", height ≤ 9")
+        inherits: notebook
+        draw_figure:
+          ncols: 3
+          nrows: 1
+          left:       0.50
+          sub_width:  1.59
+          wspace:     0.10
+          right:      0.25
+          sub_height: 1.59
+          hspace:     0.10
+          bottom:     0.40
+          top:        0.25
+          subplots:
+            0:
+              xticklabels: [-180,-90,0,90]
+            1:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            2:
               ylabel: ""
               yticklabels: []
         draw_subplot:
           legend: False
           ylabel_kw:
             rotation: horizontal
+            labelpad: 5
+          y2label_kw:
+            labelpad: 6
+        draw_dataset:
+          label_kw:
+            fp: 8r
       notebook_6:
         help: Six plots
-        extends: notebook
+        extends: notebook_3
         draw_figure:
-          ncols: 3
           nrows: 2
-          left:       0.50
-          sub_width:  1.80
-          wspace:     0.10
-          right:      0.25
-          sub_height: 1.60
-          hspace:     0.10
-          bottom:     0.40
-          top:        0.25
           subplots:
             0:
               xlabel: ""
@@ -159,27 +190,11 @@ class RamachandranFigureManager(FigureManager):
             5:
               ylabel: ""
               yticklabels: []
-        draw_subplot:
-          legend: False
-          ylabel_kw:
-            rotation: horizontal
-            labelpad: 5
-          y2label_kw:
-            labelpad: 6
       notebook_9:
         help: Nine plots
-        extends: notebook
+        extends: notebook_3
         draw_figure:
-          ncols: 3
           nrows: 3
-          left:       0.50
-          sub_width:  1.80
-          wspace:     0.10
-          right:      0.25
-          sub_height: 1.60
-          hspace:     0.10
-          bottom:     0.40
-          top:        0.25
           subplots:
             0:
               xlabel: ""
@@ -218,13 +233,134 @@ class RamachandranFigureManager(FigureManager):
             8:
               ylabel: ""
               yticklabels: []
-        draw_subplot:
-          legend: False
-          ylabel_kw:
-            rotation: horizontal
-            labelpad: 5
-          y2label_kw:
-            labelpad: 6
+      notebook_12:
+        help: Twelve plots
+        extends: notebook_3
+        draw_figure:
+          nrows: 4
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            4:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            5:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            6:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            7:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            8:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            9:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            10:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            11:
+              ylabel: ""
+              yticklabels: []
+      notebook_15:
+        help: Fifteen plots (full page)
+        extends: notebook_3
+        draw_figure:
+          nrows: 5
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            4:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            5:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            6:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            7:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            8:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            9:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            10:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            11:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            12:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            13:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            14:
+              ylabel: ""
+              yticklabels: []
       presentation_wide_6:
         help: Six plots for 16:9 presentation (width = 19.20", height =
               10.80")
@@ -330,8 +466,9 @@ class RamachandranFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, infile=None, kind="WHAM", heatmap=True,
-        nan_to_max=True, contour=True, mask=False, outline=False,**kwargs):
+    def draw_dataset(self, subplot, infile=None, label=None, kind="WHAM",
+        nan_to_max=True, heatmap=True, contour=True, mask=False,
+        outline=False,**kwargs):
         import numpy as np
         import six
         from .myplotspec import get_color
@@ -369,7 +506,8 @@ class RamachandranFigureManager(FigureManager):
         if heatmap:
             heatmap_kw = kwargs.get("heatmap_kw", {}).copy()
             heatmap_free_energy = dataset.free_energy.copy()
-            if nan_to_max and hasattr(dataset, "mask"):
+            print(heatmap_kw)
+            if nan_to_max:
                 heatmap_free_energy[np.isnan(heatmap_free_energy)] = np.nanmax(
                   heatmap_free_energy)
             subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
@@ -426,6 +564,11 @@ class RamachandranFigureManager(FigureManager):
                               [dataset.x_bins[x], dataset.x_bins[x+1]],
                               [dataset.y_bins[y+1], dataset.y_bins[y+1]],
                               zorder=0.4, **outline_kw)
+
+        if label is not None:
+            from .myplotspec.text import set_text
+            label_kw = kwargs.get("label_kw", {}).copy()
+            set_text(subplot, s=label, **label_kw)
 
 #################################### MAIN #####################################
 if __name__ == "__main__":
