@@ -5,6 +5,30 @@ MYPlotSpec_ForceField is a Python package used to design matplotlib-based
 figures of biomolecular force field components using the simple text format
 YAML.
 
+Features
+--------
+
+ForceFieldFigureManager
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Currently plots only torsion terms.
+
+MDGXFigureManager
+~~~~~~~~~~~~~~~~~
+
+Plots debug output from the Amber MDGX program, illustrating the accuracy which
+which an MM force field is able to reproduce the relative energies of an
+ensemble of comformations obtained from QM calculations.
+
+RamachandranFigureManager
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Plots Ramachandran distributions. Currently supports input from Umbrella
+Sampling simulations analyzed using the `weighted histogram analysis method
+<http://membrane.urmc.rochester.edu/content/wham>`_, `neighbor-dependent
+Ramachanran distribution datasets <http://dunbrack.fccc.edu/ndrd>`_, and
+images.
+
 Dependencies
 ------------
 
@@ -26,7 +50,7 @@ Put in your ``$PYTHONPATH``::
 
     export PYTHONPATH=/path/to/my/python/modules:$PYTHONPATH
 
-where ``/path/to/my/python/modules`` contains ``myplotspec_nmr``.
+where ``/path/to/my/python/modules`` contains ``myplotspec_forcefield``.
 
 Authorship
 ----------
