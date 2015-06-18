@@ -74,7 +74,7 @@ class RamachandranFigureManager(FigureManager):
         help: Difference between two datasets
         draw_dataset:
           heatmap_kw:
-            cmap: 'seismic'
+            cmap: seismic
             vmin: -5
             vmax:  5
           contour_kw:
@@ -83,6 +83,16 @@ class RamachandranFigureManager(FigureManager):
             max_fe: 5
           mask: True
           outline: True
+      image:
+        help: Image of a Ramachandran plot, typically from a publication
+        draw_dataset:
+          heatmap_kw:
+            cmap: hot
+            vmin: 0
+            vmax: 1
+          contour: False
+          mask: False
+          outline: False
       right_title:
         help: Additional subplot title on right side
         draw_subplot:
@@ -472,10 +482,12 @@ class RamachandranFigureManager(FigureManager):
         import numpy as np
         import six
         from .myplotspec import get_color
-        from .WHAMDataset import WHAMDataset
-        from .NDRDDataset import NDRDDataset
         from .DiffDataset import DiffDataset
-        parsers = {"WHAM": WHAMDataset, "NDRD": NDRDDataset}
+        from .ImageDataset import ImageDataset
+        from .NDRDDataset import NDRDDataset
+        from .WHAMDataset import WHAMDataset
+        parsers = {"Image": ImageDataset, "NDRD": NDRDDataset,
+                   "WHAM": WHAMDataset}
 
         # Load data
         if infile is None:

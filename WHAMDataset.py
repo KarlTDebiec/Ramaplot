@@ -42,6 +42,7 @@ class WHAMDataset(object):
         import pandas
         import numpy as np
 
+        # Load data
         if verbose > 0:
             print("loading from '{0}'".format(infile))
         self.data = pandas.read_csv(expandvars(infile), delim_whitespace=True,
