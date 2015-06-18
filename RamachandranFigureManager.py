@@ -506,7 +506,6 @@ class RamachandranFigureManager(FigureManager):
         if heatmap:
             heatmap_kw = kwargs.get("heatmap_kw", {}).copy()
             heatmap_free_energy = dataset.free_energy.copy()
-            print(heatmap_kw)
             if nan_to_max:
                 heatmap_free_energy[np.isnan(heatmap_free_energy)] = np.nanmax(
                   heatmap_free_energy)
