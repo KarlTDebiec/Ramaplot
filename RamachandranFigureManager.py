@@ -47,7 +47,7 @@ class RamachandranFigureManager(FigureManager):
             vmax: 5
           contour_kw:
             colors: '0.25'
-            levels: [0, 1, 2, 3, 4, 5]
+            levels: [1, 2, 3, 4, 5]
             linestyles: solid
           mask_kw:
             cmap: Greys_r
@@ -482,12 +482,13 @@ class RamachandranFigureManager(FigureManager):
         import numpy as np
         import six
         from .myplotspec import get_color
+        from .AnalyticalDataset import AnalyticalDataset
         from .DiffDataset import DiffDataset
         from .ImageDataset import ImageDataset
         from .NDRDDataset import NDRDDataset
         from .WHAMDataset import WHAMDataset
-        parsers = {"Image": ImageDataset, "NDRD": NDRDDataset,
-                   "WHAM": WHAMDataset}
+        parsers = {"Analytical": AnalyticalDataset, "Image": ImageDataset,
+                   "NDRD": NDRDDataset, "WHAM": WHAMDataset}
 
         # Load data
         if infile is None:
