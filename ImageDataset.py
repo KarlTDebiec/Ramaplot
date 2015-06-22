@@ -37,11 +37,11 @@ class ImageDataset(object):
             print("loading from '{0}'".format(infile))
         image = np.rot90(imread(expandvars(infile)), 3)
         image = 0.2989*image[:,:,0] + 0.5870*image[:,:,1] + 0.1140*image[:,:,2]
-        self.free_energy = image
 
         # Organize data
         self.x_centers = np.linspace(-180, 180, image.shape[0])
         self.y_centers = np.linspace(-180, 180, image.shape[1])
+        self.dist = image
         self.x_width = np.mean(self.x_centers[1:] - self.x_centers[:-1])
         self.y_width = np.mean(self.y_centers[1:] - self.y_centers[:-1])
         self.x_bins  = np.linspace(self.x_centers[0]  - self.x_width / 2,

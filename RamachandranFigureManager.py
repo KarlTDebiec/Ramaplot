@@ -39,6 +39,7 @@ class RamachandranFigureManager(FigureManager):
           ylabel_kw:
             va: center
         draw_dataset:
+          contour: True
           heatmap_kw:
             cmap: hot
             edgecolors: none
@@ -71,7 +72,7 @@ class RamachandranFigureManager(FigureManager):
 
     presets = """
       diff:
-        help: Difference between two datasets
+        help: Plot difference between two datasets
         draw_dataset:
           heatmap_kw:
             cmap: seismic
@@ -84,7 +85,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: True
       image:
-        help: Image of a Ramachandran plot, typically from a publication
+        help: Plot image of a Ramachandran plot, typically from a publication
         draw_dataset:
           heatmap_kw:
             cmap: hot
@@ -93,6 +94,24 @@ class RamachandranFigureManager(FigureManager):
           contour: False
           mask: False
           outline: False
+      ff99SB:
+        help: Plot heatmap in style of ff99SB paper; omit contours
+        draw_dataset:
+          heatmap_kw:
+            cmap: !!python/object/apply:myplotspec_forcefield.cmap_ff99SB []
+          contour: False
+      angle:
+        help: Plot average value of a backbone angle as a function of φ,ψ
+        draw_dataset:
+          heatmap_kw:
+            cmap: seismic
+            vmin: 119
+            vmax: 127
+          contour: True
+          contour_kw:
+            levels: [115,116,117,118,119120,121,122,123,124,125]
+          mask: True
+          outline: True
       right_title:
         help: Additional subplot title on right side
         draw_subplot:
@@ -478,17 +497,21 @@ class RamachandranFigureManager(FigureManager):
     @manage_kwargs()
     def draw_dataset(self, subplot, infile=None, label=None, kind="WHAM",
         nan_to_max=True, heatmap=True, contour=True, mask=False,
-        outline=False,**kwargs):
+        outline=False, **kwargs):
         import numpy as np
         import six
         from .myplotspec import get_color
         from .AnalyticalDataset import AnalyticalDataset
+        from .CDLDataset import CDLDataset
         from .DiffDataset import DiffDataset
         from .ImageDataset import ImageDataset
         from .NDRDDataset import NDRDDataset
         from .WHAMDataset import WHAMDataset
-        parsers = {"Analytical": AnalyticalDataset, "Image": ImageDataset,
-                   "NDRD": NDRDDataset, "WHAM": WHAMDataset}
+        parsers = {"Analytical": AnalyticalDataset,
+                   "CDL":        CDLDataset,
+                   "Image":      ImageDataset,
+                   "NDRD":       NDRDDataset,
+                   "WHAM":       WHAMDataset}
 
         # Load data
         if infile is None:
@@ -518,12 +541,12 @@ class RamachandranFigureManager(FigureManager):
         # Draw heatmap
         if heatmap:
             heatmap_kw = kwargs.get("heatmap_kw", {}).copy()
-            heatmap_free_energy = dataset.free_energy.copy()
+            heatmap_dist = dataset.dist.copy()
             if nan_to_max:
-                heatmap_free_energy[np.isnan(heatmap_free_energy)] = np.nanmax(
-                  heatmap_free_energy)
+                heatmap_dist[np.isnan(heatmap_dist)] = np.nanmax(
+                  heatmap_dist)
             subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
-              heatmap_free_energy.T, zorder=0.1, **heatmap_kw)
+              heatmap_dist.T, zorder=0.1, **heatmap_kw)
 
         # Draw contour
         if contour:
@@ -532,9 +555,9 @@ class RamachandranFigureManager(FigureManager):
                 contour_kw["levels"] = kwargs.pop("color")
             elif "levels" not in contour_kw:
                 contour_kw["levels"] = range(0,
-                  int(np.ceil(np.nanmax(dataset.free_energy))))
+                  int(np.ceil(np.nanmax(dataset.dist))))
             subplot.contour(dataset.x_centers, dataset.y_centers,
-              dataset.free_energy.T, zorder=0.2, **contour_kw)
+              dataset.dist.T, zorder=0.2, **contour_kw)
 
         # Draw mask
         if mask and hasattr(dataset, "mask"):
@@ -545,8 +568,8 @@ class RamachandranFigureManager(FigureManager):
         # Draw outline
         if outline and hasattr(dataset, "mask"):
             outline_kw = kwargs.get("outline_kw", {}).copy()
-            for x in range(dataset.free_energy.shape[0]):
-                for y in range(dataset.free_energy.shape[1]):
+            for x in range(dataset.dist.shape[0]):
+                for y in range(dataset.dist.shape[1]):
                     if not dataset.mask[x,y]:
                         if (x != 0
                         and y != dataset.mask.shape[1] - 1

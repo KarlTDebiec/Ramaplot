@@ -51,8 +51,7 @@ class DiffDataset(object):
         self.y_width = dataset_1.y_width.copy()
         self.x_bins = dataset_1.x_bins.copy()
         self.y_bins = dataset_1.y_bins.copy()
-        self.free_energy = dataset_1.free_energy.copy() - dataset_2.free_energy
-        self.probability = dataset_1.probability.copy() - dataset_2.probability
+        self.dist = dataset_1.dist.copy() - dataset_2.dist
 
         # Prepare mask
         #   Values that are NaN are all masked, as are values that are
@@ -61,12 +60,12 @@ class DiffDataset(object):
         #   yield the same result when passed masked arrays, and are
         #   either broken or not intended to be used for this purpose,
         #   and np.ma.mask_or() does not appear to be usable either.
-        temp1 = np.zeros_like(dataset_1.free_energy)
-        temp2 = np.zeros_like(dataset_2.free_energy)
+        temp1 = np.zeros_like(dataset_1.dist)
+        temp2 = np.zeros_like(dataset_2.dist)
         temp1[dataset_1.mask != 1] = 1
         temp2[dataset_2.mask != 1] = 1
         self.mask = np.ma.masked_where(
           np.logical_and(
-            np.logical_not(np.isnan(self.free_energy)),
+            np.logical_not(np.isnan(self.dist)),
             np.logical_or(temp1, temp2)),
-          np.ones_like(self.free_energy))
+          np.ones_like(self.dist))

@@ -45,67 +45,70 @@ class WHAMDataset(object):
         # Load data
         if verbose > 0:
             print("loading from '{0}'".format(infile))
-        self.data = pandas.read_csv(expandvars(infile), delim_whitespace=True,
-                      header=0, names=["x", "y", "free energy", "probability"],
-                      na_values=[9999999.000000])
+        dist = pandas.read_csv(expandvars(infile), delim_whitespace=True,
+                 header=0, names=["phi", "psi", "free energy",
+                 "probability"], na_values=[9999999.000000])
         if wrap:
-            self.data["x"][self.data["x"] > 180] -= 360
-            self.data["y"][self.data["y"] > 180] -= 360
+            dist["phi"][dist["phi"] > 180] -= 360
+            dist["psi"][dist["psi"] > 180] -= 360
 
         # Organize data
-        self.x_centers = np.unique(self.data["x"])
-        self.y_centers = np.unique(self.data["y"])
-        self.free_energy = np.zeros((self.x_centers.size, self.y_centers.size),
+        x_centers = np.unique(dist["phi"])
+        y_centers = np.unique(dist["psi"])
+        free_energy = np.zeros((x_centers.size, y_centers.size),
                                     np.float) * np.nan
-        self.probability = np.zeros((self.x_centers.size, self.y_centers.size),
+        probability = np.zeros((x_centers.size, y_centers.size),
                                     np.float) * np.nan
-        for index, x, y, free_energy, probability in self.data.itertuples():
-            if not np.isnan(free_energy):
-                x_index = np.where(self.x_centers == x)[0][0]
-                y_index = np.where(self.y_centers == y)[0][0]
-                self.free_energy[x_index, y_index] = free_energy
-                self.probability[x_index, y_index] = probability
-        self.free_energy -= np.nanmin(self.free_energy)
+        for index, phi, psi, fe, p in dist.itertuples():
+            if not np.isnan(fe):
+                x_index = np.where(x_centers == phi)[0][0]
+                y_index = np.where(y_centers == psi)[0][0]
+                free_energy[x_index, y_index] = fe
+                probability[x_index, y_index] = p
+        free_energy -= np.nanmin(free_energy)
 
-        self.x_width = np.mean(self.x_centers[1:] - self.x_centers[:-1])
-        self.y_width = np.mean(self.y_centers[1:] - self.y_centers[:-1])
+        x_width = np.mean(x_centers[1:] - x_centers[:-1])
+        y_width = np.mean(y_centers[1:] - y_centers[:-1])
 
         # Loop data to allow contour lines to be drawn to edges
         if loop_edges:
-            self.x_centers = np.concatenate(
-                               ([self.x_centers[0]-self.x_width],
-                                 self.x_centers,
-                                [self.x_centers[-1]+self.x_width]))
-            self.y_centers = np.concatenate(
-                               ([self.y_centers[0]-self.y_width],
-                                 self.y_centers,
-                                [self.y_centers[-1]+self.y_width]))
-            temp = np.zeros((self.x_centers.size, self.y_centers.size))*np.nan
-            temp[1:-1,1:-1]  = self.free_energy
-            temp[1:-1,-1]    = self.free_energy[:,0]
-            temp[-1,1:-1]    = self.free_energy[0,:]
-            temp[1:-1,0]     = self.free_energy[:,-1]
-            temp[0,1:-1]     = self.free_energy[-1,:]
-            temp[0,0]        = self.free_energy[-1,-1]
-            temp[-1,-1]      = self.free_energy[0,0]
-            temp[0,-1]       = self.free_energy[-1,0]
-            temp[-1,0]       = self.free_energy[0,-1]
-            self.free_energy = temp
+            x_centers = np.concatenate(([x_centers[0]  - x_width],
+                                         x_centers,
+                                        [x_centers[-1] + x_width]))
+            y_centers = np.concatenate(([y_centers[0]  - y_width],
+                                         y_centers,
+                                        [y_centers[-1] + y_width]))
+            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
+            temp[1:-1,1:-1]  = free_energy
+            temp[1:-1,-1]    = free_energy[:,0]
+            temp[-1,1:-1]    = free_energy[0,:]
+            temp[1:-1,0]     = free_energy[:,-1]
+            temp[0,1:-1]     = free_energy[-1,:]
+            temp[0,0]        = free_energy[-1,-1]
+            temp[-1,-1]      = free_energy[0,0]
+            temp[0,-1]       = free_energy[-1,0]
+            temp[-1,0]       = free_energy[0,-1]
+            free_energy = temp
 
-        self.x_bins  = np.linspace(self.x_centers[0]  - self.x_width / 2,
-                                   self.x_centers[-1] + self.x_width / 2,
-                                   self.x_centers.size + 1)
-        self.y_bins  = np.linspace(self.y_centers[0]  - self.y_width / 2,
-                                   self.y_centers[-1] + self.y_width / 2,
-                                   self.y_centers.size + 1)
+        self.x_centers = x_centers
+        self.y_centers = y_centers
+        self.x_width = x_width
+        self.y_width = y_width
+        self.x_bins  = np.linspace(x_centers[0]  - x_width / 2,
+                                   x_centers[-1] + x_width / 2,
+                                   x_centers.size + 1)
+        self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
+                                   y_centers[-1] + y_width / 2,
+                                   y_centers.size + 1)
+        self.dist = free_energy
 
         # Prepare mask
         if max_fe is not None:
             self.mask = np.ma.masked_where(np.logical_and(
-              self.free_energy <= max_fe,
-              np.logical_not(np.isnan(self.free_energy))),
-              np.ones_like(self.free_energy))
+              free_energy <= max_fe,
+              np.logical_not(np.isnan(free_energy))),
+              np.ones_like(free_energy))
         else:
             self.mask = np.ma.masked_where(
-              np.logical_not(np.isnan(self.free_energy)),
-              np.ones_like(self.free_energy))
+              np.logical_not(np.isnan(free_energy)),
+              np.ones_like(free_energy))

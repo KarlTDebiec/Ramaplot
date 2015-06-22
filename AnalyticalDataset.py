@@ -44,11 +44,11 @@ class AnalyticalDataset(object):
         ff = AmberForceField(parm=expandvars(infile), verbose=verbose-1,
                debug=debug, **kwargs)
         torsions = ff.parameters["dihedrals"]
-        pe = np.zeros((360, 360))
+        dist = np.zeros((360, 360))
         grid = np.linspace(-180, 180, 360)
 
         # Apply torsion terms
-        for dim in ["x", "y"]:
+        for dim in ["phi", "psi"]:
             
             terms = kwargs.get(dim, [])
             if (isinstance(terms, six.string_types)
@@ -100,19 +100,21 @@ class AnalyticalDataset(object):
                                       np.deg2rad(
                                         np.abs(periodicity) * grid +
                                           phase + offset)))
-                    if dim == "x":  pe += torsion_pe[:,np.newaxis]
-                    else:           pe += torsion_pe
-        pe -= np.min(pe)
+                    if dim == "phi":
+                        dist += torsion_pe[:,np.newaxis]
+                    else:
+                        dist += torsion_pe
+        dist -= np.min(dist)
 
         # Organize data
-        self.free_energy = pe
         self.x_centers = grid
         self.y_centers = grid
-        self.x_width = np.mean(self.x_centers[1:] - self.x_centers[:-1])
-        self.y_width = np.mean(self.y_centers[1:] - self.y_centers[:-1])
-        self.x_bins  = np.linspace(self.x_centers[0]  - self.x_width / 2,
-                                   self.x_centers[-1] + self.x_width / 2,
-                                   self.x_centers.size + 1)
-        self.y_bins  = np.linspace(self.y_centers[0]  - self.y_width / 2,
-                                   self.y_centers[-1] + self.y_width / 2,
-                                   self.y_centers.size + 1)
+        self.dist = dist
+        self.x_width = np.mean(grid[1:] - grid[:-1])
+        self.y_width = np.mean(grid[1:] - grid[:-1])
+        self.x_bins  = np.linspace(grid[0]  - self.x_width / 2,
+                                   grid[-1] + self.x_width / 2,
+                                   grid.size + 1)
+        self.y_bins  = np.linspace(grid[0]  - self.y_width / 2,
+                                   grid[-1] + self.y_width / 2,
+                                   grid.size + 1)
