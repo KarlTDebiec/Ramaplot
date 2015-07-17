@@ -27,30 +27,35 @@ class NDRDDataset(object):
     <http://dunbrack.fccc.edu/ndrd>_
     """
 
-    def __init__(self, infile, selection="ALA", loop_edges=True, max_fe=None,
-        **kwargs):
+    @staticmethod
+    def get_cache_key(infile, selection="ALA", loop_edges=True, max_fe=None,
+        *args, **kwargs):
         """
-        Initializes dataset.
+        Generates tuple of arguments to be used as key for dataset
+        cache.
+        """
+        from os.path import expandvars
+
+        return (NDRDDataset, expandvars(infile),
+                NDRDDataset.process_selection_arg(selection), loop_edges,
+                max_fe)
+
+    @staticmethod
+    def get_cache_message(cache_key):
+        return "previously loaded from '{0}'".format(cache_key[1])
+
+    @staticmethod
+    def process_selection_arg(selection):
+        """
+        Processes selection arguments
 
         Arguments:
-          infile (str): Path to text input file, may contain environment
-            variables
-          selection (str, list): Selected distribution; if string, may
-            be an amino acid (e.g. 'CYS', for which the (ALA)-CYS-(ALA)
-            distribution will be returned), or a specific distribution
-            (e.g. 'CYS left ALA', for which the (ALA)-CYS distribution
-            will be returned); if list, may be two amino acids (e.g.
-            ['ALA', 'CYS'], for which the (ALA)-CYS distribution will
-            be returned), or three amino acids (e.g. ['ALA', 'CYS',
-            'ASP'], for which the (ALA)-CYS-(ASP) distribution will be
-            returned)
-          kwargs (dict): additional keyword arguments
+          selections (str, list): selection(s) to be loaded from file
+
+        Returns:
+          out_selections (tuple): processed selections
         """
-        from cStringIO import StringIO
-        from os.path import expandvars
         import re
-        import pandas
-        import numpy as np
         import six
 
         def format_regex(regex):
@@ -76,81 +81,6 @@ class NDRDDataset(object):
                 direction  = "(left|right)",
                 whitespace = "\s+"))
 
-        def load_distribution(infile, selection, verbose=1, **kwargs):
-            """
-            Loads selected distribution from selected infile.
-
-            Arguments:
-              infile (str): Path to text input file, may contain
-                environment variables
-              selection (str): Start of lines containing desired
-                distribution
-              verbose (int): Enable verbose output
-
-            Returns:
-              dist (DataFrame): Selected distribution
-            """
-            if verbose > 0:
-                print("loading '{0}' from '{1}'".format(selection, infile))
-            s = StringIO()
-
-            with open(expandvars(infile)) as f:
-                for line in f:
-                    if line.startswith(selection):
-                        s.write(line)
-
-            s.seek(0)
-            dist = pandas.read_csv(s, delim_whitespace=True, header=None,
-                     usecols=[3,4,5,6], names=["phi", "psi", "probability",
-                     "free energy"])
-            return dist
-
-        def calculate_triplet(dist_1, dist_2, dist_3, **kwargs):
-            """
-            Calculates distribution for an amino acid triplet.
-
-            Formula used included with NDRD data:
-              To calculate probabilies for triplets (center,left,right),
-              use:
-              log p*(phi,psi | C,L,R) = log p(phi,psi |C,L) +
-                                        log p(phi,psi |C,R) -
-                                        log p(phi,psi |C,R=ALL)
-              Once log p*(phi,psi | C,L,R) is calculated, calculate
-              p*(phi,psi |C,L,R) = exp(log(p*(phi,psi | C,L,R)))
-              Then sum them up for each Ramachandran map, and normalize
-              the probabilities by dividing by the sum:
-              p(phi,psi, | C,L,R) = p*(phi,psi | C,L,R) / sum
-
-            Arguments:
-              dist_1 (DataFrame): (XX1)>XX2 distribution
-              dist_2 (DataFrame): XX2>(XX3) distribution
-              dist_3 (DataFrame): XX2>(ALL) distribution
-
-            Returns:
-              dist (DataFrame): RES1>RES2>RES3 distribution for RES2
-            """
-            dist = dist_1.copy()
-            dist["free energy"] += dist_2["free energy"]
-            dist["free energy"] -= dist_3["free energy"]
-            dist["probability"]  = np.exp(dist["free energy"])
-            dist["probability"] /= np.sum(dist["probability"])
-
-            return dist
-
-        type_error_text = ("Selection '{0}' ".format(selection) +
-                           "not understood. Selection may be a string "
-                           "or list; if string, may be an amino acid "
-                           "(e.g. 'CYS', for which the (ALA)-CYS-(ALA) "
-                           "distribution will be returned), or a "
-                           "specific distribution (e.g. 'CYS left "
-                           "ALA', for which the (ALA)-CYS distribution "
-                           "will be returned); if list, may be two "
-                           "amino acids (e.g. ['ALA', 'CYS'], for "
-                           "which the (ALA)-CYS distribution will be "
-                           "returned), or three amino acids (e.g. "
-                           "['ALA', 'CYS', 'ASP'], for which the "
-                           "(ALA)-CYS-(ASP) distribution will be "
-                           "returned)")
         sel_central  = format_regex("^(?P<central>{central})$")
         sel_neighbor = format_regex("^(?P<neighbor>{neighbor})$")
         sel_dist     = format_regex("^(?P<first>{central}){whitespace}"
@@ -161,19 +91,17 @@ class NDRDDataset(object):
         if isinstance(selection, list) and len(selection) == 1:
             selection = selection[0]
         if isinstance(selection, six.string_types):
-            # Selection is a single residue, return ALA>XXX>ALA
+            # Selection is a single residue, return ALA>XAA>ALA
             if re.match(sel_central, selection):
                 fields = re.match(sel_central, selection).groupdict()
-                sel_1   = "{0} left  ALA".format(fields["central"])
-                sel_2   = "{0} right ALA".format(fields["central"])
-                sel_3   = "{0} right ALL".format(fields["central"])
+                out_selection = ("{0} left  ALA".format(fields["central"]),
+                                 "{0} right ALA".format(fields["central"]),
+                                 "{0} right ALL".format(fields["central"]))
             # Selection is a single distribution
             elif re.match(sel_dist, selection):
                 fields = re.match(sel_dist, selection).groupdict()
-                sel_1 = "{0} {1:5} {2}".format(fields["first"],
-                          fields["direction"], fields["second"])
-                sel_2 = None
-                sel_3 = None
+                out_selection = ("{0} {1:5} {2}".format(fields["first"],
+                  fields["direction"], fields["second"]),)
             else:
                 raise TypeError(type_error_text)
         elif isinstance(selection, list):
@@ -183,11 +111,8 @@ class NDRDDataset(object):
                 and re.match(sel_central, selection[1])):
                     fields_1 = re.match(sel_neighbor,selection[0]).groupdict()
                     fields_2 = re.match(sel_central,selection[1]).groupdict()
-                    res_1 = fields_1["neighbor"]
-                    res_2 = fields_2["central"]
-                    sel_1 = "{0} left  {1}".format(res_2, res_1)
-                    sel_2 = None
-                    sel_3 = None
+                    out_selection = ("{0} left  {1}".format(
+                      fields_1["neighbor"], fields_2["central"]),)
                 else:
                     raise TypeError(type_error_text)
             elif len(selection) == 3:
@@ -198,23 +123,151 @@ class NDRDDataset(object):
                     fields_1 = re.match(sel_neighbor,selection[0]).groupdict()
                     fields_2 = re.match(sel_central,selection[1]).groupdict()
                     fields_3 = re.match(sel_neighbor,selection[2]).groupdict()
-                    res_1 = fields_1["neighbor"]
-                    res_2 = fields_2["central"]
-                    res_3 = fields_3["neighbor"]
-                    sel_1 = "{0} left  {1}".format(res_2, res_1)
-                    sel_2 = "{0} right {1}".format(res_2, res_3)
-                    sel_3 = "{0} right ALL".format(res_2)
+                    out_selection = (
+                      "{0} left  {1}".format( fields_2["central"],
+                      fields_1["neighbor"]),
+                      "{0} right {1}".format(fields_2["central"],
+                      fields_3["neighbor"]),
+                      "{0} right ALL".format(fields_2["central"]))
                 else:
-                    raise TypeError(type_error_text)
-        if sel_1 is not None and sel_2 is None and sel_3 is None:
-            dist = load_distribution(infile, sel_1)
-        elif sel_1 is not None and sel_2 is not None and sel_3 is not None:
-            dist_1 = load_distribution(infile, sel_1)
-            dist_2 = load_distribution(infile, sel_2)
-            dist_3 = load_distribution(infile, sel_3)
-            dist = calculate_triplet(dist_1, dist_2, dist_3)
+                    raise TypeError("Selection '{0}' ".format(selection) +
+                                    "not understood. Selection may be a "
+                                    "string or list; if string, may be an "
+                                    "amino acid (e.g. 'CYS', for which the "
+                                    "(ALA)-CYS-(ALA) distribution will be "
+                                    "returned), or a specific distribution "
+                                    "(e.g. 'CYS left ALA', for which the "
+                                    "(ALA)-CYS distribution will be "
+                                    "returned); if list, may be two amino "
+                                    "acids (e.g. ['ALA', 'CYS'], for which "
+                                    "the (ALA)-CYS distribution will be "
+                                    "returned), or three amino acids (e.g. "
+                                    "['ALA', 'CYS', 'ASP'], for which the "
+                                    "(ALA)-CYS-(ASP) distribution will be "
+                                    "returned)")
+
+        return out_selection
+        
+    @staticmethod
+    def load_distribution(infile, selection, verbose=1, **kwargs):
+        """
+        Loads selected distribution from selected infile.
+
+        Arguments:
+          infile (str): Path to text input file
+          selection (str): Start of lines containing desired
+            distribution
+          verbose (int): Enable verbose output
+
+        Returns:
+          dist (DataFrame): Selected distribution
+        """
+        from cStringIO import StringIO
+        import pandas
+
+        if verbose >= 1:
+            print("loading '{0}' from '{1}'".format(selection, infile))
+        s = StringIO()
+
+        with open(infile) as open_infile:
+            for line in open_infile:
+                if line.startswith(selection):
+                    s.write(line)
+
+        s.seek(0)
+        dist = pandas.read_csv(s, delim_whitespace=True, header=None,
+                 usecols=[3,4,5,6], names=["phi", "psi", "probability",
+                 "free energy"])
+
+        return dist
+
+    @staticmethod
+    def calculate_triplet(dist_1, dist_2, dist_3, **kwargs):
+        """
+        Calculates distribution for an amino acid triplet.
+
+        Formula used included with NDRD data:
+          To calculate probabilies for triplets (center,left,right),
+          use:
+          log p*(phi,psi | C,L,R) = log p(phi,psi |C,L) +
+                                    log p(phi,psi |C,R) -
+                                    log p(phi,psi |C,R=ALL)
+          Once log p*(phi,psi | C,L,R) is calculated, calculate
+          p*(phi,psi |C,L,R) = exp(log(p*(phi,psi | C,L,R)))
+          Then sum them up for each Ramachandran map, and normalize
+          the probabilities by dividing by the sum:
+          p(phi,psi, | C,L,R) = p*(phi,psi | C,L,R) / sum
+
+        Arguments:
+          dist_1 (DataFrame): (XX1)>XX2 distribution
+          dist_2 (DataFrame): XX2>(XX3) distribution
+          dist_3 (DataFrame): XX2>(ALL) distribution
+
+        Returns:
+          dist (DataFrame): RES1>RES2>RES3 distribution for RES2
+        """
+        from copy import copy
+        import numpy as np
+
+        dist = copy(dist_1)
+        dist["free energy"] += dist_2["free energy"]
+        dist["free energy"] -= dist_3["free energy"]
+        dist["probability"]  = np.exp(dist["free energy"])
+        dist["probability"] /= np.sum(dist["probability"])
+
+        return dist
+
+    def __init__(self, infile, selection="ALA", loop_edges=True, max_fe=None,
+        **kwargs):
+        """
+        Initializes dataset.
+
+        Arguments:
+          infile (str): Path to text input file, may contain environment
+            variables
+          selection (str, list): Selected distribution; if string, may
+            be an amino acid (e.g. 'CYS', for which the (ALA)-CYS-(ALA)
+            distribution will be returned), or a specific distribution
+            (e.g. 'CYS left ALA', for which the (ALA)-CYS distribution
+            will be returned); if list, may be two amino acids (e.g.
+            ['ALA', 'CYS'], for which the (ALA)-CYS distribution will
+            be returned), or three amino acids (e.g. ['ALA', 'CYS',
+            'ASP'], for which the (ALA)-CYS-(ASP) distribution will be
+            returned)
+          kwargs (dict): additional keyword arguments
+        """
+        from os.path import expandvars
+        import re
+        import pandas
+        import numpy as np
+        import six
+
+        infile = expandvars(infile)
+        selection = self.process_selection_arg(selection)
+
+        if len(selection) == 1:
+            dist = load_distribution(infile, selection[0])
+        elif len(selection) == 3:
+            dist = self.calculate_triplet(
+                     self.load_distribution(infile, selection[0]),
+                     self.load_distribution(infile, selection[1]),
+                     self.load_distribution(infile, selection[2]))
         else:
-            raise TypeError(type_error_text)
+            raise TypeError("Selection '{0}' ".format(selection) +
+                            "not understood. Selection may be a "
+                            "string or list; if string, may be an "
+                            "amino acid (e.g. 'CYS', for which the "
+                            "(ALA)-CYS-(ALA) distribution will be "
+                            "returned), or a specific distribution "
+                            "(e.g. 'CYS left ALA', for which the "
+                            "(ALA)-CYS distribution will be "
+                            "returned); if list, may be two amino "
+                            "acids (e.g. ['ALA', 'CYS'], for which "
+                            "the (ALA)-CYS distribution will be "
+                            "returned), or three amino acids (e.g. "
+                            "['ALA', 'CYS', 'ASP'], for which the "
+                            "(ALA)-CYS-(ASP) distribution will be "
+                            "returned)")
 
         # Organize data
         x_centers = np.unique(dist["phi"])

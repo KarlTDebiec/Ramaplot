@@ -74,14 +74,14 @@ class RamachandranFigureManager(FigureManager):
       diff:
         help: Plot difference between two datasets
         draw_dataset:
+          kind: diff
+          max_fe: 5
           heatmap_kw:
             cmap: seismic
             vmin: -5
             vmax:  5
           contour_kw:
             levels: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
-          load_kw:
-            max_fe: 5
           mask: True
           outline: True
       image:
@@ -109,7 +109,7 @@ class RamachandranFigureManager(FigureManager):
             vmax: 127
           contour: True
           contour_kw:
-            levels: [115,116,117,118,119120,121,122,123,124,125]
+            levels: [115,116,117,118,119,120,121,122,123,124,125]
           mask: True
           outline: True
       right_title:
@@ -147,6 +147,11 @@ class RamachandranFigureManager(FigureManager):
           legend: False
           ylabel_kw:
             rotation: horizontal
+          y2label_kw:
+            labelpad: 6
+        draw_dataset:
+          label_kw:
+            fp: 8r
       notebook_2:
         help: Two adjacent plots
         extends: notebook
@@ -184,7 +189,6 @@ class RamachandranFigureManager(FigureManager):
           legend: False
           ylabel_kw:
             rotation: horizontal
-            labelpad: 5
           y2label_kw:
             labelpad: 6
         draw_dataset:
@@ -390,6 +394,252 @@ class RamachandranFigureManager(FigureManager):
             14:
               ylabel: ""
               yticklabels: []
+      notebook_18:
+        help: Eighteen plots
+        extends: notebook_3
+        draw_figure:
+          nrows: 6
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            4:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            5:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            6:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            7:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            8:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            9:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            10:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            11:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            12:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            13:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            14:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            15:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            16:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            17:
+              ylabel: ""
+              yticklabels: []
+      notebook_landscape_5:
+        help: Five adjacent plots for notebook (width ≤ 6.5", height ≤ 9")
+        inherits: notebook
+        draw_figure:
+          ncols: 5
+          nrows: 1
+          left:       0.50
+          sub_width:  1.59
+          wspace:     0.10
+          right:      0.25
+          sub_height: 1.59
+          hspace:     0.10
+          bottom:     0.40
+          top:        0.25
+          subplots:
+            0:
+              xticklabels: [-180,-90,0,90]
+            1:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            2:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            3:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            4:
+              ylabel: ""
+              yticklabels: []
+        draw_subplot:
+          legend: False
+          ylabel_kw:
+            rotation: horizontal
+          y2label_kw:
+            labelpad: 6
+        draw_dataset:
+          label_kw:
+            fp: 8r
+      notebook_landscape_10:
+        help: Ten plots
+        extends: notebook_landscape_5
+        draw_figure:
+          nrows: 2
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            4:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            5:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            6:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            7:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            8:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            9:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+      notebook_landscape_15:
+        help: Fifteen plots
+        extends: notebook_landscape_5
+        draw_figure:
+          nrows: 3
+          subplots:
+            0:
+              xlabel: ""
+              xticklabels: []
+            1:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            2:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            3:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            4:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            5:
+              xlabel: ""
+              xticklabels: []
+              yticklabels: [-180,-90,0,90]
+            6:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            7:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            8:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            9:
+              xlabel: ""
+              xticklabels: []
+              ylabel: ""
+              yticklabels: []
+            10:
+              xticklabels: [-180,-90,0,90]
+              yticklabels: [-180,-90,0,90]
+            11:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            12:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            13:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
+            14:
+              xticklabels: [-180,-90,0,90]
+              ylabel: ""
+              yticklabels: []
       presentation_wide_6:
         help: Six plots for 16:9 presentation (width = 19.20", height =
               10.80")
@@ -498,6 +748,8 @@ class RamachandranFigureManager(FigureManager):
     def draw_dataset(self, subplot, infile=None, label=None, kind="WHAM",
         nan_to_max=True, heatmap=True, contour=True, mask=False,
         outline=False, **kwargs):
+        """
+        """
         import numpy as np
         import six
         from .myplotspec import get_color
@@ -507,36 +759,24 @@ class RamachandranFigureManager(FigureManager):
         from .ImageDataset import ImageDataset
         from .NDRDDataset import NDRDDataset
         from .WHAMDataset import WHAMDataset
-        parsers = {"Analytical": AnalyticalDataset,
-                   "CDL":        CDLDataset,
-                   "Image":      ImageDataset,
-                   "NDRD":       NDRDDataset,
-                   "WHAM":       WHAMDataset}
+        dataset_classes = {"analytical": AnalyticalDataset,
+                           "cdl":        CDLDataset,
+                           "diff":       DiffDataset,
+                           "image":      ImageDataset,
+                           "ndrd":       NDRDDataset,
+                           "wham":       WHAMDataset}
 
-        # Load data
-        if infile is None:
+        # Load data (for DiffDataset, infile is None, and infiles are
+        #   instead included in dataset_1_kw and dataset_2_kw
+        if  (infile is None
+        and ("dataset_1_kw" not in kwargs and "dataset_2_kw" not in kwargs)):
             return
-        elif isinstance(infile, six.string_types):
-            if "load_kw" in kwargs:
-                load_kw = kwargs.get("load_kw")
-            else:
-                load_kw = kwargs
-            dataset = parsers[kind](infile=infile, **load_kw)
-        elif isinstance(infile, list) and len(infile) == 2:
-            load_kw = kwargs.get("load_kw", {})
-            if isinstance(load_kw, list) and len(load_kw) == 2:
-                load_kw_1 = load_kw[0]
-                load_kw_2 = load_kw[1]
-            else:
-                load_kw_1 = load_kw.copy()
-                load_kw_2 = load_kw.copy()
-            if isinstance(kind, six.string_types):
-                dataset_1 = parsers[kind](infile=infile[0], **load_kw_1)
-                dataset_2 = parsers[kind](infile=infile[1], **load_kw_2)
-            elif isinstance(kind, list) and len(kind) == 2:
-                dataset_1 = parsers[kind[0]](infile=infile[0], **load_kw_1)
-                dataset_2 = parsers[kind[1]](infile=infile[1], **load_kw_2)
-            dataset = DiffDataset(dataset_1, dataset_2)
+        else:
+            dataset = self.load_dataset(dataset_classes[kind.lower()],
+                        infile=infile, dataset_classes=dataset_classes,
+                        **kwargs)
+            if dataset is None or not hasattr(dataset, "dist"):
+                return
 
         # Draw heatmap
         if heatmap:

@@ -15,10 +15,64 @@ from __future__ import absolute_import,division,print_function,unicode_literals
 class DiffDataset(object):
     """
     Manages difference datasets.
-
     """
 
-    def __init__(self, dataset_1, dataset_2, verbose=1, debug=1, **kwargs):
+    @staticmethod
+    def get_cache_key(*args, **kwargs):
+        """
+        Generates tuple of arguments to be used as key for dataset
+        cache.
+        """
+        dataset_1_kw = kwargs.get("dataset_1_kw")
+        dataset_2_kw = kwargs.get("dataset_2_kw")
+        dataset_classes = kwargs.get("dataset_classes")
+        dataset_1_class = dataset_classes[dataset_1_kw["kind"].lower()]
+        dataset_2_class = dataset_classes[dataset_1_kw["kind"].lower()]
+
+        try:
+            return (DiffDataset, 
+                    dataset_1_class.get_cache_key(**dataset_1_kw),
+                    dataset_2_class.get_cache_key(**dataset_2_kw))
+        except TypeError:
+            return None
+
+    @staticmethod
+    def get_cache_message(cache_key):
+        """
+        """
+        return "previously loaded from '{0}'".format(cache_key[1])
+
+    @staticmethod
+    def process_args(**kwargs):
+        """
+        """
+
+    @staticmethod
+    def load_dataset(infile, kind, dataset_cache=None, verbose=1, **kwargs):
+        """
+        """
+        dataset_classes = kwargs.get("dataset_classes")
+        dataset_class = dataset_classes[kind.lower()]
+
+        if "dataset_cache" is not None:
+            cache_key = dataset_class.get_cache_key(infile=infile, **kwargs)
+            if cache_key in dataset_cache:
+                if verbose >= 1:
+                    print(dataset_class.get_cache_message(cache_key))
+                return dataset_cache[cache_key]
+            else:
+                if verbose >= 1:
+                    print("loading from '{0}'".format(infile))
+                dataset_cache[cache_key] = dataset_class(infile=infile,
+                  verbose=verbose-1, **kwargs)
+                return dataset_cache[cache_key]
+        else:
+            if verbose >= 1:
+                print("loading from '{0}'".format(infile))
+            return dataset_class(infile=infile, verbose=verbose-1, **kwargs)
+
+    def __init__(self, dataset_1_kw=None, dataset_2_kw=None,
+        dataset_classes=None, dataset_cache=None, max_fe=None, **kwargs):
         """
         Initializes dataset.
 
@@ -31,9 +85,17 @@ class DiffDataset(object):
             set to NaN; used to hide distracting large differences in
             depopulated regions
         """
-        from os.path import expandvars
-        import pandas
+        from copy import copy
         import numpy as np
+
+        # Load datasets
+        if (dataset_1_kw is None or dataset_2_kw is None or
+            "infile" not in dataset_1_kw or "infile" not in dataset_2_kw):
+            return None
+        dataset_1 = self.load_dataset(dataset_cache=dataset_cache,
+                      dataset_classes=dataset_classes, **dataset_1_kw)
+        dataset_2 = self.load_dataset(dataset_cache=dataset_cache,
+                      dataset_classes=dataset_classes, **dataset_2_kw)
 
         # Validate comparability of datasets
         if not ((dataset_1.x_centers == dataset_2.x_centers).all()
@@ -45,13 +107,13 @@ class DiffDataset(object):
             raise
 
         # Prepare data
-        self.x_centers = dataset_1.x_centers.copy()
-        self.y_centers = dataset_1.y_centers.copy()
-        self.x_width = dataset_1.x_width.copy()
-        self.y_width = dataset_1.y_width.copy()
-        self.x_bins = dataset_1.x_bins.copy()
-        self.y_bins = dataset_1.y_bins.copy()
-        self.dist = dataset_1.dist.copy() - dataset_2.dist
+        self.x_centers = copy(dataset_1.x_centers)
+        self.y_centers = copy(dataset_1.y_centers)
+        self.x_width   = copy(dataset_1.x_width)
+        self.y_width   = copy(dataset_1.y_width)
+        self.x_bins    = copy(dataset_1.x_bins)
+        self.y_bins    = copy(dataset_1.y_bins)
+        self.dist      = copy(dataset_1.dist) - dataset_2.dist
 
         # Prepare mask
         #   Values that are NaN are all masked, as are values that are
@@ -62,8 +124,20 @@ class DiffDataset(object):
         #   and np.ma.mask_or() does not appear to be usable either.
         temp1 = np.zeros_like(dataset_1.dist)
         temp2 = np.zeros_like(dataset_2.dist)
-        temp1[dataset_1.mask != 1] = 1
-        temp2[dataset_2.mask != 1] = 1
+        if max_fe is None:
+            dataset_1_mask = dataset_1.mask
+            dataset_2_mask = dataset_2.mask
+        else:
+            dataset_1_mask = np.ma.masked_where(np.logical_and(
+              dataset_1.dist <= max_fe,
+              np.logical_not(np.isnan(dataset_1.dist))),
+              np.ones_like(dataset_1.dist))
+            dataset_2_mask = np.ma.masked_where(np.logical_and(
+              dataset_2.dist <= max_fe,
+              np.logical_not(np.isnan(dataset_2.dist))),
+              np.ones_like(dataset_2.dist))
+        temp1[dataset_1_mask != 1] = 1
+        temp2[dataset_2_mask != 1] = 1
         self.mask = np.ma.masked_where(
           np.logical_and(
             np.logical_not(np.isnan(self.dist)),

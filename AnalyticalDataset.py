@@ -21,15 +21,91 @@ class AnalyticalDataset(object):
     divider
     """
 
-    def __init__(self, infile, verbose=1, debug=1, **kwargs):
+    @staticmethod
+    def get_cache_key(infile, phi=None, psi=None, *args, **kwargs):
+        """
+        Generates tuple of arguments to be used as key for dataset
+        cache.
+        """
+        from os.path import expandvars
+
+        return (AnalyticalDataset, expandvars(infile),
+                AnalyticalDataset.process_term_arg(phi),
+                AnalyticalDataset.process_term_arg(psi))
+
+    @staticmethod
+    def get_cache_message(cache_key):
+        """
+        """
+        return "previously loaded from '{0}'".format(cache_key[1])
+
+    @staticmethod
+    def load_parm(infile, dataset_cache=None, verbose=1, **kwargs):
+        """
+        """
+        from .AmberForceField import AmberForceField
+
+        if "dataset_cache" is not None:
+            cache_key = AmberForceField.get_cache_key(parm=infile, **kwargs)
+            if cache_key in dataset_cache:
+                if verbose >= 1:
+                    print(AmberForceField.get_cache_message(cache_key))
+                return dataset_cache[cache_key]
+            else:
+                if verbose >= 1:
+                    print("loading from '{0}'".format(infile))
+                dataset_cache[cache_key] = AmberForceField(parm=infile,
+                  verbose=verbose-1, **kwargs)
+                return dataset_cache[cache_key]
+        else:
+            if verbose >= 1:
+                print("loading from '{0}'".format(infile))
+            return AmberForceField(parm=infile, verbose=verbose-1, **kwargs)
+
+    @staticmethod
+    def process_term_arg(terms=None):
+        """
+        Processes torsion term arguments
+
+        Arguments:
+          terms (str, list): torsion term(s) to be loaded from parm
+            file
+
+        Returns:
+          out_terms (tuple): processed terms
+        """
+        import six
+
+        out_terms = []
+
+        # May be "C -N -CX-C"
+        if terms is None:
+            pass
+        elif isinstance(terms, six.string_types):
+            out_terms.append([terms, 0.0])
+        elif isinstance(terms, list):
+            # May be ["C -N -CX-C ", 120]
+            if (len(terms) == 2
+            and isinstance(terms[0], six.string_types)):
+                out_terms.append(terms)
+            else:
+            # May be [["C -N -CX-C ", 120], "C -TN-CX -C "]
+                for in_term in terms:
+                    if isinstance(in_term, six.string_types):
+                        out_terms.append([in_term, 0.0])
+                    else:
+                        out_terms.append(in_term)
+
+        return tuple(tuple(x) for x in out_terms)
+
+    def __init__(self, infile, verbose=1, **kwargs):
         """
         Initializes dataset.
 
         Arguments:
-          infile (str): Path to text input file, may contain environment
-            variables
-          verbose (bool): Enable verbose output
-          debug (bool): Enable debug output
+          infile (str): Path to Amber parm text file, may contain
+            environment variables
+          verbose (int): Level of verbose output
         """
         from os.path import expandvars
         from warnings import warn
@@ -38,11 +114,11 @@ class AnalyticalDataset(object):
         import numpy as np
         from .AmberForceField import AmberForceField
 
-        # Load data and initialize
-        if verbose > 0:
-            print("loading from '{0}'".format(infile))
-        ff = AmberForceField(parm=expandvars(infile), verbose=verbose-1,
-               debug=debug, **kwargs)
+        # Load or reload data
+        infile = expandvars(infile)
+        ff = self.load_parm(infile, verbose=verbose, **kwargs)
+
+        # Initialize
         torsions = ff.parameters["dihedrals"]
         dist = np.zeros((360, 360))
         grid = np.linspace(-180, 180, 360)
@@ -50,20 +126,13 @@ class AnalyticalDataset(object):
         # Apply torsion terms
         for dim in ["phi", "psi"]:
             
-            terms = kwargs.get(dim, [])
-            if (isinstance(terms, six.string_types)
-            or  isinstance(terms, dict)):
-                terms = [terms]
+            terms = AnalyticalDataset.process_term_arg(kwargs.get(dim))
 
             # Apply each term in selected dimension
             for term in terms:
 
                 # Load offset if provided
-                if isinstance(term, dict):
-                    offset = float(term.values()[0])
-                    term = term.keys()[0]
-                elif isinstance(term, six.string_types):
-                    offset = 0.0
+                term, offset = term
                 type_1, type_2, type_3, type_4 = [t.strip()
                                                    for t in term.split("-")]
                 dim_torsions = torsions[(torsions["type_1"] == type_1) &
@@ -81,7 +150,7 @@ class AnalyticalDataset(object):
                             type_1, type_2, type_3, type_4) +
                             "not present in '{0}'".format(expandvars(infile)))
                     elif verbose >= 2:
-                        warn( "Term '{0:2}-{1:2}-{2:2}-{3:2}' ".format(
+                        warn("Term '{0:2}-{1:2}-{2:2}-{3:2}' ".format(
                           type_1, type_2, type_3, type_4) +
                           "not present in '{0}';".format(expandvars(infile)) +
                           "Term '{0:2}-{1:2}-{2:2}-{3:2}' ".format(

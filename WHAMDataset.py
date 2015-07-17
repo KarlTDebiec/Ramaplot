@@ -23,8 +23,24 @@ class WHAMDataset(object):
       version 2.0.9, <http://membrane.urmc.rochester.edu/content/wham>_
     """
 
+    @staticmethod
+    def get_cache_key(infile, wrap=True, loop_edges=True, max_fe=None,
+        *args, **kwargs):
+        """
+        Generates tuple of arguments to be used as key for dataset
+        cache.
+        """
+        from os.path import expandvars
+
+        return (WHAMDataset, expandvars(infile), wrap, loop_edges,
+                max_fe)
+
+    @staticmethod
+    def get_cache_message(cache_key):
+        return "previously loaded from '{0}'".format(cache_key[1])
+
     def __init__(self, infile, wrap=True, loop_edges=True, max_fe=None,
-        verbose=1, debug=1, **kwargs):
+        verbose=1, debug=0, **kwargs):
         """
         Initializes dataset.
 

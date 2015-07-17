@@ -232,7 +232,7 @@ class MDGXFigureManager(FigureManager):
             bottom:      0.00
             legend_kw:
               loc:          9
-              ncol:         3
+              ncol:         4
           subplots:
             1:
               ylabel:       ""
