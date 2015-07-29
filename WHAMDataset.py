@@ -51,8 +51,8 @@ class WHAMDataset(object):
             between -180 and 0
           loop_edges (bool):
           max_fe (float): 
-          verbose (bool): Enable verbose output
-          debug (bool): Enable debug output
+          verbose (int): Level of verbose output
+          debug (int): Level of debug output
         """
         from os.path import expandvars
         import pandas
