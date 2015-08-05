@@ -5,7 +5,7 @@ Ramaplot is a Python program used to generate `Ramachandran plot
 Ramachandran plots are a powerful method of visualizing the distribution of
 backbone Φ and Ψ dihedral angles in peptides and proteins, or of other
 properites as a function of Φ and Ψ. Ramaplot configuration is powered by
-`myplotspec <http://karltdebiec.github.io/myplotspec/>`_, enabling powerful
+`myplotspec <http://karltdebiec.github.io/myplotspec>`_, enabling powerful
 configuration options from `YAML
 <http://www.yaml.org/spec/1.2/spec.html>`_-format text files. Several types of
 experimental and simulated datasets are currently supported.
@@ -41,7 +41,7 @@ and standard deviations of backbone bond lengths and angles as a function of Φ
 and Ψ, measured from solved structures. The dataset is divided into 8 classes:
 isoleucine/valine, glycine, proline, and all other residues, each leading into
 proline or residues other than proline. This dataset may be obtained from
-`<http://dunbrack.fccc.edu/nmhrcm/>`_. (Work in progress)
+`<http://dunbrack.fccc.edu/nmhrcm>`_. (Work in progress)
 
 `Berkholz, Donald S., Shapovalov, Maxim V., Dunbrack Jr. Roland L., Karplus, P.
 Andrew. Conformation Dependence of Backbone Geometry in Proteins. Structure.
@@ -101,6 +101,7 @@ Ramaplot supports Python 2.7 and 3.4, and requires the following packages:
 
 - matplotlib
 - numpy
+- pandas
 - six
 - yaml
 
