@@ -86,8 +86,8 @@ _______________________________
 The distribution of Φ and Ψ dihedral angles sampled in a molecular dynamics
 simulation are a function of the force field parameters used, in particular the
 fourier series used to model the potential energy surface along Φ and Ψ. These
-parameters may be loaded from an `Amber-format force field (parm*.dat)
-<http://ambermd.org/#ff>`_.
+parameters may be loaded from an `Amber-format force field
+<http://ambermd.org/#ff>`_ (parm*.dat).
 (Work in progress)
 
 Images
