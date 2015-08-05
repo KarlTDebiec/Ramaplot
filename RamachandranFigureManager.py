@@ -38,6 +38,10 @@ class RamachandranFigureManager(FigureManager):
           yticks: [-180,-90,0,90,180]
           ylabel_kw:
             va: center
+          y2ticks: [-180,-90,0,90,180]
+          y2ticklabels: []
+          y2label_kw:
+            rotation: 270
         draw_dataset:
           contour: True
           heatmap_kw:
@@ -112,13 +116,6 @@ class RamachandranFigureManager(FigureManager):
             levels: [115,116,117,118,119,120,121,122,123,124,125]
           mask: True
           outline: True
-      right_title:
-        help: Additional subplot title on right side
-        draw_subplot:
-          y2ticks: [-180,-90,0,90,180]
-          y2ticklabels: []
-          y2label_kw:
-            rotation: 270
       poster:
         help: Single plot for poster (width = 4.6", height = 4.3")
         inherits: poster
@@ -747,9 +744,9 @@ class RamachandranFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, infile=None, label=None, kind="WHAM",
+    def draw_dataset(self, subplot, label=None, kind="wham",
         nan_to_max=True, heatmap=True, contour=True, mask=False,
-        outline=False, plot=False, **kwargs):
+        outline=False, plot=False, verbose=1, debug=0, **kwargs):
         """
         """
         from copy import copy
@@ -772,17 +769,16 @@ class RamachandranFigureManager(FigureManager):
                            "pdist":      PDistDataset,
                            "wham":       WHAMDataset}
 
-        # Load data (for DiffDataset, infile is None, and infiles are
-        #   instead included in dataset_1_kw and dataset_2_kw
-        if  (infile is None
-        and ("dataset_1_kw" not in kwargs and "dataset_2_kw" not in kwargs)):
+        # Load data
+        kind = kind.lower()
+        dataset_kw = kwargs.get("dataset_kw", kwargs)
+        if "infile" in kwargs:
+            dataset_kw["infile"] = kwargs["infile"]
+        dataset = self.load_dataset(dataset_classes[kind],
+                    dataset_classes=dataset_classes,
+                    verbose=verbose, debug=debug, **dataset_kw)
+        if dataset is None:
             return
-        else:
-            dataset = self.load_dataset(dataset_classes[kind.lower()],
-                        infile=infile, dataset_classes=dataset_classes,
-                        **kwargs)
-            if dataset is None or not hasattr(dataset, "dist"):
-                return
 
         # Draw heatmap
         if heatmap:

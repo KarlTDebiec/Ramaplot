@@ -33,6 +33,8 @@ class NDRDDataset(object):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
+
+        Arguments documentented under :func:`__init__`.
         """
         from os.path import expandvars
 
@@ -42,6 +44,18 @@ class NDRDDataset(object):
 
     @staticmethod
     def get_cache_message(cache_key):
+        """
+        Generates message to be used when reloading previously-loaded
+        dataset.
+
+        Arguments:
+            cache_key (tuple): key with which dataset object is stored
+              in dataset cache
+
+        Returns:
+            cache_message (str): message to be used when reloading
+              previously-loaded dataset
+        """
         return "previously loaded from '{0}'".format(cache_key[1])
 
     @staticmethod
