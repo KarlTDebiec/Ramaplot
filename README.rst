@@ -78,7 +78,7 @@ function of the chosen coordinate(s) may be subsequently calculated using the
 `Weighted Histogram Analysis Method (WHAM)
 <http://membrane.urmc.rochester.edu/content/wham>`_
 
-`Grossfield, Alan, WHAM: the weighted histogram analysis method, version 2.0.9,
+`Grossfield, Alan, WHAM: The Weighted Histogram Analysis Method, version 2.0.9,
 <http://membrane.urmc.rochester.edu/content/wham>`_
 
 Molecular Mechanics Force Field
