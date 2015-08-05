@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#   myplotspec_forcefield.PDistDataset.py
+#   ramaplot.PDistDataset.py
 #
 #   Copyright (C) 2015 Karl T Debiec
 #   All rights reserved.

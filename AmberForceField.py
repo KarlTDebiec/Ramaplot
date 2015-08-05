@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#   myplotspec_forcefield.AmberForceField.py
+#   ramaplot.AmberForceField.py
 #
 #   Copyright (C) 2015 Karl T Debiec
 #   All rights reserved.
@@ -13,9 +13,6 @@ Reads and represents AMBER-format force fields
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
 import re
-if __name__ == "__main__":
-    __package__ = str("myplotspec_forcefield")
-    import myplotspec_forcefield
 from .ForceField import ForceField
 ################################### CLASSES ###################################
 class AmberForceField(ForceField):

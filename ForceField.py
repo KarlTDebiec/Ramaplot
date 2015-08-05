@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#   myplotspec_forcefield.ForceField.py
+#   ramaplot.ForceField.py
 #
 #   Copyright (C) 2015 Karl T Debiec
 #   All rights reserved.

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#   myplotspec_forcefield.RamachandranFigureManager.py
+#   ramaplot.Ramaplot.py
 #
 #   Copyright (C) 2015 Karl T Debiec
 #   All rights reserved.
@@ -16,9 +16,9 @@ from __future__ import absolute_import,division,print_function,unicode_literals
 import matplotlib
 matplotlib.use("agg")
 if __name__ == "__main__":
-    __package__ = str("myplotspec_forcefield")
-    import myplotspec_forcefield
-from myplotspec.FigureManager import FigureManager
+    __package__ = str("ramaplot")
+    import ramaplot
+from .myplotspec.FigureManager import FigureManager
 ################################### CLASSES ###################################
 class RamachandranFigureManager(FigureManager):
     """
@@ -79,7 +79,7 @@ class RamachandranFigureManager(FigureManager):
         help: Plot heatmap in style of ff99SB paper; omit contours
         draw_dataset:
           heatmap_kw:
-            cmap: !!python/object/apply:myplotspec_forcefield.cmap_ff99SB []
+            cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
       diff:
         help: Plot difference between two datasets
