@@ -16,8 +16,8 @@ Supported Datasets
 Experiment
 ~~~~~~~~~~
 
-Neighbor-Dependent Ramachandran Distribution
-____________________________________________
+Neighbor-Dependent Ramachandran Distributions
+_____________________________________________
 The Neighbor-Dependent Ramachandran Distribution (NDRD) dataset is a collection
 of Φ/Ψ probability distributions measured from the loop (non-α/β) regions of
 solved structures. In addition to distributions for all 20 amino acids, left-
@@ -41,7 +41,7 @@ and standard deviations of backbone bond lengths and angles as a function of Φ
 and Ψ, measured from solved structures. The dataset is divided into 8 classes:
 isoleucine/valine, glycine, proline, and all other residues, each leading into
 proline or residues other than proline. This dataset may be obtained from
-`<http://dunbrack.fccc.edu/nmhrcm/>`_. (Work in Progress)
+`<http://dunbrack.fccc.edu/nmhrcm/>`_. (Work in progress)
 
 `Berkholz, Donald S., Shapovalov, Maxim V., Dunbrack Jr. Roland L., Karplus, P.
 Andrew. Conformation Dependence of Backbone Geometry in Proteins. Structure.
@@ -58,7 +58,7 @@ simulation may be calculated from a text file containing a timeseries,
 typically calculated from the trajectory using `cpptraj
 <https://github.com/Amber-MD/cpptraj>`_. Alternatively, the average value of
 another property as a function of Φ and Ψ may be calculated. (Work in
-Progress)
+progress)
 
 `Roe, Daniel R., Cheatham III, Thomas E. PTRAJ and CPPTRAJ: Software for
 Processing and Analysis of Molecular Dynamics Trajectory Data Journal of
@@ -76,7 +76,7 @@ typically using a harmonic restraint. Provided that the sampling within each
 'window' overlaps with its neighbors, the true free energy of the system as a
 function of the chosen coordinate(s) may be subsequently calculated using the
 `Weighted Histogram Analysis Method (WHAM)
-http://membrane.urmc.rochester.edu/content/wham>`_
+<http://membrane.urmc.rochester.edu/content/wham>`_
 
 `Grossfield, Alan, WHAM: the weighted histogram analysis method, version 2.0.9,
 <http://membrane.urmc.rochester.edu/content/wham>`_
@@ -86,7 +86,8 @@ _______________________________
 The distribution of Φ and Ψ dihedral angles sampled in a molecular dynamics
 simulation are a function of the force field parameters used, in particular the
 fourier series used to model the potential energy surface along Φ and Ψ. These
-parameters may be loaded from and Amber-format force field (parm.dat file).
+parameters may be loaded from an `Amber-format force field (parm*.dat)
+<http://ambermd.org/#ff>`_.
 (Work in progress)
 
 Images
