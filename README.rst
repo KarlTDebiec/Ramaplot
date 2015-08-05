@@ -105,7 +105,7 @@ Ramaplot supports Python 2.7 and 3.4, and requires the following packages:
 - six
 - yaml
 
-Ramaplot has been tested with Anaconda python 2.2.0 on Arch Linux, OSX
+Ramaplot has been tested with Anaconda Python 2.2.0 on Arch Linux, OSX
 Yosemite, and Windows 8.1.
 
 Authorship
