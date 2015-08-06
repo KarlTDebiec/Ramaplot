@@ -63,7 +63,7 @@ another property as a function of Φ and Ψ may be calculated. (Work in
 progress)
 
 `Roe, Daniel R., Cheatham III, Thomas E. PTRAJ and CPPTRAJ: Software for
-Processing and Analysis of Molecular Dynamics Trajectory Data Journal of
+Processing and Analysis of Molecular Dynamics Trajectory Data. Journal of
 Chemical Theory and Computation. 2013. 93084–3095.
 <http://pubs.acs.org/doi/abs/10.1021/ct400341p>`_
 
