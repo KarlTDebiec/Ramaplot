@@ -100,7 +100,7 @@ Ramaplot supports plotting of image files.
 Example Usage
 -------------
 
-The example output shown above may be generated using the following command
+The example output shown above may be generated using the following command:
 
 ::
 
