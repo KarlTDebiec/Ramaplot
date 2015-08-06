@@ -81,8 +81,8 @@ function of the chosen coordinate(s) may be subsequently calculated using the
 `Grossfield, Alan. WHAM: The Weighted Histogram Analysis Method. Version 2.0.9.
 <http://membrane.urmc.rochester.edu/content/wham>`_
 
-Molecular Mechanics Force Field
-_______________________________
+Molecular Mechanics Force Fields
+________________________________
 The distribution of Φ and Ψ dihedral angles sampled in a molecular dynamics
 simulation are a function of the force field parameters used, in particular the
 fourier series used to model the potential energy surface along Φ and Ψ. These
