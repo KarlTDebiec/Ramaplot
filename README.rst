@@ -128,7 +128,7 @@ example.yml
                     title:  "CHARMM36"
                     datasets:
                         0:
-                            kind:   wham
+                            kind: wham
                             infile: examples/charmm36.dat
                 2: 
                     preset: diff
@@ -136,10 +136,10 @@ example.yml
                     datasets: 
                         0:
                             dataset_1_kw:
-                                kind: WHAM
+                                kind: wham
                                 infile: examples/ff14SB.dat
                             dataset_2_kw:
-                                kind: WHAM
+                                kind: wham
                                 infile: examples/charmm36.dat
 
 Dependencies
