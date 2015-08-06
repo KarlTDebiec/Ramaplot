@@ -100,13 +100,17 @@ Ramaplot supports plotting of image files.
 Example Usage
 -------------
 
-The example output shown above may be generated using the following command::
+The example output shown above may be generated using the following command
+
+::
+
     python Ramaplot.py -yaml examples/example.yml
 
 example.yml
 ~~~~~~~~~~~
 
 ::
+
     figures:
         0:
             preset: notebook_3
