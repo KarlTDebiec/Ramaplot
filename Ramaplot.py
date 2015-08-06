@@ -880,6 +880,19 @@ class RamachandranFigureManager(FigureManager):
             label_kw = kwargs.get("label_kw", {}).copy()
             set_text(subplot, s=label, **label_kw)
 
+    def main(self):
+        """
+        Provides command-line functionality.
+        """
+        import argparse
+        from inspect import getmodule
+
+        parser = argparse.ArgumentParser(
+          description     = getmodule(self.__class__).__doc__,
+          formatter_class = argparse.RawTextHelpFormatter)
+
+        super(RamachandranFigureManager, self).main(parser=parser)
+        
 #################################### MAIN #####################################
 if __name__ == "__main__":
     RamachandranFigureManager().main()

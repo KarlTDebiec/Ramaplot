@@ -10,6 +10,8 @@ configuration options from `YAML
 <http://www.yaml.org/spec/1.2/spec.html>`_-format text files. Several types of
 experimental and simulated datasets are currently supported.
 
+.. image:: examples/example.png
+
 Supported Datasets
 ------------------
 
@@ -94,6 +96,47 @@ Images
 ~~~~~~
 In order to enable more direct comparison to published Ramachandran plots,
 Ramaplot supports plotting of image files.
+
+Example Usage
+-------------
+
+The example output shown above may be generated using the following command::
+    python Ramaplot.py -yaml examples/example.yml
+
+example.yml
+~~~~~~~~~~~
+
+::
+    figures:
+        0:
+            preset: notebook_3
+            outfile: examples/example.png
+            savefig_kw:
+                dpi: 300
+            subplots:
+                0:
+                    title: "AMBER ff14SB"
+                    datasets:
+                        0:
+                            kind: wham
+                            infile: examples/ff14SB.dat
+                1:
+                    title:  "CHARMM36"
+                    datasets:
+                        0:
+                            kind:   wham
+                            infile: examples/charmm36.dat
+                2: 
+                    preset: diff
+                    title: "ff14SB - CHARMM36"
+                    datasets: 
+                        0:
+                            dataset_1_kw:
+                                kind: WHAM
+                                infile: examples/ff14SB.dat
+                            dataset_2_kw:
+                                kind: WHAM
+                                infile: examples/charmm36.dat
 
 Dependencies
 ------------
