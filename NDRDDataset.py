@@ -273,7 +273,6 @@ class NDRDDataset(object):
                                np.float) * np.nan
         probability = np.zeros((x_centers.size, y_centers.size),
                                np.float) * np.nan
-        print(free_energy.shape)
         for index, phi, psi, p, fe in dataset.itertuples():
             x_index = np.where(x_centers == phi)[0][0]
             y_index = np.where(y_centers == psi)[0][0]

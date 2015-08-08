@@ -196,7 +196,6 @@ class CDLDataset(object):
         y_width = np.mean(y_centers[1:] - y_centers[:-1])
         dist = np.zeros((x_centers.size, y_centers.size), np.float) * np.nan
         mask = np.zeros((x_centers.size, y_centers.size), np.bool)
-        print(dist.shape)
         for index, row in dataset.iterrows():
             x_index = np.where(x_centers == row["phi"])[0][0]
             y_index = np.where(y_centers == row["psi"])[0][0]
