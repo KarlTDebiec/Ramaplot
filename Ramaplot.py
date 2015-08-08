@@ -43,23 +43,26 @@ class RamachandranFigureManager(FigureManager):
           y2label_kw:
             rotation: 270
         draw_dataset:
-          contour: True
+          heatmap: True
           heatmap_kw:
             cmap: hot
             edgecolors: none
             rasterized: True
             vmin: 0
             vmax: 5
+          contour: True
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
+          mask: True
           mask_kw:
             cmap: Greys_r
             edgecolors: none
             rasterized: True
             vmin: 0
             vmax: 1
+          outline: True
           outline_kw:
             color: black
           label_kw:
@@ -74,13 +77,50 @@ class RamachandranFigureManager(FigureManager):
                 lw: 0
     """
 
-    presets = """
+    available_presets = """
       ff99SB:
         help: Plot heatmap in style of ff99SB paper; omit contours
         draw_dataset:
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
+      free_energy:
+        help: Plot free energy as a function of φ,ψ
+        draw_dataset:
+          heatmap: True
+          heatmap_kw:
+            cmap: hot
+            edgecolors: none
+            rasterized: True
+            vmin: 0
+            vmax: 5
+          contour: True
+          contour_kw:
+            colors: '0.25'
+            levels: [1, 2, 3, 4, 5]
+            linestyles: solid
+          mask: True
+          mask_kw:
+            cmap: Greys_r
+            edgecolors: none
+            rasterized: True
+            vmin: 0
+            vmax: 1
+          outline: True
+          outline_kw:
+            color: black
+      angle:
+        help: Plot average value of a backbone angle as a function of φ,ψ
+        draw_dataset:
+          heatmap_kw:
+            cmap: seismic
+            vmin: 110
+            vmax: 130
+          contour: True
+          contour_kw:
+            levels: [110,115,120,125,130]
+          mask: True
+          outline: True
       diff:
         help: Plot difference between two datasets
         draw_dataset:
@@ -98,24 +138,12 @@ class RamachandranFigureManager(FigureManager):
         help: Plot image of a Ramachandran plot, typically from a publication
         draw_dataset:
           heatmap_kw:
-            cmap: hot
+            cmap: Greys
             vmin: 0
             vmax: 1
           contour: False
           mask: False
           outline: False
-      angle:
-        help: Plot average value of a backbone angle as a function of φ,ψ
-        draw_dataset:
-          heatmap_kw:
-            cmap: seismic
-            vmin: 119
-            vmax: 127
-          contour: True
-          contour_kw:
-            levels: [115,116,117,118,119,120,121,122,123,124,125]
-          mask: True
-          outline: True
       poster:
         help: Single plot for poster (width = 4.6", height = 4.3")
         inherits: poster

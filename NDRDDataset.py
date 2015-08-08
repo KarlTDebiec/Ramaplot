@@ -27,6 +27,16 @@ class NDRDDataset(object):
     <http://dunbrack.fccc.edu/ndrd>_
     """
 
+    type_error_text = ("Selection may be a  string or list; if string, "
+      "may be an  amino acid (e.g. 'CYS', for which the "
+      "(ALA)-CYS-(ALA) distribution will be  returned), or a specific "
+      "distribution  (e.g. 'CYS left ALA', for which the  (ALA)-CYS "
+      "distribution will be  returned); if list, may be two amino "
+      "acids (e.g. ['ALA', 'CYS'], for which  the (ALA)-CYS "
+      "distribution will be  returned), or three amino acids (e.g. "
+      "['ALA', 'CYS', 'ASP'], for which the  (ALA)-CYS-(ASP) "
+      "distribution will be returned.")
+
     @staticmethod
     def get_cache_key(infile, selection="ALA", loop_edges=True, max_fe=None,
         *args, **kwargs):
@@ -64,10 +74,10 @@ class NDRDDataset(object):
         Processes selection arguments
 
         Arguments:
-          selections (str, list): selection(s) to be loaded from file
+          selection (str, list): selection(s) to be loaded from file
 
         Returns:
-          out_selections (tuple): processed selections
+          out_selection (tuple): processed selection(s)
         """
         import re
         import six
@@ -117,7 +127,8 @@ class NDRDDataset(object):
                 out_selection = ("{0} {1:5} {2}".format(fields["first"],
                   fields["direction"], fields["second"]),)
             else:
-                raise TypeError(type_error_text)
+                raise TypeError("Selection '{0}' not ".format(selection) +
+                                "understood. " + NDRDDataset.type_error_text)
         elif isinstance(selection, list):
             if len(selection) == 2:
                 # Selection is a sequence of two resides, return XX1>XX2
@@ -128,7 +139,8 @@ class NDRDDataset(object):
                     out_selection = ("{0} left  {1}".format(
                       fields_1["neighbor"], fields_2["central"]),)
                 else:
-                    raise TypeError(type_error_text)
+                    raise TypeError("Selection '{0}' not ".format(selection) +
+                                    "understood. " + self.type_error_text)
             elif len(selection) == 3:
                 # Selection is a sequence of three residues
                 if (re.match(sel_neighbor, selection[0])
@@ -144,56 +156,42 @@ class NDRDDataset(object):
                       fields_3["neighbor"]),
                       "{0} right ALL".format(fields_2["central"]))
                 else:
-                    raise TypeError("Selection '{0}' ".format(selection) +
-                                    "not understood. Selection may be a "
-                                    "string or list; if string, may be an "
-                                    "amino acid (e.g. 'CYS', for which the "
-                                    "(ALA)-CYS-(ALA) distribution will be "
-                                    "returned), or a specific distribution "
-                                    "(e.g. 'CYS left ALA', for which the "
-                                    "(ALA)-CYS distribution will be "
-                                    "returned); if list, may be two amino "
-                                    "acids (e.g. ['ALA', 'CYS'], for which "
-                                    "the (ALA)-CYS distribution will be "
-                                    "returned), or three amino acids (e.g. "
-                                    "['ALA', 'CYS', 'ASP'], for which the "
-                                    "(ALA)-CYS-(ASP) distribution will be "
-                                    "returned)")
+                    raise TypeError("Selection '{0}' not ".format(selection) +
+                                    "understood. " + self.type_error_text)
 
         return out_selection
-        
+
     @staticmethod
-    def load_distribution(infile, selection, verbose=1, **kwargs):
+    def load_dataset(infile, selection, verbose=1, **kwargs):
         """
         Loads selected distribution from selected infile.
 
         Arguments:
           infile (str): Path to text input file
-          selection (str): Start of lines containing desired
-            distribution
-          verbose (int): Enable verbose output
+          selection (str): Start of lines containing desired dataset
+          verbose (int): Level of verbose output
 
         Returns:
-          dist (DataFrame): Selected distribution
+          dist (DataFrame): Selected dataset
         """
         from cStringIO import StringIO
         import pandas
 
         if verbose >= 1:
             print("loading '{0}' from '{1}'".format(selection, infile))
-        s = StringIO()
 
+        s = StringIO()
         with open(infile) as open_infile:
             for line in open_infile:
                 if line.startswith(selection):
                     s.write(line)
-
         s.seek(0)
-        dist = pandas.read_csv(s, delim_whitespace=True, header=None,
-                 usecols=[3,4,5,6], names=["phi", "psi", "probability",
-                 "free energy"])
 
-        return dist
+        dataset = pandas.read_csv(s, delim_whitespace=True, header=None,
+          usecols=[3,4,5,6], names=["phi", "psi", "probability",
+          "free energy"])
+
+        return dataset
 
     @staticmethod
     def calculate_triplet(dist_1, dist_2, dist_3, **kwargs):
@@ -251,37 +249,22 @@ class NDRDDataset(object):
           kwargs (dict): additional keyword arguments
         """
         from os.path import expandvars
-        import re
         import pandas
         import numpy as np
-        import six
 
         infile = expandvars(infile)
         selection = self.process_selection_arg(selection)
 
         if len(selection) == 1:
-            dist = load_distribution(infile, selection[0])
+            dist = self.load_dataset(infile, selection[0])
         elif len(selection) == 3:
             dist = self.calculate_triplet(
-                     self.load_distribution(infile, selection[0]),
-                     self.load_distribution(infile, selection[1]),
-                     self.load_distribution(infile, selection[2]))
+                     self.load_dataset(infile, selection[0]),
+                     self.load_dataset(infile, selection[1]),
+                     self.load_dataset(infile, selection[2]))
         else:
-            raise TypeError("Selection '{0}' ".format(selection) +
-                            "not understood. Selection may be a "
-                            "string or list; if string, may be an "
-                            "amino acid (e.g. 'CYS', for which the "
-                            "(ALA)-CYS-(ALA) distribution will be "
-                            "returned), or a specific distribution "
-                            "(e.g. 'CYS left ALA', for which the "
-                            "(ALA)-CYS distribution will be "
-                            "returned); if list, may be two amino "
-                            "acids (e.g. ['ALA', 'CYS'], for which "
-                            "the (ALA)-CYS distribution will be "
-                            "returned), or three amino acids (e.g. "
-                            "['ALA', 'CYS', 'ASP'], for which the "
-                            "(ALA)-CYS-(ASP) distribution will be "
-                            "returned)")
+            raise TypeError("Selection '{0}' not ".format(selection) +
+                            "understood. " + self.type_error_text)
 
         # Organize data
         x_centers = np.unique(dist["phi"])
@@ -300,7 +283,7 @@ class NDRDDataset(object):
         x_width = np.mean(x_centers[1:] - x_centers[:-1])
         y_width = np.mean(y_centers[1:] - y_centers[:-1])
 
-        # Loop data to allow contour lines to be drawn to edges
+        # Loop distribution to allow contour lines to be drawn to edges
         if loop_edges:
             x_centers = np.concatenate(([x_centers[0]  - x_width],
                                          x_centers,

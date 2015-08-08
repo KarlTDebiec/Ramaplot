@@ -25,22 +25,50 @@ class CDLDataset(object):
     <http://dunbrack.fccc.edu/nmhrcm/>_
     """
 
-    def __init__(self, infile, loop_edges=False,
-        **kwargs):
+    type_error_text = ("NAY")
+
+    @staticmethod
+    def get_cache_key(infile, selection="NonPGIV_nonxpro", loop_edges=True,
+        *args, **kwargs):
         """
-        Initializes dataset.
+        Generates tuple of arguments to be used as key for dataset
+        cache.
+
+        Arguments documentented under :func:`__init__`.
+        """
+        from os.path import expandvars
+
+        return (CDLDataset, expandvars(infile),
+        CDLDataset.process_selection_arg(selection), loop_edges)
+
+    @staticmethod
+    def get_cache_message(cache_key):
+        """
+        Generates message to be used when reloading previously-loaded
+        dataset.
 
         Arguments:
-          infile (str): Path to text input file, may contain environment
-            variables
-          selection (str, list): Selected distribution and measurement
-          loop_edges (bool): Copy edges to enable plotting to edge of
-            plot
-          kwargs (dict): additional keyword arguments
+            cache_key (tuple): key with which dataset object is stored
+              in dataset cache
+
+        Returns:
+            cache_message (str): message to be used when reloading
+              previously-loaded dataset
+        """
+        return "previously loaded from '{0}'".format(cache_key[1])
+
+    @staticmethod
+    def process_selection_arg(selection):
+        """
+        Processes selection arguments
+
+        Arguments:
+          selection (str, list): selection to be loaded from file
+
+        Returns:
+          out_selection (tuple): processed selections
         """
         import re
-        import pandas
-        import numpy as np
         import six
 
         def format_regex(regex):
@@ -49,8 +77,8 @@ class CDLDataset(object):
 
             Arguments:
               regex (str): Regular expression string, for which
-                '{distribution}'  and '{whitespace}' will be replaced
-                with the appropriate expressions
+                '{dataset}', '{field}', and '{whitespace}' will be
+                replaced with the appropriate expressions
 
             Returns:
               regex (Pattern): Compiled regular expression
@@ -58,86 +86,124 @@ class CDLDataset(object):
             return re.compile(regex.format(
                 dataset = "(NonPGIV_nonxpro|IleVal_nonxpro"
                           "|Gly_nonxpro|Pro_nonxpro"
-                          "|NonPGIV_xpro|IleVal_xpro|IleVal_xpro"
+                          "|NonPGIV_xpro|IleVal_xpro"
                           "|Gly_xpro|Pro_xpro)",
-                measurement = "(CNA|NAB|NAC|BAC|ACO|ACN|OCN"
+                field = "(CNA|NAB|NAC|BAC|ACO|ACN|OCN"
                               "|CN|NA|AB|AC|CO)",
                 whitespace = "\s+"), re.IGNORECASE)
 
-        def load_dataset(infile, selection, verbose=1, debug=0, **kwargs):
-            """
-            Loads selected dataset from selected infile.
-
-            Arguments:
-              infile (str): Path to text input file, may contain
-                environment variables
-              selection (str): Start of lines containing desired
-                dataset
-              verbose (int): Enable verbose output
-              debug (int): Enable debug output
-
-            Returns:
-              dist (DataFrame): Selected dataset
-            """
-            from os.path import expandvars
-            from cStringIO import StringIO
-
-            if verbose > 0:
-                print("loading '{0}' from '{1}'".format(selection, infile))
-            s = StringIO()
-
-            with open(expandvars(infile)) as f:
-                for line in f:
-                    if line.startswith(selection):
-                        s.write(line)
-
-            s.seek(0)
-            dist = pandas.read_csv(s, delim_whitespace=True, header=None,
-                     usecols=range(1,29), names=["phi", "psi", "mode", "N",
-                     "CNA mean", "CNA sd", "NAB mean", "NAB sd", "NAC mean",
-                     "NAC sd", "BAC mean", "BAC sd", "ACO mean", "ACO sd",
-                     "ACN mean", "ACN sd", "OCN mean", "OCN sd", "CN mean",
-                     "CN sd", "NA mean", "NA sd", "AB mean", "AB sd",
-                     "AC mean", "AC sd", "CO mean", "CO sd"])
-            return dist
-
-        type_error_text = ("SELECTION NOT UNDERSTOOD")
-        sel_dist = format_regex("^(?P<dataset>{dataset})$")
-        sel_meas = format_regex("^(?P<measurement>{measurement})$")
+        re_dataset = format_regex("^(?P<dataset>{dataset})$")
+        re_field = format_regex("^(s|m)?(?P<field>{field})"
+                           "({whitespace}(mean|avg|average|sd|std|stdev))?$")
+        re_sd   = format_regex(
+                    "(^s{field}$|^{field}{whitespace}(sd|std|stdev)$)")
 
         # Unpack list to string
+        if isinstance(selection, list) and len(selection) == 1:
+            selection = selection[0]
         if isinstance(selection, six.string_types):
-            pass
-        elif isinstance(selection, list) and len(selection) == 1:
-            pass
-        elif isinstance(selection, list) and len(selection) == 1:
-            sel_1 = selection[0]
-            if re.match(sel_dist, selection):
-                sel = re.match(sel_dist, selection).groupdict()["dataset"]
-                data = load_dataset(infile, sel)
+            # Selection is a dataset, default to CNA field
+            if re.match(re_dataset, selection):
+                dataset, field = selection, "CNA"
+            # Selection is a field, default to !PGVI>!P dataset
+            elif re.match(re_field, selection):
+                dataset, field = "NonPGIV_nonxpro", selection
             else:
-                raise TypeError(type_error_text)
+                raise TypeError("Selection '{0}' not ".format(selection) +
+                                "understood. " + CDLDataset.type_error_text)
+        elif isinstance(selection, list) and len(selection) == 2:
+            # Selection is a dataset, field pair
+            if (re.match(re_dataset, selection[0])
+            and re.match(re_field, selection[1])):
+                dataset, field = selection
+            else:
+                raise TypeError("Selection '{0}' not ".format(selection) +
+                                "understood. " + CDLDataset.type_error_text)
         else:
-            raise TypeError(type_error_text)
-        sel = "CNA"
-        if sel.endswith("mean"):
-            sel = sel.rstrip("mean").strip()
+            raise TypeError("Selection '{0}' not ".format(selection) +
+                            "understood. " + CDLDataset.type_error_text)
+
+        match_sd = re.match(re_sd, field)
+        match_field = re.match(re_field, field)
+        if match_sd:
+            field = "{0} sd".format(match_field.groupdict()["field"])
+        else:
+            field = "{0} mean".format(match_field.groupdict()["field"])
+
+        return dataset, field
+
+    @staticmethod
+    def load_dataset(infile, selection, verbose=1, **kwargs):
+        """
+        Loads selected dataset from selected infile.
+
+        Arguments:
+          infile (str): Path to text input file
+          selection (str): Start of lines containing desired dataset
+          verbose (int): Level of verbose output
+
+        Returns:
+          dist (DataFrame): Selected dataset
+        """
+        from cStringIO import StringIO
+        import pandas
+
+        if verbose >= 1:
+            print("loading '{0}' from '{1}'".format(selection, infile))
+
+        s = StringIO()
+        with open(infile) as f:
+            for line in f:
+                if line.startswith(selection):
+                    s.write(line)
+        s.seek(0)
+
+        dataset = pandas.read_csv(s, delim_whitespace=True, header=None,
+          usecols=range(1,29), names=["phi", "psi", "mode", "N", "CNA mean",
+          "CNA sd", "NAB mean", "NAB sd", "NAC mean", "NAC sd", "BAC mean",
+          "BAC sd", "ACO mean", "ACO sd", "ACN mean", "ACN sd", "OCN mean",
+          "OCN sd", "CN mean", "CN sd", "NA mean", "NA sd", "AB mean", "AB sd",
+          "AC mean", "AC sd", "CO mean", "CO sd"])
+
+        return dataset
+
+    def __init__(self, infile, selection="NonPGIV_nonxpro", loop_edges=False,
+        **kwargs):
+        """
+        Initializes dataset.
+
+        Arguments:
+          infile (str): Path to text input file, may contain environment
+            variables
+          selection (str, list): Selected dataset and field
+          loop_edges (bool): Copy edges to enable plotting to edge of
+            plot
+          kwargs (dict): additional keyword arguments
+        """
+        from os.path import expandvars
+        import pandas
+        import numpy as np
+
+        infile = expandvars(infile)
+        selection = self.process_selection_arg(selection)
+
+        dataset = self.load_dataset(infile, selection[0])
 
         # Organize data
-        x_centers = np.unique(data["phi"])
-        y_centers = np.unique(data["psi"])
+        x_centers = np.unique(dataset["phi"])
+        y_centers = np.unique(dataset["psi"])
         x_width = np.mean(x_centers[1:] - x_centers[:-1])
         y_width = np.mean(y_centers[1:] - y_centers[:-1])
         dist = np.zeros((x_centers.size, y_centers.size), np.float) * np.nan
         mask = np.zeros((x_centers.size, y_centers.size), np.bool)
-        for index, row in data.iterrows():
+        for index, row in dataset.iterrows():
             x_index = np.where(x_centers == row["phi"])[0][0]
             y_index = np.where(y_centers == row["psi"])[0][0]
-            dist[x_index, y_index] = row["{0} mean".format(sel)]
+            dist[x_index, y_index] = row[selection[1]]
             if row["mode"] == "B":
                 mask[x_index, y_index] = True
 
-        # Loop data to allow contour lines to be drawn to edges
+        # Loop distribution to allow contour lines to be drawn to edges
         if loop_edges:
             x_centers = np.concatenate(([x_centers[0] - x_width],
                                          x_centers,
