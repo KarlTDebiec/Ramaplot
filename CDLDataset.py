@@ -167,7 +167,7 @@ class CDLDataset(object):
 
         return dataset
 
-    def __init__(self, infile, selection="NonPGIV_nonxpro", loop_edges=False,
+    def __init__(self, infile, selection="NonPGIV_nonxpro", loop_edges=True,
         **kwargs):
         """
         Initializes dataset.
@@ -196,6 +196,7 @@ class CDLDataset(object):
         y_width = np.mean(y_centers[1:] - y_centers[:-1])
         dist = np.zeros((x_centers.size, y_centers.size), np.float) * np.nan
         mask = np.zeros((x_centers.size, y_centers.size), np.bool)
+        print(dist.shape)
         for index, row in dataset.iterrows():
             x_index = np.where(x_centers == row["phi"])[0][0]
             y_index = np.where(y_centers == row["psi"])[0][0]
@@ -211,7 +212,7 @@ class CDLDataset(object):
             y_centers = np.concatenate(([y_centers[0] - y_width],
                                          y_centers,
                                         [y_centers[-1] + y_width]))
-            temp = np.zeros((x_centers.size, y_centers.size), np.float)*np.nan
+            temp = np.zeros((x_centers.size, y_centers.size), np.float)
             temp[1:-1,1:-1] = dist
             temp[1:-1,-1]   = dist[:,0]
             temp[-1,1:-1]   = dist[0,:]

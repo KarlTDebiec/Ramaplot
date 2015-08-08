@@ -866,27 +866,27 @@ class RamachandranFigureManager(FigureManager):
                     for y in range(dataset.dist.shape[1]):
                         if not dataset.mask[x,y]:
                             if (x != 0
-                            and y != dataset.mask.shape[1] - 1
+                            and y != dataset.mask.shape[1]
                             and dataset.mask[x-1,y]):
                                 subplot.plot(
                                   [dataset.x_bins[x], dataset.x_bins[x]],
                                   [dataset.y_bins[y], dataset.y_bins[y+1]],
                                   zorder=0.4, **outline_kw)
                             if (x != dataset.mask.shape[0] - 1
-                            and y != dataset.mask.shape[1] - 1
+                            and y != dataset.mask.shape[1]
                             and dataset.mask[x+1,y]):
                                 subplot.plot(
                                   [dataset.x_bins[x+1], dataset.x_bins[x+1]],
                                   [dataset.y_bins[y],   dataset.y_bins[y+1]],
                                   zorder=0.4, **outline_kw)
-                            if (x != dataset.mask.shape[0] - 1
+                            if (x != dataset.mask.shape[0]
                             and y != 0
                             and dataset.mask[x,y-1]):
                                 subplot.plot(
                                   [dataset.x_bins[x], dataset.x_bins[x+1]],
                                   [dataset.y_bins[y], dataset.y_bins[y]],
                                   zorder=0.4, **outline_kw)
-                            if (x != dataset.mask.shape[0] - 1
+                            if (x != dataset.mask.shape[0]
                             and y != dataset.mask.shape[1] - 1
                             and dataset.mask[x,y+1]):
                                 subplot.plot(

@@ -107,7 +107,7 @@ class NDRDDataset(object):
 
         sel_central  = format_regex("^(?P<central>{central})$")
         sel_neighbor = format_regex("^(?P<neighbor>{neighbor})$")
-        sel_dist     = format_regex("^(?P<first>{central}){whitespace}"
+        sel_dataset  = format_regex("^(?P<first>{central}){whitespace}"
                                      "(?P<direction>{direction}){whitespace}"
                                      "(?P<second>{neighbor})$")
 
@@ -122,8 +122,8 @@ class NDRDDataset(object):
                                  "{0} right ALA".format(fields["central"]),
                                  "{0} right ALL".format(fields["central"]))
             # Selection is a single distribution
-            elif re.match(sel_dist, selection):
-                fields = re.match(sel_dist, selection).groupdict()
+            elif re.match(sel_dataset, selection):
+                fields = re.match(sel_dataset, selection).groupdict()
                 out_selection = ("{0} {1:5} {2}".format(fields["first"],
                   fields["direction"], fields["second"]),)
             else:
@@ -172,7 +172,7 @@ class NDRDDataset(object):
           verbose (int): Level of verbose output
 
         Returns:
-          dist (DataFrame): Selected dataset
+          dataset (DataFrame): Selected dataset
         """
         from cStringIO import StringIO
         import pandas
@@ -194,7 +194,7 @@ class NDRDDataset(object):
         return dataset
 
     @staticmethod
-    def calculate_triplet(dist_1, dist_2, dist_3, **kwargs):
+    def calculate_triplet(dataset_1, dataset_2, dataset_3, **kwargs):
         """
         Calculates distribution for an amino acid triplet.
 
@@ -211,23 +211,23 @@ class NDRDDataset(object):
           p(phi,psi, | C,L,R) = p*(phi,psi | C,L,R) / sum
 
         Arguments:
-          dist_1 (DataFrame): (XX1)>XX2 distribution
-          dist_2 (DataFrame): XX2>(XX3) distribution
-          dist_3 (DataFrame): XX2>(ALL) distribution
+          dataset_1 (DataFrame): (XX1)>XX2 distribution
+          dataset_2 (DataFrame): XX2>(XX3) distribution
+          dataset_3 (DataFrame): XX2>(ALL) distribution
 
         Returns:
-          dist (DataFrame): RES1>RES2>RES3 distribution for RES2
+          dataset (DataFrame): RES1>RES2>RES3 distribution for RES2
         """
         from copy import copy
         import numpy as np
 
-        dist = copy(dist_1)
-        dist["free energy"] += dist_2["free energy"]
-        dist["free energy"] -= dist_3["free energy"]
-        dist["probability"]  = np.exp(dist["free energy"])
-        dist["probability"] /= np.sum(dist["probability"])
+        dataset = copy(dataset_1)
+        dataset["free energy"] += dataset_2["free energy"]
+        dataset["free energy"] -= dataset_3["free energy"]
+        dataset["probability"]  = np.exp(dataset["free energy"])
+        dataset["probability"] /= np.sum(dataset["probability"])
 
-        return dist
+        return dataset
 
     def __init__(self, infile, selection="ALA", loop_edges=True, max_fe=None,
         **kwargs):
@@ -256,9 +256,9 @@ class NDRDDataset(object):
         selection = self.process_selection_arg(selection)
 
         if len(selection) == 1:
-            dist = self.load_dataset(infile, selection[0])
+            dataset = self.load_dataset(infile, selection[0])
         elif len(selection) == 3:
-            dist = self.calculate_triplet(
+            dataset = self.calculate_triplet(
                      self.load_dataset(infile, selection[0]),
                      self.load_dataset(infile, selection[1]),
                      self.load_dataset(infile, selection[2]))
@@ -267,13 +267,14 @@ class NDRDDataset(object):
                             "understood. " + self.type_error_text)
 
         # Organize data
-        x_centers = np.unique(dist["phi"])
-        y_centers = np.unique(dist["psi"])
+        x_centers = np.unique(dataset["phi"])
+        y_centers = np.unique(dataset["psi"])
         free_energy = np.zeros((x_centers.size, y_centers.size),
                                np.float) * np.nan
         probability = np.zeros((x_centers.size, y_centers.size),
                                np.float) * np.nan
-        for index, phi, psi, p, fe in dist.itertuples():
+        print(free_energy.shape)
+        for index, phi, psi, p, fe in dataset.itertuples():
             x_index = np.where(x_centers == phi)[0][0]
             y_index = np.where(y_centers == psi)[0][0]
             free_energy[x_index, y_index] = fe
@@ -291,7 +292,7 @@ class NDRDDataset(object):
             y_centers = np.concatenate(([y_centers[0] -  y_width],
                                          y_centers,
                                         [y_centers[-1] + y_width]))
-            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
+            temp = np.zeros((x_centers.size, y_centers.size), np.float)
             temp[1:-1,1:-1]  = free_energy
             temp[1:-1,-1]    = free_energy[:,0]
             temp[-1,1:-1]    = free_energy[0,:]
@@ -307,11 +308,11 @@ class NDRDDataset(object):
         self.y_centers = y_centers
         self.x_width = x_width
         self.y_width = y_width
-        self.x_bins  = np.linspace(x_centers[0]  - x_width/2,
-                                   x_centers[-1] + x_width/2,
+        self.x_bins  = np.linspace(x_centers[0]  - x_width / 2,
+                                   x_centers[-1] + x_width / 2,
                                    x_centers.size + 1)
-        self.y_bins  = np.linspace(y_centers[0]  - y_width/2,
-                                   y_centers[-1] + y_width/2,
+        self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
+                                   y_centers[-1] + y_width / 2,
                                    y_centers.size + 1)
         self.dist = free_energy
 
