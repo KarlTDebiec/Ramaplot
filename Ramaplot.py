@@ -116,11 +116,81 @@ class RamachandranFigureManager(FigureManager):
             cmap: seismic
             vmin: 110
             vmax: 130
-          contour: True
-          contour_kw:
-            levels: [110,115,120,125,130]
+          contour: False
           mask: True
           outline: True
+      angle_CNA:
+        help: Plot average value of C-N-Cα angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 119
+            vmax: 127
+          zticks: [120,122,124,126]
+          zlabel: C-N-Cα (°)
+      angle_NAB:
+        help: Plot average value of N-Cα-Cβ angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 108
+            vmax: 116
+          zticks: [109,111,113,115]
+          zlabel: N-Cα-Cβ (°)
+      angle_NAC:
+        help: Plot average value of N-Cα-C angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 107
+            vmax: 115
+          zticks: [108,110,112,114]
+          zlabel: N-Cα-C (°)
+      angle_BAC:
+        help: Plot average value of B-Cα-C angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 109
+            vmax: 117
+          zticks: [110,112,114,116]
+          zlabel: B-Cα-C (°)
+      angle_ACO:
+        help: Plot average value of Cα-C-O angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 116
+            vmax: 124
+          zticks: [117,119,121,123]
+          zlabel: Cα-C-O (°)
+      angle_ACN:
+        help: Plot average value of Cα-C-N angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 114
+            vmax: 122
+          zticks: [115,117,119,121]
+          zlabel: Cα-C-N (°)
+      angle_OCN:
+        help: Plot average value of OCN angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 118
+            vmax: 126
+          zticks: [119,121,123,125]
+          zlabel: O-C-N (°)
+      angle_OCN:
+        help: Plot average value of OCN angle as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 118
+            vmax: 126
+          zticks: [119, 121, 123, 125]
+          zlabel: O-C-N (°)
       diff:
         help: Plot difference between two datasets
         draw_dataset:
@@ -167,6 +237,7 @@ class RamachandranFigureManager(FigureManager):
           right:      0.25
           bottom:     0.40
           sub_height: 1.59
+          hspace:     0.10
           top:        0.25
         draw_subplot:
           legend: False
@@ -177,6 +248,14 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           label_kw:
             fp: 8r
+          ztick_fp: 8r
+          zlabel_fp: 10b
+          ztick_params:
+            pad: 2
+            bottom: off
+            top: off
+            left: off
+            right: off
       notebook_2:
         help: Two adjacent plots
         extends: notebook
@@ -773,8 +852,8 @@ class RamachandranFigureManager(FigureManager):
     @manage_defaults_presets()
     @manage_kwargs()
     def draw_dataset(self, subplot, label=None, kind="wham",
-        nan_to_max=True, heatmap=True, contour=True, mask=False,
-        outline=False, plot=False, verbose=1, debug=0, **kwargs):
+        nan_to_max=True, heatmap=True, colorbar=False, contour=True,
+        mask=False, outline=False, plot=False, verbose=1, debug=0, **kwargs):
         """
         """
         from copy import copy
@@ -782,6 +861,7 @@ class RamachandranFigureManager(FigureManager):
         import numpy as np
         import six
         from .myplotspec import get_color
+        from .myplotspec.axes import set_colorbar
         from .AnalyticalDataset import AnalyticalDataset
         from .CDLDataset import CDLDataset
         from .DiffDataset import DiffDataset
@@ -821,8 +901,13 @@ class RamachandranFigureManager(FigureManager):
                 if nan_to_max:
                     heatmap_dist[np.isnan(heatmap_dist)] = np.nanmax(
                       heatmap_dist)
-                subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
+                pcolormesh=subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
                   heatmap_dist.T, zorder=0.1, **heatmap_kw)
+                if colorbar:
+                    if not hasattr(subplot, "_mps_partner_subplot"):
+                        from .myplotspec.axes import add_partner_subplot
+                        add_partner_subplot(subplot, **kwargs)
+                    set_colorbar(subplot, pcolormesh, **kwargs)
 
         # Draw contour
         if contour:
@@ -905,7 +990,7 @@ class RamachandranFigureManager(FigureManager):
 
         if label is not None:
             from .myplotspec.text import set_text
-            label_kw = kwargs.get("label_kw", {}).copy()
+            label_kw = kwargs.get("label_kw", {})
             set_text(subplot, s=label, **label_kw)
 
     def main(self):
