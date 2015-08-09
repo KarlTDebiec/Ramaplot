@@ -43,7 +43,7 @@ and standard deviations of backbone bond lengths and angles as a function of Φ
 and Ψ, measured from solved structures. The dataset is divided into 8 classes:
 isoleucine/valine, glycine, proline, and all other residues, each leading into
 proline or residues other than proline. This dataset may be obtained from
-`<http://dunbrack.fccc.edu/nmhrcm>`_. (Work in progress)
+`<http://dunbrack.fccc.edu/nmhrcm>`_.
 
 `Berkholz, Donald S., Shapovalov, Maxim V., Dunbrack Jr. Roland L., Karplus, P.
 Andrew. Conformation Dependence of Backbone Geometry in Proteins. Structure.

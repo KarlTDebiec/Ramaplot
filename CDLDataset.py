@@ -246,4 +246,3 @@ class CDLDataset(object):
                                   y_centers.size + 1)
         self.dist = dist
         self.mask = np.ma.masked_where(mask, np.ones_like(dist))
-        print(np.min(dist), np.max(dist))

@@ -124,9 +124,9 @@ class RamachandranFigureManager(FigureManager):
         extends: angle
         draw_dataset:
           heatmap_kw:
-            vmin: 119
+            vmin: 118
             vmax: 127
-          zticks: [120,122,124,126]
+          zticks: [119,121,123,125]
           zlabel: C-N-Cα (°)
       angle_NAB:
         help: Plot average value of N-Cα-Cβ angle as a function of φ,ψ
@@ -134,17 +134,27 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           heatmap_kw:
             vmin: 108
-            vmax: 116
-          zticks: [109,111,113,115]
+            vmax: 115
+          zticks: [109,110,111,112,113,114]
+          zlabel: N-Cα-Cβ (°)
+      angle_NAB_extended:
+        help: Plot average value of N-Cα-Cβ angle as a function of φ,ψ; range
+              extended to support proline's smaller angle
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 101
+            vmax: 115
+          zticks: [102,105,108,111,114]
           zlabel: N-Cα-Cβ (°)
       angle_NAC:
         help: Plot average value of N-Cα-C angle as a function of φ,ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
-            vmin: 107
-            vmax: 115
-          zticks: [108,110,112,114]
+            vmin: 106
+            vmax: 117
+          zticks: [107,109,111,113,115]
           zlabel: N-Cα-C (°)
       angle_BAC:
         help: Plot average value of B-Cα-C angle as a function of φ,ψ
@@ -152,7 +162,7 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           heatmap_kw:
             vmin: 109
-            vmax: 117
+            vmax: 118
           zticks: [110,112,114,116]
           zlabel: B-Cα-C (°)
       angle_ACO:
@@ -160,18 +170,18 @@ class RamachandranFigureManager(FigureManager):
         extends: angle
         draw_dataset:
           heatmap_kw:
-            vmin: 116
+            vmin: 117
             vmax: 124
-          zticks: [117,119,121,123]
+          zticks: [118,120,122]
           zlabel: Cα-C-O (°)
       angle_ACN:
         help: Plot average value of Cα-C-N angle as a function of φ,ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
-            vmin: 114
+            vmin: 113
             vmax: 122
-          zticks: [115,117,119,121]
+          zticks: [114,116,118,120]
           zlabel: Cα-C-N (°)
       angle_OCN:
         help: Plot average value of OCN angle as a function of φ,ψ
@@ -187,9 +197,9 @@ class RamachandranFigureManager(FigureManager):
         extends: angle
         draw_dataset:
           heatmap_kw:
-            vmin: 118
-            vmax: 126
-          zticks: [119, 121, 123, 125]
+            vmin: 120
+            vmax: 125
+          zticks: [121,122,123,124]
           zlabel: O-C-N (°)
       diff:
         help: Plot difference between two datasets
