@@ -31,6 +31,9 @@ class RamachandranFigureManager(FigureManager):
         draw_figure:
           subplot_kw:
             autoscale_on: False
+          multiplot: False
+          multi_xticklabels: [-180,-90,0,90,180]
+          multi_yticklabels: [-180,-90,0,90,180]
         draw_subplot:
           xlabel: '$\\Phi$'
           xticks: [-180,-90,0,90,180]
@@ -172,7 +175,7 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 117
             vmax: 124
-          zticks: [118,120,122]
+          zticks: [118,119,120,121,122,123]
           zlabel: Cα-C-O (°)
       angle_ACN:
         help: Plot average value of Cα-C-N angle as a function of φ,ψ
