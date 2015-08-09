@@ -48,7 +48,7 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           heatmap: True
           heatmap_kw:
-            cmap: hot
+            cmap: afmhot
             edgecolors: none
             rasterized: True
             vmin: 0
@@ -58,14 +58,14 @@ class RamachandranFigureManager(FigureManager):
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
-          mask: True
+          mask: False
           mask_kw:
             cmap: Greys_r
             edgecolors: none
             rasterized: True
             vmin: 0
             vmax: 1
-          outline: True
+          outline: False
           outline_kw:
             color: black
           label_kw:
@@ -116,7 +116,7 @@ class RamachandranFigureManager(FigureManager):
         help: Plot average value of a backbone angle as a function of φ,ψ
         draw_dataset:
           heatmap_kw:
-            cmap: seismic
+            cmap: RdBu
             vmin: 110
             vmax: 130
           contour: False
@@ -210,7 +210,7 @@ class RamachandranFigureManager(FigureManager):
           kind: diff
           max_fe: 5
           heatmap_kw:
-            cmap: seismic
+            cmap: RdBu
             vmin: -5
             vmax:  5
           contour_kw:
