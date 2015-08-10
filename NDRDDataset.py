@@ -66,7 +66,8 @@ class NDRDDataset(object):
             cache_message (str): message to be used when reloading
               previously-loaded dataset
         """
-        return "previously loaded from '{0}'".format(cache_key[1])
+        return "previously loaded '{0}' from '{1}'".format(cache_key[2],
+          cache_key[1])
 
     @staticmethod
     def process_selection_arg(selection):
