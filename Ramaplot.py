@@ -210,7 +210,7 @@ class RamachandranFigureManager(FigureManager):
           kind: diff
           max_fe: 5
           heatmap_kw:
-            cmap: RdBu
+            cmap: RdBu_r
             vmin: -5
             vmax:  5
           contour_kw:
