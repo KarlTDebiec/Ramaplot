@@ -160,14 +160,14 @@ class RamachandranFigureManager(FigureManager):
           zticks: [107,109,111,113,115]
           zlabel: N-Cα-C (°)
       angle_BAC:
-        help: Plot average B-Cα-C angle as a function of φ,ψ
+        help: Plot average Cβ-Cα-C angle as a function of φ,ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
             vmin: 109
             vmax: 118
           zticks: [110,112,114,116]
-          zlabel: B-Cα-C (°)
+          zlabel: Cβ-Cα-C (°)
       angle_ACO:
         help: Plot average Cα-C-O angle as a function of φ,ψ
         extends: angle
