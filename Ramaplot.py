@@ -68,6 +68,13 @@ class RamachandranFigureManager(FigureManager):
           outline: False
           outline_kw:
             color: black
+          plot: False
+          plot_kw:
+            marker: 'o'
+            ls: None
+            mew: 0
+            mfc: [0.5,0.5,0.5]
+            ms: 0.5
           label_kw:
             x: 165
             y: -170
