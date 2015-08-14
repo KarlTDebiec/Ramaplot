@@ -23,7 +23,7 @@ class PDistDataset(object):
 
     @staticmethod
     def get_cache_key(infile, loop_edges=True, mode="hist", bins=72,
-        max_fe=None, *args, **kwargs):
+        phikey="phi", psikey="psi", max_fe=None, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -39,7 +39,7 @@ class PDistDataset(object):
             kde_kw = kwargs.get("kde_kw", {})
             bandwidth = kde_kw.get("bandwidth", kwargs.get("bandwidth", 5))
             return (PDistDataset, expandvars(infile), loop_edges, mode, bins,
-                    bandwidth, max_fe)
+                    phikey, psikey, bandwidth, max_fe)
 
     @staticmethod
     def get_cache_message(cache_key):
@@ -58,7 +58,8 @@ class PDistDataset(object):
         return "previously loaded from '{0}'".format(cache_key[1])
 
     def __init__(self, infile, loop_edges=True, mode="hist",
-        bins=72, max_fe=None, verbose=1, debug=0, **kwargs):
+        bins=72, phikey="phi", psikey="psi", max_fe=None, verbose=1, debug=0,
+        **kwargs):
         """
         """
         from copy import copy
@@ -77,7 +78,7 @@ class PDistDataset(object):
             hist_kw["bins"] = hist_kw.get("bins", bins)
 
             count, x_bins, y_bins = np.histogram2d(
-              dist["phi"], dist["psi"], **hist_kw)
+              dist[phikey], dist[psikey], **hist_kw)
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
@@ -100,7 +101,7 @@ class PDistDataset(object):
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
             xg, yg = np.meshgrid(x_centers, y_centers)
             xyg = np.vstack([yg.ravel(), xg.ravel()]).T
-            samples = np.column_stack((dist["phi"], dist["psi"]))
+            samples = np.column_stack((dist[phikey], dist[psikey]))
 
             kde = KernelDensity(**kde_kw)
             kde.fit(samples)
@@ -141,7 +142,7 @@ class PDistDataset(object):
             z_width = np.mean(z_centers[1:] - z_centers[:-1])
             xg, yg, zg = np.meshgrid(x_centers, y_centers, z_centers)
             xyzg = np.vstack([yg.ravel(), xg.ravel(), zg.ravel()]).T
-            samples = np.column_stack((dist["phi"], dist["psi"], z))
+            samples = np.column_stack((dist[phikey], dist[psikey], z))
 
             kde = KernelDensity(**kde_kw)
             kde.fit(samples)
@@ -154,21 +155,14 @@ class PDistDataset(object):
                 z_index = np.where(z_centers == z)[0][0]
                 pdist[x_index, y_index, z_index] = p
             pdist /= np.sum(pdist)
-            print(pdist, pdist.shape, pdist.sum(), pdist.min(), pdist.max())
             a = np.sum(pdist, axis=2)[:,:,np.newaxis]
-            print(a, a.shape, a.sum(), a.min(), a.max())
             b = pdist / a
-            print(b, b.shape, b.sum(), b.min(), b.max())
             c = np.zeros_like(b) * np.nan
             for i in range(b.shape[0]):
                 for j in range(b.shape[1]):
                     c[i,j] = b[i,j] * z_centers
-            print(c, c.shape, c.sum(), c.min(), c.max())
             d = np.sum(c, axis=2)
-            print(d, d.shape, d.sum(), d.min(), d.max())
             free_energy = d * (3*height) / 360 * 627.503
-            print(free_energy, free_energy.shape, free_energy.sum(),
-              free_energy.min(), free_energy.max())
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
             print(free_energy, free_energy.shape, free_energy.sum(),
@@ -206,8 +200,8 @@ class PDistDataset(object):
                                    y_centers[-1] + y_width / 2,
                                    y_centers.size + 1)
         self.dist = free_energy
-        self.x = dist["phi"]
-        self.y = dist["psi"]
+        self.x = dist[phikey]
+        self.y = dist[psikey]
 
         # Prepare mask
         if max_fe is not None:
