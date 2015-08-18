@@ -46,29 +46,36 @@ class RamachandranFigureManager(FigureManager):
           y2label_kw:
             rotation: 270
         draw_dataset:
-          heatmap: True
           heatmap_kw:
             cmap: afmhot
             edgecolors: none
             rasterized: True
             vmin: 0
             vmax: 5
-          contour: True
+          partner_kw:
+            position: right
+          colorbar_kw:
+            position: right
+            orientation: vertical
+            zticks: [0,1,2,3,4,5]
+            ztick_params:
+              bottom: off
+              top: off
+              left: off
+              right: off
+            zlabel: '$\Delta G\ (kcal/mol)$'
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
-          mask: False
           mask_kw:
             cmap: Greys_r
             edgecolors: none
             rasterized: True
             vmin: 0
             vmax: 1
-          outline: False
           outline_kw:
             color: black
-          plot: False
           plot_kw:
             marker: 'o'
             ls: None
@@ -83,7 +90,7 @@ class RamachandranFigureManager(FigureManager):
               va: bottom
               bbox:
                 facecolor: white
-                alpha: 0.8
+                alpha: 0.9
                 lw: 0
     """
 
@@ -136,8 +143,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 118
             vmax: 127
-          zticks: [119,121,123,125]
-          zlabel: C-N-Cα (°)
+          colorbar_kw:
+            zticks: [119,121,123,125]
+            zlabel: C-N-Cα (°)
       angle_NAB:
         help: Plot average N-Cα-Cβ angle as a function of φ,ψ
         extends: angle
@@ -145,8 +153,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 108
             vmax: 115
-          zticks: [109,110,111,112,113,114]
-          zlabel: N-Cα-Cβ (°)
+          colorbar_kw:
+            zticks: [109,110,111,112,113,114]
+            zlabel: N-Cα-Cβ (°)
       angle_NAB_extended:
         help: Plot average N-Cα-Cβ angle as a function of φ,ψ; range
               extended to support proline's smaller angle
@@ -155,8 +164,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 101
             vmax: 115
-          zticks: [102,105,108,111,114]
-          zlabel: N-Cα-Cβ (°)
+          colorbar_kw:
+            zticks: [102,105,108,111,114]
+            zlabel: N-Cα-Cβ (°)
       angle_NAC:
         help: Plot average N-Cα-C angle as a function of φ,ψ
         extends: angle
@@ -164,8 +174,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 106
             vmax: 117
-          zticks: [107,109,111,113,115]
-          zlabel: N-Cα-C (°)
+          colorbar_kw:
+            zticks: [107,109,111,113,115]
+            zlabel: N-Cα-C (°)
       angle_BAC:
         help: Plot average Cβ-Cα-C angle as a function of φ,ψ
         extends: angle
@@ -173,8 +184,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 109
             vmax: 118
-          zticks: [110,112,114,116]
-          zlabel: Cβ-Cα-C (°)
+          colorbar_kw:
+            zticks: [110,112,114,116]
+            zlabel: Cβ-Cα-C (°)
       angle_ACO:
         help: Plot average Cα-C-O angle as a function of φ,ψ
         extends: angle
@@ -182,8 +194,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 117
             vmax: 124
-          zticks: [118,119,120,121,122,123]
-          zlabel: Cα-C-O (°)
+          colorbar_kw:
+            zticks: [118,119,120,121,122,123]
+            zlabel: Cα-C-O (°)
       angle_ACN:
         help: Plot average Cα-C-N angle as a function of φ,ψ
         extends: angle
@@ -191,8 +204,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 113
             vmax: 122
-          zticks: [114,116,118,120]
-          zlabel: Cα-C-N (°)
+          colorbar_kw:
+            zticks: [114,116,118,120]
+            zlabel: Cα-C-N (°)
       angle_OCN:
         help: Plot average OCN angle as a function of φ,ψ
         extends: angle
@@ -200,8 +214,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 118
             vmax: 126
-          zticks: [119,121,123,125]
-          zlabel: O-C-N (°)
+          colorbar_kw:
+            zticks: [119,121,123,125]
+            zlabel: O-C-N (°)
       angle_OCN:
         help: Plot average OCN angle as a function of φ,ψ
         extends: angle
@@ -209,8 +224,9 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             vmin: 120
             vmax: 125
-          zticks: [121,122,123,124]
-          zlabel: O-C-N (°)
+          colorbar_kw:
+            zticks: [121,122,123,124]
+            zlabel: O-C-N (°)
       diff:
         help: Plot difference between two datasets
         draw_dataset:
@@ -267,16 +283,13 @@ class RamachandranFigureManager(FigureManager):
           y2label_kw:
             labelpad: 6
         draw_dataset:
+          colorbar_kw:
+            ztick_fp: 8r
+            zlabel_fp: 10b
+            ztick_params:
+              pad: 2
           label_kw:
             fp: 8r
-          ztick_fp: 8r
-          zlabel_fp: 10b
-          ztick_params:
-            pad: 2
-            bottom: off
-            top: off
-            left: off
-            right: off
       presentation_wide_6:
         help: Six plots for 16:9 presentation (width = 19.20", height =
               10.80")
@@ -339,7 +352,7 @@ class RamachandranFigureManager(FigureManager):
         if dataset is None:
             return
 
-        # Draw heatmap
+        # Draw heatmap and colorbar
         if heatmap:
             if not (hasattr(dataset, "dist") and hasattr(dataset, "x_bins")
             and     hasattr(dataset, "y_bins")):
@@ -352,7 +365,7 @@ class RamachandranFigureManager(FigureManager):
                 if nan_to_max:
                     heatmap_dist[np.isnan(heatmap_dist)] = np.nanmax(
                       heatmap_dist)
-                pcolormesh=subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
+                pcolormesh = subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
                   heatmap_dist.T, zorder=0.1, **heatmap_kw)
                 if colorbar:
                     if not hasattr(subplot, "_mps_partner_subplot"):
