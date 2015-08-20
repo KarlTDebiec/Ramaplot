@@ -124,11 +124,13 @@ class PDistDataset(object):
             z_key = kwargs.get("z_key", "energy")
             # Only a single bandwidth is supported; scale z
             #   dimension to span range of 120-240
+            scale_range = 340
             z = copy(dist[z_key])
             z -= z.min()        # shift bottom to 0
-            height = z.max()
-            z += height             # shift upward by range
-            z *= 360 / (3*height)   # Scale range to be from 120-240
+            z_range = z.max()     # save max
+
+            z *= (scale_range / z_range)
+            z += (360 - scale_range) / 2    # Give buffer on top and bottom
 
             x_bins = np.linspace(-180, 180, bins+1)
             y_bins = np.linspace(-180, 180, bins+1)
@@ -153,19 +155,21 @@ class PDistDataset(object):
                 y_index = np.where(y_centers == psi)[0][0]
                 z_index = np.where(z_centers == z)[0][0]
                 pdist[x_index, y_index, z_index] = p
-            pdist /= np.sum(pdist)
-            a = np.sum(pdist, axis=2)[:,:,np.newaxis]
-            b = pdist / a
+            pdist /= np.sum(pdist)                    # Normalize whole thing
+            a = np.sum(pdist, axis=2)[:,:,np.newaxis] # Total P in each x/y bin
+            b = pdist / a                             # Normalize each x/y bin
             c = np.zeros_like(b) * np.nan
             for i in range(b.shape[0]):
                 for j in range(b.shape[1]):
-                    c[i,j] = b[i,j] * z_centers
-            d = np.sum(c, axis=2)
-            free_energy = d * (3*height) / 360 * 627.503
+                    c[i,j] = b[i,j] * z_centers # Scale each z bin by weight
+            free_energy = np.sum(c, axis=2)     # Weighted average
+            free_energy -= (360 - scale_range) / 2  # Shift back down
+            free_energy *= (z_range / scale_range) # Back from degrees to E
+            free_energy *= 627.503              # Convert to kcal/mol
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
-            print(free_energy, free_energy.shape, free_energy.sum(),
-              free_energy.min(), free_energy.max())
+#            print(free_energy, free_energy.shape, free_energy.sum(),
+#              free_energy.min(), free_energy.max())
     
         if loop_edges:
             x_centers = np.concatenate(([x_centers[0]  - x_width],
