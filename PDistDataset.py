@@ -57,9 +57,8 @@ class PDistDataset(object):
         """
         return "previously loaded from '{0}'".format(cache_key[1])
 
-    def __init__(self, infile, loop_edges=True, mode="hist",
-        bins=72, phikey="phi", psikey="psi", max_fe=None, verbose=1, debug=0,
-        **kwargs):
+    def __init__(self, infile, loop_edges=True, mode="hist", bins=72,
+        phikey="phi", psikey="psi", max_fe=None, verbose=1, debug=0, **kwargs):
         """
         """
         from copy import copy

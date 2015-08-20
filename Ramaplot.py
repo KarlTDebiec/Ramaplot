@@ -57,13 +57,13 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             position: right
             orientation: vertical
-            zticks: [0,1,2,3,4,5]
-            ztick_params:
+            ticks: [0,1,2,3,4,5]
+            tick_params:
               bottom: off
               top: off
               left: off
               right: off
-            zlabel: '$\Delta G\ (kcal/mol)$'
+            label: '$\Delta G\ (kcal/mol)$'
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
@@ -106,9 +106,7 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           heatmap: True
           heatmap_kw:
-            cmap: hot
-            edgecolors: none
-            rasterized: True
+            cmap: afmhot
             vmin: 0
             vmax: 5
           contour: True
@@ -117,17 +115,23 @@ class RamachandranFigureManager(FigureManager):
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
           mask: True
-          mask_kw:
-            cmap: Greys_r
-            edgecolors: none
-            rasterized: True
+          outline: False
+      sampling:
+        help: Plot sampling as a function of φ,ψ
+        draw_dataset:
+          heatmap: False
+          heatmap_kw:
+            cmap: afmhot_r
             vmin: 0
-            vmax: 1
+            vmax: 5
+          contour: False
+          mask: True
+          mask_kw:
+            cmap: Greys
           outline: True
-          outline_kw:
-            color: black
+          plot: True
       angle:
-        help: Plot average value of a backbone angle as a function of φ,ψ
+        help: Plot average value of an angle as a function of φ,ψ
         draw_dataset:
           heatmap_kw:
             cmap: RdBu
