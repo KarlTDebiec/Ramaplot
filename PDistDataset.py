@@ -74,10 +74,13 @@ class PDistDataset(object):
 
         if mode == "hist":
             hist_kw = copy(kwargs.get("hist_kw", {}))
-            hist_kw["bins"] = hist_kw.get("bins", bins)
+            if "bins" in hist_kw:
+                bins = hist_kw.pop("bins")
+            if isinstance(bins, int):
+                bins = np.linspace(-180, 180, bins)
 
             count, x_bins, y_bins = np.histogram2d(
-              dist[phikey], dist[psikey], **hist_kw)
+              dist[phikey], dist[psikey], bins=bins, **hist_kw)
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
@@ -194,8 +197,6 @@ class PDistDataset(object):
         self.y_centers = y_centers
         self.x_width = x_width
         self.y_width = y_width
-        self.x_bins = x_bins
-        self.y_bins = y_bins
         self.x_bins  = np.linspace(x_centers[0]  - x_width / 2,
                                    x_centers[-1] + x_width / 2,
                                    x_centers.size + 1)
