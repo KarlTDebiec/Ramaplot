@@ -135,7 +135,10 @@ class PDistDataset(object):
             z *= (scale_range / z_range)
             z += (360 - scale_range) / 2    # Give buffer on top and bottom
 
-            x_bins = np.linspace(-180, 180, bins+1)
+            if kwargs.get("left_half", False):
+                x_bins = np.linspace(-180, 0, (bins/2)+1)
+            else:
+                x_bins = np.linspace(-180, 180, bins+1)
             y_bins = np.linspace(-180, 180, bins+1)
             z_bins = np.linspace(   0, 360, bins+1)
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
@@ -145,7 +148,7 @@ class PDistDataset(object):
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
             z_width = np.mean(z_centers[1:] - z_centers[:-1])
             xg, yg, zg = np.meshgrid(x_centers, y_centers, z_centers)
-            xyzg = np.vstack([yg.ravel(), xg.ravel(), zg.ravel()]).T
+            xyzg = np.vstack([xg.ravel(), yg.ravel(), zg.ravel()]).T
             samples = np.column_stack((dist[phikey], dist[psikey], z))
 
             kde = KernelDensity(**kde_kw)
