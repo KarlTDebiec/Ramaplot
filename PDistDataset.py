@@ -60,6 +60,23 @@ class PDistDataset(object):
     def __init__(self, infile, loop_edges=True, mode="hist", bins=72,
         phikey="phi", psikey="psi", max_fe=None, verbose=1, debug=0, **kwargs):
         """
+        Arguments:
+          infile (str): Path to text input file, may contain environment
+          loop_edges (bool):
+          mode:
+          bins:
+          phikey:
+          psikey:
+          max_fe:
+          verbose (int): Level of verbose output
+          debug (int): Level of debug output
+
+        .. todo:
+            - improve bins support
+            - auto-detect phikey and psikey
+            - support variable bandwidth
+            - PERIODICITY
+            - VARIABLE WIDTH
         """
         from copy import copy
         from os.path import expandvars
