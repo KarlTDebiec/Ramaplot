@@ -84,12 +84,13 @@ class CDLDataset(object):
               regex (Pattern): Compiled regular expression
             """
             return re.compile(regex.format(
-                dataset = "(NonPGIV_nonxpro|IleVal_nonxpro"
+                dataset = "(All|All_nonxpro|All_xpro"
+                          "|NonPGIV_nonxpro|IleVal_nonxpro"
                           "|Gly_nonxpro|Pro_nonxpro"
                           "|NonPGIV_xpro|IleVal_xpro"
                           "|Gly_xpro|Pro_xpro)",
                 field = "(CNA|NAB|NAC|BAC|ACO|ACN|OCN"
-                              "|CN|NA|AB|AC|CO)",
+                              "|CN|NA|AB|AC|CO|W)",
                 whitespace = "\s+"), re.IGNORECASE)
 
         re_dataset = format_regex("^(?P<dataset>{dataset})$")
