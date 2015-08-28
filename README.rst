@@ -39,16 +39,23 @@ Model. PLoS Computational Biology. 2010. 6. e1000763.
 Conformation-Dependent Library
 ______________________________
 The Conformation-Dependent Library (CDL) dataset is a collection of averages
-and standard deviations of backbone bond lengths and angles as a function of Φ
-and Ψ, measured from solved structures. The dataset is divided into 8 classes:
-isoleucine/valine, glycine, proline, and all other residues, each leading into
-proline or residues other than proline. This dataset may be obtained from
-`<http://dunbrack.fccc.edu/nmhrcm>`_.
+and standard deviations of backbone bond lengths, angles, and ω as a function
+of Φ and Ψ, measured from solved structures. The dataset is divided into 8
+classes: isoleucine/valine, glycine, proline, and all other residues, each
+leading into proline or residues other than proline. This dataset may be
+obtained from `<http://dunbrack.fccc.edu/nmhrcm>`_ and
+`<http://dunbrack.fccc.edu/omega>`_.
 
 `Berkholz, Donald S., Shapovalov, Maxim V., Dunbrack Jr. Roland L., Karplus, P.
 Andrew. Conformation Dependence of Backbone Geometry in Proteins. Structure.
 2009. 17. 1316-1325.
 <http://www.sciencedirect.com/science/article/pii/S0969212609003359>`_
+
+`Berkholz, Donald S., Driggers, Camden M., Shapovalov, Maxim V., Dunbrack Jr.,
+Roland L., Karplus, P. Andrew. Nonplanar Peptide Bonds in Proteins are Common
+and Conserved but not Biased Toward Active Sites. Proceedings of the National
+Acadedemy of the Sciences of the United States of America. 2012. 109. 449-453.
+<http://www.pnas.org/content/109/2/449>`_
 
 Simulation
 ~~~~~~~~~~

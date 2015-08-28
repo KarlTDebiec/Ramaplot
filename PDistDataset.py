@@ -98,6 +98,7 @@ class PDistDataset(object):
 
             count, x_bins, y_bins = np.histogram2d(
               dist[phikey], dist[psikey], bins=bins, **hist_kw)
+            print(np.where(count == 0)[0].size)
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])

@@ -21,8 +21,15 @@ class CDLDataset(object):
       Berkholz, Donald S., Shapovalov, Maxim V., Dunbrack Jr. Roland L.,
       Karplus, P. Andrew. Conformation Dependence of Backbone Geometry
       in Proteins. Structure. 2009. 17. 1316-1325.
+    and:
+      Berkholz, Donald S., Driggers, Camden M., Shapovalov, Maxim V., Dunbrack
+      Jr., Roland L., Karplus, P. Andrew. Nonplanar Peptide Bonds in Proteins
+      are Common and Conserved but not Biased Toward Active Sites. Proceedings
+      of the National Acadedemy of the Sciences of the United States of
+      America. 2012. 109. 449-453.
     Data for use with this class may be obtained from
-    <http://dunbrack.fccc.edu/nmhrcm/>_
+    `<http://dunbrack.fccc.edu/nmhrcm>`_ and
+    `<http://dunbrack.fccc.edu/omega>`_.
     """
 
     type_error_text = ("NAY")
