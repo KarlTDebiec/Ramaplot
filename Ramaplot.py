@@ -82,6 +82,7 @@ class RamachandranFigureManager(FigureManager):
             mew: 0
             mfc: [0.5,0.5,0.5]
             ms: 0.5
+            rasterized: True
           label_kw:
             x: 165
             y: -170
