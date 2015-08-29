@@ -129,7 +129,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           mask_kw:
             cmap: Greys
-          outline: True
+          outline: False
           plot: True
       angle:
         help: Plot average value of an angle as a function of φ,ψ
