@@ -34,7 +34,7 @@ class PDistDataset(object):
 
         if mode == "hist":
             return (PDistDataset, expandvars(infile), loop_edges, mode, bins,
-                    max_fe)
+                    phikey, psikey, max_fe)
         elif mode == "kde":
             kde_kw = kwargs.get("kde_kw", {})
             bandwidth = kde_kw.get("bandwidth", kwargs.get("bandwidth", 5))
