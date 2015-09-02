@@ -351,12 +351,9 @@ class RamachandranFigureManager(FigureManager):
         dataset_kw = kwargs.get("dataset_kw", kwargs)
         if "infile" in kwargs:
             dataset_kw["infile"] = kwargs["infile"]
-        try:
-            dataset = self.load_dataset(dataset_classes[kind],
-                        dataset_classes=dataset_classes,
-                        verbose=verbose, debug=debug, **dataset_kw)
-        except TypeError:
-            return
+        dataset = self.load_dataset(dataset_classes[kind],
+                    dataset_classes=dataset_classes,
+                    verbose=verbose, debug=debug, **dataset_kw)
 
         # Draw heatmap and colorbar
         if heatmap:
