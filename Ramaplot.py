@@ -354,6 +354,8 @@ class RamachandranFigureManager(FigureManager):
         dataset = self.load_dataset(dataset_classes[kind],
                     dataset_classes=dataset_classes,
                     verbose=verbose, debug=debug, **dataset_kw)
+        if dataset is None:
+            return
 
         # Draw heatmap and colorbar
         if heatmap:
