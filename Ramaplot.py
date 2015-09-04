@@ -57,13 +57,16 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             position: right
             orientation: vertical
-            ticks: [0,1,2,3,4,5]
-            tick_params:
+            zticks: [0,1,2,3,4,5]
+            ztick_params:
               bottom: off
               top: off
               left: off
               right: off
-            label: '$\Delta G\ (kcal/mol)$'
+            zlabel: '$\Delta G\ (kcal/mol)$'
+            zlabel_kw:
+                rotation: 270
+                labelpad: 30
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
@@ -89,10 +92,7 @@ class RamachandranFigureManager(FigureManager):
             text_kw:
               ha: right
               va: bottom
-              bbox:
-                facecolor: white
-                alpha: 0.9
-                lw: 0
+            border_lw: 3
     """
 
     available_presets = """
@@ -248,8 +248,9 @@ class RamachandranFigureManager(FigureManager):
       image:
         help: Plot image of a Ramachandran plot, typically from a publication
         draw_dataset:
+          kind: image
           heatmap_kw:
-            cmap: Greys
+            cmap: Greys_r
             vmin: 0
             vmax: 1
           contour: False
@@ -269,7 +270,6 @@ class RamachandranFigureManager(FigureManager):
           ylabel_kw:
             rotation: horizontal
       notebook:
-        help: Single plot for notebook (width ≤ 6.5", height ≤ 9")
         inherits: notebook
         draw_figure:
           left:       0.50
@@ -294,21 +294,18 @@ class RamachandranFigureManager(FigureManager):
             ztick_params:
               pad: 2
           label_kw:
-            fp: 8r
-      presentation_wide_6:
-        help: Six plots for 16:9 presentation (width = 19.20", height =
-              10.80")
+            fp: 10b
+            border_lw: 3
+      presentation_wide:
         inherits: presentation_wide
         draw_figure:
-          ncols: 3
-          nrows: 2
-          multiplot: True
           left:       1.50
           sub_width:  3.40
           wspace:     0.30
           sub_height: 3.40
           hspace:     0.30
           bottom:     1.20
+          multiplot: True
         draw_subplot:
           legend: False
           ylabel_kw:
@@ -316,6 +313,20 @@ class RamachandranFigureManager(FigureManager):
             labelpad: 10
           y2label_kw:
             labelpad: 20
+        draw_dataset:
+          contour_kw:
+            linewidths: 2
+          plot_kw:
+            ms: 2
+          colorbar_kw:
+            ztick_fp:  20r
+            zlabel_fp: 24b
+            ztick_params:
+              pad: 5
+            zlw: 3
+          label_kw:
+            fp: 24b
+            border_lw: 3
     """
 
     @manage_defaults_presets()
