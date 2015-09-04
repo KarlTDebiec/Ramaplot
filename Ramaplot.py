@@ -403,8 +403,13 @@ class RamachandranFigureManager(FigureManager):
                 elif "levels" not in contour_kw:
                     contour_kw["levels"] = range(0,
                       int(np.ceil(np.nanmax(dataset.dist))))
-                subplot.contour(dataset.x_centers, dataset.y_centers,
+                contour = subplot.contour(dataset.x_centers, dataset.y_centers,
                   dataset.dist.T, zorder=0.2, **contour_kw)
+                for collection in contour.collections:
+                    for path in collection.get_paths():
+                        if np.all(path.vertices[0] == path.vertices[-1]):
+                            path.vertices = np.append(path.vertices,
+                              [path.vertices[1]], axis=0)
 
         # Draw mask
         if mask:
