@@ -65,8 +65,7 @@ class RamachandranFigureManager(FigureManager):
               right: off
             zlabel: '$\Delta G\ (kcal/mol)$'
             zlabel_kw:
-                rotation: 270
-                labelpad: 30
+              rotation: 270
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
@@ -293,6 +292,8 @@ class RamachandranFigureManager(FigureManager):
             zlabel_fp: 10b
             ztick_params:
               pad: 2
+            zlabel_kw:
+              labelpad: 14
           label_kw:
             fp: 10b
             border_lw: 3
@@ -324,6 +325,8 @@ class RamachandranFigureManager(FigureManager):
             ztick_params:
               pad: 5
             zlw: 3
+            zlabel_kw:
+              labelpad: 30
           label_kw:
             fp: 24b
             border_lw: 3
