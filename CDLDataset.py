@@ -8,6 +8,11 @@
 #   BSD license. See the LICENSE file for details.
 """
 Manages Conformation-Dependent Library datasets.
+
+.. todo
+    - Write type_error_text
+    - Improve error checking
+    - Add bond presets
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
@@ -74,6 +79,10 @@ class CDLDataset(object):
 
         Returns:
           out_selection (tuple): processed selections
+
+        .. todo:
+          - Check that if dataset is All, All_nonxpro, or All_xpro,
+            field is omega
         """
         import re
         import six
@@ -161,19 +170,23 @@ class CDLDataset(object):
 
         s = StringIO()
         with open(infile) as f:
+            omega = True if "omega" in f.readline() else False
             for line in f:
                 if line.startswith(selection):
                     s.write(line)
         s.seek(0)
 
-        dataset = pandas.read_csv(s, delim_whitespace=True, header=None,
-          usecols=range(1,29), names=["phi", "psi", "mode", "N", "CNA mean",
-          "CNA sd", "NAB mean", "NAB sd", "NAC mean", "NAC sd", "BAC mean",
-          "BAC sd", "ACO mean", "ACO sd", "ACN mean", "ACN sd", "OCN mean",
-          "OCN sd", "CN mean", "CN sd", "NA mean", "NA sd", "AB mean", "AB sd",
-          "AC mean", "AC sd", "CO mean", "CO sd"])
-
-        return dataset
+        if omega:
+            return pandas.read_csv(s, delim_whitespace=True, header=None,
+              usecols=range(1,7), names=["phi", "psi", "mode", "N",
+              "W mean", "W sd", ])
+        else:
+            return pandas.read_csv(s, delim_whitespace=True, header=None,
+              usecols=range(1,29), names=["phi", "psi", "mode", "N",
+              "CNA mean", "CNA sd", "NAB mean", "NAB sd", "NAC mean", "NAC sd",
+              "BAC mean", "BAC sd", "ACO mean", "ACO sd", "ACN mean", "ACN sd",
+              "OCN mean", "OCN sd", "CN mean",  "CN sd",  "NA mean",  "NA sd",
+              "AB mean",  "AB sd",  "AC mean",  "AC sd",  "CO mean",  "CO sd"])
 
     def __init__(self, infile, selection="NonPGIV_nonxpro", loop_edges=True,
         **kwargs):

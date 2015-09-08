@@ -133,6 +133,7 @@ class RamachandranFigureManager(FigureManager):
       angle:
         help: Plot average value of an angle as a function of φ,ψ
         draw_dataset:
+          kind: cdl
           heatmap_kw:
             cmap: RdBu
             vmin: 110
@@ -231,6 +232,23 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zticks: [121,122,123,124]
             zlabel: O-C-N (°)
+      omega:
+        help: Plot average value of omega as a function of ψ(i-1),φ(i)
+        draw_subplot:
+          xlabel: '$φ_{i}$'
+          ylabel: '$ψ_{i-1}$'
+        draw_dataset:
+          kind: cdl
+          heatmap_kw:
+            cmap: RdBu
+            vmin: 170
+            vmax: 190
+          colorbar_kw:
+            zticks: [170,175,180,185,190]
+            zlabel: ω (°)
+          contour: False
+          mask: True
+          outline: True
       diff:
         help: Plot difference between two datasets
         draw_dataset:
@@ -330,6 +348,18 @@ class RamachandranFigureManager(FigureManager):
           label_kw:
             fp: 24b
             border_lw: 3
+      colorbar_top:
+        help: Draw colorbar above plot
+        draw_dataset:
+          colorbar: True
+          partner_kw:
+            position: top
+          colorbar_kw:
+            position: top
+            orientation: horizontal
+            zlabel_kw:
+              rotation: 0
+              labelpad: 5
     """
 
     @manage_defaults_presets()
