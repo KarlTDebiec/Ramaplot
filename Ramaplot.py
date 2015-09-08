@@ -130,6 +130,78 @@ class RamachandranFigureManager(FigureManager):
             cmap: Greys
           outline: False
           plot: True
+      bond:
+        help: Plot average value of a bond as a function of φ,ψ
+        draw_dataset:
+          kind: cdl
+          heatmap_kw:
+            cmap: RdBu
+            vmin: 0
+            vmax: 3
+          contour: False
+          mask: True
+          outline: True
+      bond_CN:
+        help: Plot average C-N bond as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 1.31
+            vmax: 1.35
+          colorbar_kw:
+            zticks: [1.32, 1.33, 1.34]
+            zlabel: C-N (Å)
+      bond_CN_extended:
+        help: Plot average C-N bond as a function of φ,ψ; range extended to
+              support proline's longer bond
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 1.31
+            vmax: 1.40
+          colorbar_kw:
+            zticks: [1.32, 1.34, 1.36, 1.38]
+            zlabel: C-N (Å)
+      bond_NA:
+        help: Plot average N-Cα bond as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 1.43
+            vmax: 1.49
+          colorbar_kw:
+            zticks: [1.44, 1.45, 1.46, 1.47, 1.48]
+            zlabel: N-Cα (Å)
+      bond_AB:
+        help: Plot average Cα-Cβ bond as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 1.51
+            vmax: 1.55
+          colorbar_kw:
+            zticks: [1.52, 1.53, 1.54]
+            zlabel: Cα-Cβ (Å)
+      bond_AC:
+        help: Plot average Cα-C bond as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 1.50
+            vmax: 1.54
+          colorbar_kw:
+            zticks: [1.51, 1.52, 1.53]
+            zlabel: Cα-C (Å)
+      bond_CO:
+        help: Plot average C-O bond as a function of φ,ψ
+        extends: angle
+        draw_dataset:
+          heatmap_kw:
+            vmin: 1.22
+            vmax: 1.25
+          colorbar_kw:
+            zticks: [1.23, 1.24]
+            zlabel: C-O (Å)
       angle:
         help: Plot average value of an angle as a function of φ,ψ
         draw_dataset:
@@ -348,6 +420,18 @@ class RamachandranFigureManager(FigureManager):
           label_kw:
             fp: 24b
             border_lw: 3
+      colorbar_right:
+        help: Draw colorbar to right of plot
+        draw_dataset:
+          colorbar: True
+          partner_kw:
+            position: right
+          colorbar_kw:
+            position: right
+            orientation: vertical
+            zlabel_kw:
+              rotation: 270
+              labelpad: 14
       colorbar_top:
         help: Draw colorbar above plot
         draw_dataset:
