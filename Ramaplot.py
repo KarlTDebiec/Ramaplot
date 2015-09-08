@@ -296,7 +296,7 @@ class RamachandranFigureManager(FigureManager):
               labelpad: 14
           label_kw:
             fp: 10b
-            border_lw: 3
+            border_lw: 4
       presentation_wide:
         inherits: presentation_wide
         draw_figure:
