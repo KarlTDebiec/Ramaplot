@@ -35,9 +35,9 @@ class RamachandranFigureManager(FigureManager):
           multi_xticklabels: [-180,-90,0,90,180]
           multi_yticklabels: [-180,-90,0,90,180]
         draw_subplot:
-          xlabel: '$\\Phi$'
+          xlabel: Φ
           xticks: [-180,-90,0,90,180]
-          ylabel: '$\\Psi$'
+          ylabel: Ψ
           yticks: [-180,-90,0,90,180]
           ylabel_kw:
             va: center
@@ -63,7 +63,7 @@ class RamachandranFigureManager(FigureManager):
               top: off
               left: off
               right: off
-            zlabel: '$\Delta G\ (kcal/mol)$'
+            zlabel: 'ΔG (kcal/mol)'
             zlabel_kw:
               rotation: 270
           contour_kw:
@@ -305,10 +305,10 @@ class RamachandranFigureManager(FigureManager):
             zticks: [121,122,123,124]
             zlabel: O-C-N (°)
       omega:
-        help: Plot average value of omega as a function of ψ(i-1),φ(i)
+        help: Plot average value of omega as a function of φ (i),ψ (i-1)
         draw_subplot:
-          xlabel: '$φ_{i}$'
-          ylabel: '$ψ_{i-1}$'
+          xlabel: '$Φ_{i}$'
+          ylabel: '$Ψ_{i-1}$'
         draw_dataset:
           kind: cdl
           heatmap_kw:
@@ -317,7 +317,7 @@ class RamachandranFigureManager(FigureManager):
             vmax: 190
           colorbar_kw:
             zticks: [170,175,180,185,190]
-            zlabel: ω (°)
+            zlabel: ω
           contour: False
           mask: True
           outline: True
