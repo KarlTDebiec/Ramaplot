@@ -101,6 +101,24 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
+      potential_energy:
+        help: Plot potential energy as a function of φ,ψ
+        draw_dataset:
+          heatmap: True
+          heatmap_kw:
+            cmap: bone
+            vmin: 0
+            vmax: 5
+          colorbar_kw:
+            zticks: [0,1,2,3,4,5]
+            zlabel: 'ΔU (kcal/mol)'
+          contour: True
+          contour_kw:
+            colors: '0.25'
+            levels: [1, 2, 3, 4, 5]
+            linestyles: solid
+          mask: True
+          outline: False
       free_energy:
         help: Plot free energy as a function of φ,ψ
         draw_dataset:
@@ -109,6 +127,9 @@ class RamachandranFigureManager(FigureManager):
             cmap: afmhot
             vmin: 0
             vmax: 5
+          colorbar_kw:
+            zticks: [0,1,2,3,4,5]
+            zlabel: 'ΔG (kcal/mol)'
           contour: True
           contour_kw:
             colors: '0.25'
@@ -116,6 +137,22 @@ class RamachandranFigureManager(FigureManager):
             linestyles: solid
           mask: True
           outline: False
+      diff:
+        help: Plot difference between two datasets
+        draw_dataset:
+          kind: diff
+          max_fe: 5
+          heatmap_kw:
+            cmap: RdBu_r
+            vmin: -5
+            vmax:  5
+          colorbar_kw:
+            zticks: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
+            zlabel: 'ΔΔG (kcal/mol)'
+          contour_kw:
+            levels: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
+          mask: True
+          outline: True
       sampling:
         help: Plot sampling as a function of φ,ψ
         draw_dataset:
@@ -319,19 +356,6 @@ class RamachandranFigureManager(FigureManager):
             zticks: [170,175,180,185,190]
             zlabel: ω
           contour: False
-          mask: True
-          outline: True
-      diff:
-        help: Plot difference between two datasets
-        draw_dataset:
-          kind: diff
-          max_fe: 5
-          heatmap_kw:
-            cmap: RdBu_r
-            vmin: -5
-            vmax:  5
-          contour_kw:
-            levels: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
           mask: True
           outline: True
       image:
