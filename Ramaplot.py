@@ -23,6 +23,9 @@ from .myplotspec.FigureManager import FigureManager
 class RamachandranFigureManager(FigureManager):
     """
     Manages the generation of Ramachandran figures.
+
+    .. todo:
+      - Population preset
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs
