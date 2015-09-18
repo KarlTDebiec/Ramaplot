@@ -105,7 +105,7 @@ class RamachandranFigureManager(FigureManager):
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
       potential_energy:
-        help: Plot potential energy as a function of φ,ψ
+        help: Plot potential energy as a function of Φ,Ψ
         draw_dataset:
           heatmap: True
           heatmap_kw:
@@ -123,7 +123,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: False
       free_energy:
-        help: Plot free energy as a function of φ,ψ
+        help: Plot free energy as a function of Φ,Ψ
         draw_dataset:
           heatmap: True
           heatmap_kw:
@@ -157,7 +157,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: True
       sampling:
-        help: Plot sampling as a function of φ,ψ
+        help: Plot sampling as a function of Φ,Ψ
         draw_dataset:
           heatmap: False
           heatmap_kw:
@@ -171,7 +171,7 @@ class RamachandranFigureManager(FigureManager):
           outline: False
           plot: True
       bond:
-        help: Plot average value of a bond as a function of φ,ψ
+        help: Plot average value of a bond as a function of Φ,Ψ
         draw_dataset:
           kind: cdl
           heatmap_kw:
@@ -182,7 +182,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: True
       bond_CN:
-        help: Plot average C-N bond as a function of φ,ψ
+        help: Plot average C-N bond as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -192,9 +192,9 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.32, 1.33, 1.34]
             zlabel: C-N (Å)
       bond_CN_extended:
-        help: Plot average C-N bond as a function of φ,ψ; range extended to
+        help: Plot average C-N bond as a function of Φ,Ψ; range extended to
               support proline's longer bond
-        extends: angle
+        extends: bond
         draw_dataset:
           heatmap_kw:
             vmin: 1.31
@@ -203,8 +203,8 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.32, 1.34, 1.36, 1.38]
             zlabel: C-N (Å)
       bond_NA:
-        help: Plot average N-Cα bond as a function of φ,ψ
-        extends: angle
+        help: Plot average N-Cα bond as a function of Φ,Ψ
+        extends: bond
         draw_dataset:
           heatmap_kw:
             vmin: 1.43
@@ -213,8 +213,8 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.44, 1.45, 1.46, 1.47, 1.48]
             zlabel: N-Cα (Å)
       bond_AB:
-        help: Plot average Cα-Cβ bond as a function of φ,ψ
-        extends: angle
+        help: Plot average Cα-Cβ bond as a function of Φ,Ψ
+        extends: bond
         draw_dataset:
           heatmap_kw:
             vmin: 1.51
@@ -223,8 +223,8 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.52, 1.53, 1.54]
             zlabel: Cα-Cβ (Å)
       bond_AC:
-        help: Plot average Cα-C bond as a function of φ,ψ
-        extends: angle
+        help: Plot average Cα-C bond as a function of Φ,Ψ
+        extends: bond
         draw_dataset:
           heatmap_kw:
             vmin: 1.50
@@ -233,8 +233,8 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.51, 1.52, 1.53]
             zlabel: Cα-C (Å)
       bond_CO:
-        help: Plot average C-O bond as a function of φ,ψ
-        extends: angle
+        help: Plot average C-O bond as a function of Φ,Ψ
+        extends: bond
         draw_dataset:
           heatmap_kw:
             vmin: 1.22
@@ -243,7 +243,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.23, 1.24]
             zlabel: C-O (Å)
       angle:
-        help: Plot average value of an angle as a function of φ,ψ
+        help: Plot average value of an angle as a function of Φ,Ψ
         draw_dataset:
           kind: cdl
           heatmap_kw:
@@ -254,7 +254,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: True
       angle_CNA:
-        help: Plot average C-N-Cα angle as a function of φ,ψ
+        help: Plot average C-N-Cα angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -264,7 +264,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [119,121,123,125]
             zlabel: C-N-Cα (°)
       angle_NAB:
-        help: Plot average N-Cα-Cβ angle as a function of φ,ψ
+        help: Plot average N-Cα-Cβ angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -274,7 +274,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [109,110,111,112,113,114]
             zlabel: N-Cα-Cβ (°)
       angle_NAB_extended:
-        help: Plot average N-Cα-Cβ angle as a function of φ,ψ; range
+        help: Plot average N-Cα-Cβ angle as a function of Φ,Ψ; range
               extended to support proline's smaller angle
         extends: angle
         draw_dataset:
@@ -285,7 +285,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [102,105,108,111,114]
             zlabel: N-Cα-Cβ (°)
       angle_NAC:
-        help: Plot average N-Cα-C angle as a function of φ,ψ
+        help: Plot average N-Cα-C angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -295,7 +295,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [107,109,111,113,115]
             zlabel: N-Cα-C (°)
       angle_BAC:
-        help: Plot average Cβ-Cα-C angle as a function of φ,ψ
+        help: Plot average Cβ-Cα-C angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -305,7 +305,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [110,112,114,116]
             zlabel: Cβ-Cα-C (°)
       angle_ACO:
-        help: Plot average Cα-C-O angle as a function of φ,ψ
+        help: Plot average Cα-C-O angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -315,7 +315,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [118,119,120,121,122,123]
             zlabel: Cα-C-O (°)
       angle_ACN:
-        help: Plot average Cα-C-N angle as a function of φ,ψ
+        help: Plot average Cα-C-N angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -325,7 +325,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [114,116,118,120]
             zlabel: Cα-C-N (°)
       angle_OCN:
-        help: Plot average OCN angle as a function of φ,ψ
+        help: Plot average OCN angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -335,7 +335,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [119,121,123,125]
             zlabel: O-C-N (°)
       angle_OCN:
-        help: Plot average OCN angle as a function of φ,ψ
+        help: Plot average OCN angle as a function of Φ,Ψ
         extends: angle
         draw_dataset:
           heatmap_kw:
@@ -345,7 +345,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [121,122,123,124]
             zlabel: O-C-N (°)
       omega:
-        help: Plot average value of omega as a function of φ (i),ψ (i-1)
+        help: Plot average value of omega as a function of Φ (i),Ψ (i-1)
         draw_subplot:
           xlabel: '$Φ_{i}$'
           ylabel: '$Ψ_{i-1}$'
