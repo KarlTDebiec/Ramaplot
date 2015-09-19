@@ -175,7 +175,7 @@ class NDRDDataset(object):
         Returns:
           dataset (DataFrame): Selected dataset
         """
-        from cStringIO import StringIO
+        from six import StringIO
         import pandas
 
         if verbose >= 1:

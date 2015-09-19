@@ -14,7 +14,6 @@ a YAML file.
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
 import matplotlib
-matplotlib.use("agg")
 if __name__ == "__main__":
     __package__ = str("ramaplot")
     import ramaplot
@@ -99,12 +98,14 @@ class RamachandranFigureManager(FigureManager):
 
     available_presets = """
       ff99SB:
+        class: appearance
         help: Plot heatmap in style of ff99SB paper; omit contours
         draw_dataset:
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
       potential_energy:
+        class: content
         help: Plot potential energy as a function of Φ,Ψ
         draw_dataset:
           heatmap: True
@@ -123,6 +124,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: False
       free_energy:
+        class: content
         help: Plot free energy as a function of Φ,Ψ
         draw_dataset:
           heatmap: True
@@ -141,6 +143,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: False
       diff:
+        class: content
         help: Plot difference between two datasets
         draw_dataset:
           kind: diff
@@ -157,6 +160,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: True
       sampling:
+        class: content
         help: Plot sampling as a function of Φ,Ψ
         draw_dataset:
           heatmap: False
@@ -171,6 +175,7 @@ class RamachandranFigureManager(FigureManager):
           outline: False
           plot: True
       bond:
+        class: content
         help: Plot average value of a bond as a function of Φ,Ψ
         draw_dataset:
           kind: cdl
@@ -243,6 +248,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [1.23, 1.24]
             zlabel: C-O (Å)
       angle:
+        class: content
         help: Plot average value of an angle as a function of Φ,Ψ
         draw_dataset:
           kind: cdl
@@ -345,6 +351,7 @@ class RamachandranFigureManager(FigureManager):
             zticks: [121,122,123,124]
             zlabel: O-C-N (°)
       omega:
+        class: content
         help: Plot average value of omega as a function of Φ (i),Ψ (i-1)
         draw_subplot:
           xlabel: '$Φ_{i}$'
@@ -362,6 +369,7 @@ class RamachandranFigureManager(FigureManager):
           mask: True
           outline: True
       image:
+        class: content
         help: Plot image of a Ramachandran plot, typically from a publication
         draw_dataset:
           kind: image
@@ -373,6 +381,7 @@ class RamachandranFigureManager(FigureManager):
           mask: False
           outline: False
       poster:
+        class: target
         help: Single plot for poster (width = 4.6", height = 4.3")
         inherits: poster
         draw_figure:
@@ -386,6 +395,7 @@ class RamachandranFigureManager(FigureManager):
           ylabel_kw:
             rotation: horizontal
       notebook:
+        class: target
         inherits: notebook
         draw_figure:
           left:       0.50
@@ -415,6 +425,7 @@ class RamachandranFigureManager(FigureManager):
             fp: 10b
             border_lw: 4
       presentation_wide:
+        class: target
         inherits: presentation_wide
         draw_figure:
           left:       1.50
@@ -448,6 +459,7 @@ class RamachandranFigureManager(FigureManager):
             fp: 24b
             border_lw: 3
       colorbar_right:
+        class: appearance
         help: Draw colorbar to right of plot
         draw_dataset:
           colorbar: True
@@ -460,6 +472,7 @@ class RamachandranFigureManager(FigureManager):
               rotation: 270
               labelpad: 14
       colorbar_top:
+        class: appearance
         help: Draw colorbar above plot
         draw_dataset:
           colorbar: True
