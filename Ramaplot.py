@@ -99,7 +99,7 @@ class RamachandranFigureManager(FigureManager):
     available_presets = """
       ff99SB:
         class: appearance
-        help: Plot heatmap in style of ff99SB paper; omit contours
+        help: Draw heatmap in style of AMBER ff99SB paper
         draw_dataset:
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
@@ -382,7 +382,7 @@ class RamachandranFigureManager(FigureManager):
           outline: False
       poster:
         class: target
-        help: Single plot for poster (width = 4.6", height = 4.3")
+        help: Poster (width = 4.6", height = 4.3")
         inherits: poster
         draw_figure:
           left:       1.20

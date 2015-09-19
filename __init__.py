@@ -12,7 +12,7 @@ General functions.
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
 ################################### CLASSES ###################################
-def cmap_ff99SB(*args, **kwargs):
+def cmap_ff99SB():
     """
     """
     from matplotlib.colors import LinearSegmentedColormap
@@ -37,4 +37,5 @@ def cmap_ff99SB(*args, **kwargs):
     cdict["red"]   = tuple(cdict["red"])
     cdict["green"] = tuple(cdict["green"])
     cdict["blue"]  = tuple(cdict["blue"])
+
     return LinearSegmentedColormap("test", cdict)
