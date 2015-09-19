@@ -57,8 +57,6 @@ class RamachandranFigureManager(FigureManager):
           partner_kw:
             position: right
           colorbar_kw:
-            position: right
-            orientation: vertical
             zticks: [0,1,2,3,4,5]
             ztick_params:
               bottom: off
@@ -66,8 +64,6 @@ class RamachandranFigureManager(FigureManager):
               left: off
               right: off
             zlabel: 'ΔG (kcal/mol)'
-            zlabel_kw:
-              rotation: 270
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
@@ -417,10 +413,6 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             ztick_fp: 8r
             zlabel_fp: 10b
-            ztick_params:
-              pad: 2
-            zlabel_kw:
-              labelpad: 14
           label_kw:
             fp: 10b
             border_lw: 4
@@ -466,8 +458,6 @@ class RamachandranFigureManager(FigureManager):
           partner_kw:
             position: right
           colorbar_kw:
-            position: right
-            orientation: vertical
             zlabel_kw:
               rotation: 270
               labelpad: 14
@@ -479,11 +469,17 @@ class RamachandranFigureManager(FigureManager):
           partner_kw:
             position: top
           colorbar_kw:
-            position: top
-            orientation: horizontal
             zlabel_kw:
               rotation: 0
               labelpad: 5
+      colorbar_bottom:
+        class: appearance
+        help: Draw colorbar below plot
+        draw_dataset:
+          colorbar: True
+          partner_kw:
+            position: bottom
+            hspace: 0.5
     """
 
     @manage_defaults_presets()
