@@ -14,6 +14,17 @@ from __future__ import absolute_import,division,print_function,unicode_literals
 ################################### CLASSES ###################################
 def cmap_ff99SB():
     """
+    Generates purple->yellow->black colormap.
+
+    Generates colormap in style of:
+      Hornak, Viktor, Abel, Robert, Okur, Asim, Stockbine, Bentley,
+      Roitberg, Adrian, Simmerling, Carlos, Comparison of Multiple Amber
+      Force Fields and Development of Improved Protein Backbone
+      Parameters. Proteins: Structure, Function, and Bioinformatics.
+      2006. 65. 712-725.
+
+    Returns:
+      cmap (LinearSegmentedColormap): ff99SB-style colormap
     """
     from matplotlib.colors import LinearSegmentedColormap
 
