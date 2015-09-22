@@ -135,10 +135,10 @@ example.yml
                             kind: wham
                             infile: examples/ff14SB.dat
                 1:
-                    title:  "CHARMM36"
+                    title: "CHARMM36"
                     datasets:
                         0:
-                            kind:   wham
+                            kind: wham
                             infile: examples/charmm36.dat
                 2: 
                     preset: [diff, colorbar_bottom]
