@@ -26,8 +26,8 @@ figures:
                 datasets: 
                     0:
                         dataset_1_kw:
-                            kind: WHAM
+                            kind: wham
                             infile: examples/ff14SB.dat
                         dataset_2_kw:
-                            kind: WHAM
+                            kind: wham
                             infile: examples/charmm36.dat

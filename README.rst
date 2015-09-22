@@ -122,11 +122,13 @@ example.yml
         0:
             preset: notebook
             ncols: 3
+            bottom: 1.0
             outfile: examples/example.png
             savefig_kw:
                 dpi: 300
             subplots:
                 0:
+                    preset: colorbar_bottom
                     title: "AMBER ff14SB"
                     datasets:
                         0:
@@ -139,15 +141,15 @@ example.yml
                             kind:   wham
                             infile: examples/charmm36.dat
                 2: 
-                    preset: diff
+                    preset: [diff, colorbar_bottom]
                     title: "ff14SB - CHARMM36"
                     datasets: 
                         0:
                             dataset_1_kw:
-                                kind: WHAM
+                                kind: wham
                                 infile: examples/ff14SB.dat
                             dataset_2_kw:
-                                kind: WHAM
+                                kind: wham
                                 infile: examples/charmm36.dat
 
 Dependencies
