@@ -89,7 +89,7 @@ class RamachandranFigureManager(FigureManager):
             text_kw:
               ha: right
               va: bottom
-            border_lw: 3
+            border_lw: 1
     """
 
     available_presets = """
@@ -415,7 +415,7 @@ class RamachandranFigureManager(FigureManager):
             zlabel_fp: 10b
           label_kw:
             fp: 10b
-            border_lw: 4
+            border_lw: 1
       presentation_wide:
         class: target
         inherits: presentation_wide
