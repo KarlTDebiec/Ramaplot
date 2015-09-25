@@ -492,7 +492,6 @@ class RamachandranFigureManager(FigureManager):
         from copy import copy
         from warnings import warn
         import numpy as np
-        import six
         from .myplotspec import get_color
         from .myplotspec.axes import set_colorbar
         from .AnalyticalDataset import AnalyticalDataset
