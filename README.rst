@@ -122,7 +122,7 @@ example.yml
         0:
             preset: notebook
             ncols: 3
-            bottom: 1.0
+            bottom: 0.9
             outfile: examples/example.png
             savefig_kw:
                 dpi: 300

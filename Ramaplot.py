@@ -518,7 +518,10 @@ class RamachandranFigureManager(FigureManager):
           colorbar: True
           partner_kw:
             position: bottom
-            hspace: 0.5
+            hspace: 0.4
+          colorbar_kw:
+            zlabel_kw:
+              labelpad: 3
     """
 
     @manage_defaults_presets()
