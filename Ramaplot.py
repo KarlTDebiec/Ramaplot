@@ -47,6 +47,11 @@ class RamachandranFigureManager(FigureManager):
           y2ticklabels: []
           y2label_kw:
             rotation: 270
+          grid: True
+          grid_kw:
+            b: True
+            linestyle: '-'
+            alpha: 0.1
         draw_dataset:
           heatmap_kw:
             cmap: afmhot
@@ -627,6 +632,7 @@ class RamachandranFigureManager(FigureManager):
 
         if label is not None:
             from .myplotspec.text import set_text
+
             label_kw = kwargs.get("label_kw", {})
             set_text(subplot, s=label, **label_kw)
 
