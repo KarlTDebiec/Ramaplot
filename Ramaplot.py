@@ -448,7 +448,7 @@ class RamachandranFigureManager(FigureManager):
           tick_params:
             pad: 4
           y2label_kw:
-            labelpad: 4
+            labelpad: 8
         draw_dataset:
           colorbar_kw:
             ztick_fp: 8r
