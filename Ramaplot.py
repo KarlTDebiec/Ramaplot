@@ -47,6 +47,17 @@ class RamachandranFigureManager(FigureManager):
           y2ticklabels: []
           y2label_kw:
             rotation: 270
+          tick_params:
+            left: off
+            right: off
+            bottom: off
+            top: off
+            width: 1
+          y2tick_params:
+            left: off
+            right: off
+            bottom: off
+            top: off
           grid: True
           grid_kw:
             b: True
@@ -101,10 +112,27 @@ class RamachandranFigureManager(FigureManager):
       ff99SB:
         class: appearance
         help: Draw heatmap in style of AMBER ff99SB paper
+        draw_subplot:
+          grid_kw:
+            color: white
+            alpha: 0.2
         draw_dataset:
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
+      tick_out:
+        class: appearance
+        help: Draw ticks extending out from left and bottom sides
+        draw_figure:
+          multi_tick_params:
+            left: on
+            right: off
+            bottom: on
+            top: off
+            inner: off
+        draw_subplot:
+          tick_params:
+            direction: out
       potential_energy:
         class: content
         help: Plot potential energy as a function of Φ,Ψ
@@ -408,19 +436,25 @@ class RamachandranFigureManager(FigureManager):
           hspace:     0.10
           top:        0.25
           multiplot: True
+          title_kw:
+            top: -0.1
         draw_subplot:
           legend: False
+          xlabel_kw:
+            labelpad: 4
           ylabel_kw:
+            labelpad: 4
             rotation: horizontal
+          tick_params:
+            pad: 4
           y2label_kw:
-            labelpad: 6
+            labelpad: 4
         draw_dataset:
           colorbar_kw:
             ztick_fp: 8r
             zlabel_fp: 10b
           label_kw:
             fp: 10b
-            border_lw: 1
       presentation_wide:
         class: target
         inherits: presentation_wide
