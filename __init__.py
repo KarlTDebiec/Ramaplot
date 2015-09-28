@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#   myplotspec_forcefield.__init__.py
+#   ramaplot.__init__.py
 #
 #   Copyright (C) 2015 Karl T Debiec
 #   All rights reserved.
