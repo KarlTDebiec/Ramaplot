@@ -68,6 +68,8 @@ class PDistDataset(object):
           phikey:
           psikey:
           max_fe:
+          hist_kw:
+          bins:
           verbose (int): Level of verbose output
           debug (int): Level of debug output
 
@@ -83,11 +85,17 @@ class PDistDataset(object):
         import pandas
         import numpy as np
 
+        # Check arguments
+        if mode not in ["hist", "kde"]:
+            raise ValueError("Argument 'mode' does not support provided " +
+              "value '{0}', must be 'hist' or 'kde'".format(mode))
+
         # Load data
         if verbose > 0:
             print("loading from '{0}'".format(infile))
         dist = pandas.read_csv(expandvars(infile), delim_whitespace=True,
                  index_col=0)
+
 
         if mode == "hist":
             hist_kw = copy(kwargs.get("hist_kw", {}))
@@ -106,6 +114,7 @@ class PDistDataset(object):
             free_energy = -1 * np.log(count / count.sum())
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
+
         elif mode == "kde":
             from sklearn.neighbors import KernelDensity
 
