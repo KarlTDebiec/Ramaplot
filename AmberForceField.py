@@ -153,7 +153,6 @@ class AmberForceField(ForceField):
     def __init__(self, parm=None, **kwargs):
         """
         """
-
         if parm is not None:
             self.parameters = self.read_parm(parm, **kwargs)
 

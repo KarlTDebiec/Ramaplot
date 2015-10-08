@@ -8,6 +8,9 @@
 #   BSD license. See the LICENSE file for details.
 """
 Manages analytical Ramachandran plot datasets.
+
+.. todo:
+  - Use parmed? Should be able to support many force fields
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals

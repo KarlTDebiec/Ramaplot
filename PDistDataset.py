@@ -11,8 +11,9 @@ Manages probability distribution datasets.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
+from .myplotspec.Dataset import Dataset
 ################################### CLASSES ###################################
-class PDistDataset(object):
+class PDistDataset(Dataset):
     """
     Manages probability distribution datasets.
 
@@ -21,8 +22,8 @@ class PDistDataset(object):
     of a selected measurement (e.g. energy) at that Φ/Ψ.
     """
 
-    @staticmethod
-    def get_cache_key(infile, loop_edges=True, mode="hist", bins=72,
+    @classmethod
+    def get_cache_key(cls, infile, loop_edges=True, mode="hist", bins=72,
         phikey="phi", psikey="psi", max_fe=None, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
@@ -33,31 +34,15 @@ class PDistDataset(object):
         from os.path import expandvars
 
         if mode == "hist":
-            return (PDistDataset, expandvars(infile), loop_edges, mode, bins,
+            return (cls, expandvars(infile), loop_edges, mode, bins,
                     phikey, psikey, max_fe)
         elif mode == "kde":
             kde_kw = kwargs.get("kde_kw", {})
             bandwidth = kde_kw.get("bandwidth", kwargs.get("bandwidth", 5))
-            return (PDistDataset, expandvars(infile), loop_edges, mode, bins,
+            return (cls, expandvars(infile), loop_edges, mode, bins,
                     phikey, psikey, bandwidth, max_fe)
 
-    @staticmethod
-    def get_cache_message(cache_key):
-        """
-        Generates message to be used when reloading previously-loaded
-        dataset.
-
-        Arguments:
-            cache_key (tuple): key with which dataset object is stored
-              in dataset cache
-
-        Returns:
-            cache_message (str): message to be used when reloading
-              previously-loaded dataset
-        """
-        return "previously loaded from '{0}'".format(cache_key[1])
-
-    def __init__(self, infile, loop_edges=True, mode="hist", bins=72,
+    def __init__(self, loop_edges=True, mode="hist", bins=72,
         phikey="phi", psikey="psi", max_fe=None, verbose=1, debug=0, **kwargs):
         """
         Arguments:
@@ -91,11 +76,8 @@ class PDistDataset(object):
               "value '{0}', must be 'hist' or 'kde'".format(mode))
 
         # Load data
-        if verbose > 0:
-            print("loading from '{0}'".format(infile))
-        dist = pandas.read_csv(expandvars(infile), delim_whitespace=True,
-                 index_col=0)
-
+        kwargs["read_csv_kw"] = {"delim_whitespace":True, "index_col":0}
+        dist = self.load_dataset(verbose=verbose, **kwargs).data
 
         if mode == "hist":
             hist_kw = copy(kwargs.get("hist_kw", {}))
