@@ -43,7 +43,7 @@ class CDLDataset(Dataset):
       "field (e.g. 'CN', for which the standard residue C-N bond distribution "
       "will be returned; if list, must be a pair of class and field (e.g. "
       "'['IleVal_xpro', 'BAC']', for which the isoleucine/valine CB-CA-C "
-      "angle distribution will be returned.")
+      "angle distribution will be returned).")
 
     @classmethod
     def get_cache_key(cls, infile, selection="NonPGIV_nonxpro",
@@ -68,7 +68,7 @@ class CDLDataset(Dataset):
           selection (str, list): selection to be loaded from file
 
         Returns:
-          out_selection (tuple): processed selections
+          out_selection (tuple): processed selection
 
         .. todo:
           - Check that if dataset is All, All_nonxpro, or All_xpro,
@@ -83,14 +83,14 @@ class CDLDataset(Dataset):
 
             Arguments:
               regex (str): Regular expression string, for which
-                '{dataset}', '{field}', and '{whitespace}' will be
+                '{resclass}', '{field}', and '{whitespace}' will be
                 replaced with the appropriate expressions
 
             Returns:
               regex (Pattern): Compiled regular expression
             """
             return re.compile(regex.format(
-                dataset = "(All|All_nonxpro|All_xpro"
+                resclass = "(All|All_nonxpro|All_xpro"
                           "|NonPGIV_nonxpro|IleVal_nonxpro"
                           "|Gly_nonxpro|Pro_nonxpro"
                           "|NonPGIV_xpro|IleVal_xpro"
@@ -99,7 +99,7 @@ class CDLDataset(Dataset):
                               "|CN|NA|AB|AC|CO|W)",
                 whitespace = "\s+"), re.IGNORECASE)
 
-        re_dataset = format_regex("^(?P<dataset>{dataset})$")
+        re_resclass = format_regex("^(?P<resclass>{resclass})$")
         re_field = format_regex("^(s|m)?(?P<field>{field})"
                            "({whitespace}(mean|avg|average|sd|std|stdev))?$")
         re_sd   = format_regex(
@@ -109,20 +109,20 @@ class CDLDataset(Dataset):
         if isinstance(selection, list) and len(selection) == 1:
             selection = selection[0]
         if isinstance(selection, six.string_types):
-            # Selection is a dataset, default to CNA field
-            if re.match(re_dataset, selection):
-                dataset, field = selection, "NAC"
-            # Selection is a field, default to !PGVI>!P dataset
+            # Selection is a residue class, default to CNA field
+            if re.match(re_resclass, selection):
+                resclass, field = selection, "NAC"
+            # Selection is a field, default to !PGVI>!P residue class
             elif re.match(re_field, selection):
-                dataset, field = "NonPGIV_nonxpro", selection
+                resclass, field = "NonPGIV_nonxpro", selection
             else:
                 raise TypeError("Selection '{0}' not ".format(selection) +
                                 "understood. " + CDLDataset.type_error_text)
         elif isinstance(selection, list) and len(selection) == 2:
-            # Selection is a dataset, field pair
-            if (re.match(re_dataset, selection[0])
+            # Selection is a residue class, field pair
+            if (re.match(re_resclass, selection[0])
             and re.match(re_field, selection[1])):
-                dataset, field = selection
+                resclass, field = selection
             else:
                 raise TypeError("Selection '{0}' not ".format(selection) +
                                 "understood. " + CDLDataset.type_error_text)
@@ -137,20 +137,20 @@ class CDLDataset(Dataset):
         else:
             field = "{0} mean".format(match_field.groupdict()["field"])
 
-        return dataset, field
+        return resclass, field
 
     @staticmethod
-    def load_cdl_dataset(infile, selection, verbose=1, **kwargs):
+    def load_cdl_distribution(infile, selection, verbose=1, **kwargs):
         """
-        Loads selected dataset from selected infile.
+        Loads selected distribution from selected infile.
 
         Arguments:
           infile (str): Path to text input file
-          selection (str): Start of lines containing desired dataset
+          selection (str): Start of lines containing desired distribution
           verbose (int): Level of verbose output
 
         Returns:
-          dist (DataFrame): Selected dataset
+          dist (DataFrame): Selected distribution
         """
         from cStringIO import StringIO
         import pandas
@@ -186,7 +186,13 @@ class CDLDataset(Dataset):
         Arguments:
           infile (str): Path to text input file, may contain environment
             variables
-          selection (str, list): Selected dataset and field
+          selection (str, list): Selected distribution; if string, may be the
+            name of a class (e.g. 'NonPGIV_nonxpro', for which the N-CA-C (tau)
+            angle distribution will be returned), or the name of a field (e.g.
+            'CN', for which the standard residue C-N bond distribution will be
+            returned; if list, must be a pair of class and field (e.g.
+            '['IleVal_xpro', 'BAC']', for which the isoleucine/valine CB-CA-C
+            angle distribution will be returned)
           loop_edges (bool): Copy edges to enable plotting to edge of
             plot
           kwargs (dict): additional keyword arguments
@@ -198,16 +204,16 @@ class CDLDataset(Dataset):
         infile = expandvars(infile)
         selection = self.process_selection_arg(selection)
 
-        dataset = self.load_cdl_dataset(infile, selection[0])
+        dataframe = self.load_cdl_distribution(infile, selection[0])
 
         # Organize data
-        x_centers = np.unique(dataset["phi"])
-        y_centers = np.unique(dataset["psi"])
+        x_centers = np.unique(dataframe["phi"])
+        y_centers = np.unique(dataframe["psi"])
         x_width = np.mean(x_centers[1:] - x_centers[:-1])
         y_width = np.mean(y_centers[1:] - y_centers[:-1])
         dist = np.zeros((x_centers.size, y_centers.size), np.float) * np.nan
         mask = np.zeros((x_centers.size, y_centers.size), np.bool)
-        for index, row in dataset.iterrows():
+        for index, row in dataframe.iterrows():
             x_index = np.where(x_centers == row["phi"])[0][0]
             y_index = np.where(y_centers == row["psi"])[0][0]
             dist[x_index, y_index] = row[selection[1]]
