@@ -12,12 +12,12 @@ Manages Conformation-Dependent Library datasets.
 .. todo
     - Write type_error_text
     - Improve error checking
-    - Add bond presets
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
+from .myplotspec.Dataset import Dataset
 ################################### CLASSES ###################################
-class CDLDataset(object):
+class CDLDataset(Dataset):
     """
     Manages Conformation-dependent library datasets.
 
@@ -37,11 +37,17 @@ class CDLDataset(object):
     `<http://dunbrack.fccc.edu/omega>`_.
     """
 
-    type_error_text = ("NAY")
+    type_error_text = ("Selection may be a string or list; if string, "
+      "may be the name of a class (e.g. 'NonPGIV_nonxpro', for which the "
+      "N-CA-C (tau) angle distribution will be returned), or the name of a "
+      "field (e.g. 'CN', for which the standard residue C-N bond distribution "
+      "will be returned; if list, must be a pair of class and field (e.g. "
+      "'['IleVal_xpro', 'BAC']', for which the isoleucine/valine CB-CA-C "
+      "angle distribution will be returned.")
 
-    @staticmethod
-    def get_cache_key(infile, selection="NonPGIV_nonxpro", loop_edges=True,
-        *args, **kwargs):
+    @classmethod
+    def get_cache_key(cls, infile, selection="NonPGIV_nonxpro",
+        loop_edges=True, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -50,24 +56,8 @@ class CDLDataset(object):
         """
         from os.path import expandvars
 
-        return (CDLDataset, expandvars(infile),
-        CDLDataset.process_selection_arg(selection), loop_edges)
-
-    @staticmethod
-    def get_cache_message(cache_key):
-        """
-        Generates message to be used when reloading previously-loaded
-        dataset.
-
-        Arguments:
-            cache_key (tuple): key with which dataset object is stored
-              in dataset cache
-
-        Returns:
-            cache_message (str): message to be used when reloading
-              previously-loaded dataset
-        """
-        return "previously loaded from '{0}'".format(cache_key[1])
+        return (cls, expandvars(infile), cls.process_selection_arg(selection),
+          loop_edges)
 
     @staticmethod
     def process_selection_arg(selection):
@@ -121,7 +111,7 @@ class CDLDataset(object):
         if isinstance(selection, six.string_types):
             # Selection is a dataset, default to CNA field
             if re.match(re_dataset, selection):
-                dataset, field = selection, "CNA"
+                dataset, field = selection, "NAC"
             # Selection is a field, default to !PGVI>!P dataset
             elif re.match(re_field, selection):
                 dataset, field = "NonPGIV_nonxpro", selection
@@ -150,7 +140,7 @@ class CDLDataset(object):
         return dataset, field
 
     @staticmethod
-    def load_dataset(infile, selection, verbose=1, **kwargs):
+    def load_cdl_dataset(infile, selection, verbose=1, **kwargs):
         """
         Loads selected dataset from selected infile.
 
@@ -208,7 +198,7 @@ class CDLDataset(object):
         infile = expandvars(infile)
         selection = self.process_selection_arg(selection)
 
-        dataset = self.load_dataset(infile, selection[0])
+        dataset = self.load_cdl_dataset(infile, selection[0])
 
         # Organize data
         x_centers = np.unique(dataset["phi"])

@@ -20,6 +20,9 @@ class PDistDataset(Dataset):
     Generates probability distribution from series of Φ/Ψ values,
     representing either the probability of Φ/Ψ, or the expectation value
     of a selected measurement (e.g. energy) at that Φ/Ψ.
+
+    Input data may be a whitespace-delimited text file including columns
+    for Φ, Ψ, and any additional data.
     """
 
     @classmethod
@@ -42,16 +45,21 @@ class PDistDataset(Dataset):
             return (cls, expandvars(infile), loop_edges, mode, bins,
                     phikey, psikey, bandwidth, max_fe)
 
-    def __init__(self, loop_edges=True, mode="hist", bins=72,
-        phikey="phi", psikey="psi", max_fe=None, verbose=1, debug=0, **kwargs):
+    def __init__(self, mode="hist", phikey="phi", psikey="psi",
+        bins=72, loop_edges=True, max_fe=None, verbose=1, debug=0,
+        **kwargs):
         """
         Arguments:
+          mode (str): Method of calculating probability distribution;
+            may be either 'hist', to use a histogram, or 'kde', to use a
+            kernel density estimate
           infile (str): Path to text input file, may contain environment
+            variables
+          phikey: 
+          psikey:
           loop_edges (bool):
           mode:
           bins:
-          phikey:
-          psikey:
           max_fe:
           hist_kw:
           bins:
@@ -70,14 +78,16 @@ class PDistDataset(Dataset):
         import pandas
         import numpy as np
 
-        # Check arguments
+        # Manage arguments
         if mode not in ["hist", "kde"]:
             raise ValueError("Argument 'mode' does not support provided " +
               "value '{0}', must be 'hist' or 'kde'".format(mode))
+        read_csv_kw = {"delim_whitespace":True, "index_col":0}
+        read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
         # Load data
-        kwargs["read_csv_kw"] = {"delim_whitespace":True, "index_col":0}
-        dist = self.load_dataset(verbose=verbose, **kwargs).data
+        dist = self.load_dataset(verbose=verbose,
+          read_csv_kw=read_csv_kw, **kwargs).data
 
         if mode == "hist":
             hist_kw = copy(kwargs.get("hist_kw", {}))
