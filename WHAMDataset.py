@@ -11,8 +11,9 @@ Manages weighted histogram analysis method datasets.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
+from .myplotspec.Dataset import Dataset
 ################################### CLASSES ###################################
-class WHAMDataset(object):
+class WHAMDataset(Dataset):
     """
     Manages weighted histogram analysis method datasets.
 
@@ -23,47 +24,57 @@ class WHAMDataset(object):
       version 2.0.9, <http://membrane.urmc.rochester.edu/content/wham>_
     """
 
-    @staticmethod
-    def get_cache_key(infile, wrap=True, loop_edges=True, max_fe=None,
-        *args, **kwargs):
+    @classmethod
+    def get_cache_key(cls, infile, zkey="free energy", wrap=True,
+        loop_edges=True, mask_cutoff=None, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
         """
         from os.path import expandvars
 
-        return (WHAMDataset, expandvars(infile), wrap, loop_edges,
-                max_fe)
+        return (cls, expandvars(infile), zkey, wrap, loop_edges, mask_cutoff)
 
-    @staticmethod
-    def get_cache_message(cache_key):
-        return "previously loaded from '{0}'".format(cache_key[1])
-
-    def __init__(self, infile, wrap=True, loop_edges=True, max_fe=None,
-        verbose=1, debug=0, **kwargs):
+    def __init__(self, zkey="free energy", wrap=True, loop_edges=True,
+        mask_cutoff=None, verbose=1, debug=0, **kwargs):
         """
         Initializes dataset.
 
         Arguments:
           infile (str): Path to text input file, may contain environment
             variables
+          zkey (str): Key from which to load distribution; acceptable
+            values are  'free energy' and 'probability'
           wrap (bool): Wrap x and y coordinates between 180 and 360 to
             between -180 and 0
-          loop_edges (bool):
-          max_fe (float): 
+          loop_edges (bool): Mirror first and last row and column along
+            edges of distribution; enables contours to be plotted
+            smoothly to edge
+          mask_cutoff (float): Cutoff beyond which distribution is
+            masked, if `zkey` is 'free energy', this is a the maximum
+            free energy above which the mask will be set, and if `zkey`
+            is 'probability', this is the minimum probability below
+            which the mask will be set
           verbose (int): Level of verbose output
           debug (int): Level of debug output
+          kwargs (dict): Additional keyword arguments
         """
-        from os.path import expandvars
         import pandas
         import numpy as np
 
+        # Manage arguments
+        if zkey not in ["free energy", "probability"]:
+            raise ValueError("Argument 'zkey' does not support provided " +
+              "value '{0}', must be 'free energy or ".format(zkey) +
+              "probability.")
+        read_csv_kw = dict(delim_whitespace=True, header=0,
+          names=("phi", "psi", "free energy", "probability"),
+          na_values=(9999999.000000))
+        read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
+
         # Load data
-        if verbose > 0:
-            print("loading from '{0}'".format(infile))
-        dist = pandas.read_csv(expandvars(infile), delim_whitespace=True,
-                 header=0, names=["phi", "psi", "free energy",
-                 "probability"], na_values=[9999999.000000])
+        dist = self.load_dataset(verbose=verbose, read_csv_kw=read_csv_kw,
+          **kwargs).data
         if wrap:
             dist["phi"][dist["phi"] > 180] -= 360
             dist["psi"][dist["psi"] > 180] -= 360
@@ -82,6 +93,7 @@ class WHAMDataset(object):
                 free_energy[x_index, y_index] = fe
                 probability[x_index, y_index] = p
         free_energy -= np.nanmin(free_energy)
+        probability /= np.nansum(probability)
 
         x_width = np.mean(x_centers[1:] - x_centers[:-1])
         y_width = np.mean(y_centers[1:] - y_centers[:-1])
@@ -95,16 +107,27 @@ class WHAMDataset(object):
                                          y_centers,
                                         [y_centers[-1] + y_width]))
             temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
-            temp[1:-1,1:-1]  = free_energy
-            temp[1:-1,-1]    = free_energy[:,0]
-            temp[-1,1:-1]    = free_energy[0,:]
-            temp[1:-1,0]     = free_energy[:,-1]
-            temp[0,1:-1]     = free_energy[-1,:]
-            temp[0,0]        = free_energy[-1,-1]
-            temp[-1,-1]      = free_energy[0,0]
-            temp[0,-1]       = free_energy[-1,0]
-            temp[-1,0]       = free_energy[0,-1]
+            temp[1:-1,1:-1] = free_energy
+            temp[1:-1,-1]   = free_energy[:,0]
+            temp[-1,1:-1]   = free_energy[0,:]
+            temp[1:-1,0]    = free_energy[:,-1]
+            temp[0,1:-1]    = free_energy[-1,:]
+            temp[0,0]       = free_energy[-1,-1]
+            temp[-1,-1]     = free_energy[0,0]
+            temp[0,-1]      = free_energy[-1,0]
+            temp[-1,0]      = free_energy[0,-1]
             free_energy = temp
+            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
+            temp[1:-1,1:-1] = probability
+            temp[1:-1,-1]   = probability[:,0]
+            temp[-1,1:-1]   = probability[0,:]
+            temp[1:-1,0]    = probability[:,-1]
+            temp[0,1:-1]    = probability[-1,:]
+            temp[0,0]       = probability[-1,-1]
+            temp[-1,-1]     = probability[0,0]
+            temp[0,-1]      = probability[-1,0]
+            temp[-1,0]      = probability[0,-1]
+            probability = temp
 
         self.x_centers = x_centers
         self.y_centers = y_centers
@@ -116,15 +139,27 @@ class WHAMDataset(object):
         self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
                                    y_centers[-1] + y_width / 2,
                                    y_centers.size + 1)
-        self.dist = free_energy
 
-        # Prepare mask
-        if max_fe is not None:
-            self.mask = np.ma.masked_where(np.logical_and(
-              free_energy <= max_fe,
-              np.logical_not(np.isnan(free_energy))),
-              np.ones_like(free_energy))
-        else:
-            self.mask = np.ma.masked_where(
-              np.logical_not(np.isnan(free_energy)),
-              np.ones_like(free_energy))
+        # Store distribution in instance variable and create mask
+        if zkey == "free energy":
+            self.dist = free_energy
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  free_energy <= mask_cutoff,
+                  np.logical_not(np.isnan(free_energy))),
+                  np.ones_like(free_energy))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(free_energy)),
+                  np.ones_like(free_energy))
+        elif zkey == "probability":
+            self.dist = probability
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  probability >= mask_cutoff,
+                  np.logical_not(np.isnan(probability))),
+                  np.ones_like(probability))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(probability)),
+                  np.ones_like(probability))

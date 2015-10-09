@@ -21,8 +21,8 @@ class PDistDataset(Dataset):
     representing either the probability of Φ/Ψ, or the expectation value
     of a selected measurement (e.g. energy) at that Φ/Ψ.
 
-    Input data may be a whitespace-delimited text file including columns
-    for Φ, Ψ, and any additional data.
+    Input data may consit of  a whitespace-delimited text file including
+    columns for Φ, Ψ, and any additional data.
     """
 
     @classmethod
@@ -65,6 +65,7 @@ class PDistDataset(Dataset):
           bins:
           verbose (int): Level of verbose output
           debug (int): Level of debug output
+          kwargs (dict): Additional keyword arguments
 
         .. todo:
             - improve bins support
@@ -82,7 +83,7 @@ class PDistDataset(Dataset):
         if mode not in ["hist", "kde"]:
             raise ValueError("Argument 'mode' does not support provided " +
               "value '{0}', must be 'hist' or 'kde'".format(mode))
-        read_csv_kw = {"delim_whitespace":True, "index_col":0}
+        read_csv_kw = dict(delim_whitespace=True, index_col=0)
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
         # Load data

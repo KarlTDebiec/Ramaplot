@@ -24,7 +24,8 @@ class RamachandranFigureManager(FigureManager):
     Manages the generation of Ramachandran figures.
 
     .. todo:
-      - Population preset
+      - Consider moving 'loop edges' out of indivual datasets and inot
+        RamachandranFigureManager (de-duplicate)
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs
@@ -156,6 +157,9 @@ class RamachandranFigureManager(FigureManager):
         class: content
         help: Plot free energy as a function of Φ,Ψ
         draw_dataset:
+          dataset_kw:
+            zkey: free energy
+            mask_cutoff: 5
           heatmap: True
           heatmap_kw:
             cmap: afmhot
@@ -169,8 +173,30 @@ class RamachandranFigureManager(FigureManager):
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
-          mask: True
+          mask: False
           outline: False
+      probability:
+        class: content
+        help: Plot probability as a function of Φ,Ψ
+        draw_dataset:
+          dataset_kw:
+            zkey: probability
+            mask_cutoff: 0.001
+          heatmap: True
+          heatmap_kw:
+            cmap: summer
+            vmin: 0
+            vmax: 0.02
+          colorbar_kw:
+            zticks: [0.000,0.005,0.010,0.015,0.02]
+            zlabel: 'Probability'
+          contour: True
+          contour_kw:
+            colors: '0.25'
+            levels: [0.000,0.005,0.010,0.015,0.020]
+            linestyles: solid
+          mask: True
+          outline: True
       diff:
         class: content
         help: Plot difference between two datasets
