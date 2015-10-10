@@ -35,7 +35,7 @@ class PDistDataset(Dataset):
     @classmethod
     def get_cache_key(cls, infile, phikey="phi", psikey="psi",
         zkey="free energy", mode="hist", bins=72, bandwidth=5, wrap=True,
-        loop_edges=True, mask_cutoff=None, *args, **kwargs):
+        mask_cutoff=None, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -44,16 +44,96 @@ class PDistDataset(Dataset):
         """
         from os.path import expandvars
 
+        if zkey in ["free energy", "probability"]:
+            x_bins, y_bins = cls.process_bins_arg(bins, dim=2)
+            bins = (tuple(x_bins), tuple(y_bins))
+        else:
+            x_bins, y_bins, z_bins = cls.process_bins_arg(bins, dim=3)
+            bins = (tuple(x_bins), tuple(y_bins), tuple(z_bins))
+
         if mode == "hist":
             return (cls, expandvars(infile), phikey, psikey, zkey, mode, bins,
-                    wrap, loop_edges, mask_cutoff)
+                    wrap, mask_cutoff)
         elif mode == "kde":
             return (cls, expandvars(infile), phikey, psikey, zkey, mode, bins,
-                    bandwidth, wrap, loop_edges, mask_cutoff)
+                    bandwidth, wrap, mask_cutoff)
+
+    @staticmethod
+    def process_bins_arg(bins, dim=2):
+        """
+        Processes bin argument.
+
+        Arguments:
+          selection (str, list): selection to be loaded from file
+          bins (int, list, ndarray): Bins to use for histogram or grid
+            to use for kernel density estimate; if int, number of bins
+            or gride points between -180° and 180° in Φ and Ψ, if list
+            or ndarray, bins or grid directly
+
+        Returns:
+          out_bins (tuple): Processed bins
+        """
+        import numpy as np
+        if dim == 2:
+            if isinstance(bins, int):
+                x_bins = y_bins = np.linspace(-180, 180, bins + 1)
+            elif isinstance(bins, list):
+                if len(bins) == 2:
+                    if isinstance(bins[0], int):
+                        x_bins = np.linspace(-180, 180, bins[0] + 1)
+                    elif isinstance(bins[0], list):
+                        x_bins = np.array(bins[0])
+                    if isinstance(bins[1], int):
+                        y_bins = np.linspace(-180, 180, bins[1] + 1)
+                    elif isinstance(bins[1], list):
+                        y_bins = np.array(bins[1])
+                else:
+                    x_bins = y_bins = np.array(bins)
+            elif isinstance(bins, np.ndarray):
+                x_bins = y_bins = bins
+            return x_bins, y_bins
+        elif dim == 3:
+            if isinstance(bins, int):
+                x_bins = y_bins = z_bins = np.linspace(-180, 180, bins + 1)
+            elif isinstance(bins, list):
+                if len(bins) == 2:
+                    if isinstance(bins[0], int):
+                        x_bins = y_bins = np.linspace(-180, 180, bins[0] + 1)
+                    elif (isinstance(bins[0], list)
+                    or    isinstance(bins[0], np.ndarray)):
+                        x_bins = y_bins = np.array(bins[0])
+                    if isinstance(bins[1], int):
+                        z_bins = np.linspace(-180, 180, bins[1] + 1)
+                    elif (isinstance(bins[1], list)
+                    or    isinstance(bins[1], np.ndarray)):
+                        z_bins = np.array(bins[1])
+                elif len(bins) == 3:
+                    if isinstance(bins[0], int):
+                        x_bins = np.linspace(-180, 180, bins[0] + 1)
+                    elif (isinstance(bins[0], list)
+                    or    isinstance(bins[0], np.ndarray)):
+                        x_bins = np.array(bins[0])
+                    if isinstance(bins[1], int):
+                        y_bins = np.linspace(-180, 180, bins[1] + 1)
+                    elif (isinstance(bins[1], list)
+                    or    isinstance(bins[1], np.ndarray)):
+                        y_bins = np.array(bins[1])
+                    if isinstance(bins[2], int):
+                        z_bins = np.linspace(-180, 180, bins[2] + 1)
+                    elif (isinstance(bins[2], list)
+                    or    isinstance(bins[2], np.ndarray)):
+                        z_bins = np.array(bins[2])
+                else:
+                    x_bins = y_bins = z_bins = np.array(bins)
+            elif isinstance(bins, np.ndarray):
+                x_bins = y_bins = z_bins = bins
+            return x_bins, y_bins, z_bins
+        else:
+            raise TypeError()
 
     def __init__(self, phikey="phi", psikey="psi", zkey="free energy",
-        mode="hist", bins=72, bandwidth=5, wrap=True, loop_edges=True,
-        mask_cutoff=None, verbose=1, debug=0, **kwargs):
+        mode="hist", bins=72, bandwidth=5, wrap=True, mask_cutoff=None,
+        verbose=1, debug=0, **kwargs):
         """
         Arguments:
           infile (str): Path to text input file, may contain environment
@@ -79,9 +159,6 @@ class PDistDataset(Dataset):
             density estimate
           wrap (bool): Wrap x and y coordinates between 180° and 360° to
             between -180° and 0°
-          loop_edges (bool): Mirror first and last row and column along
-            edges of distribution; enables contours to be plotted
-            smoothly to edge
           mask_cutoff (float): Cutoff beyond which distribution is
             masked, if `zkey` is 'free energy', this is a the maximum
             free energy above which the mask will be set, and if `zkey`
@@ -96,8 +173,8 @@ class PDistDataset(Dataset):
 
         .. todo:
             - Auto-detect phikey and psikey
-            - Support periodicty
-            - Support variable bandwidth
+            - Support periodicic kernel density estimate
+            - Support variable bandwidth kernel density estimate
         """
         import numpy as np
         from .myplotspec import multi_get_copy
@@ -117,29 +194,15 @@ class PDistDataset(Dataset):
             dataframe[phikey][dataframe[phikey] > 180] -= 360
             dataframe[psikey][dataframe[psikey] > 180] -= 360
 
-        # Analyze
+        # Option 1: Calculate probability and free energy of Φ, Ψ
         if zkey in ["free energy", "probability"]:
-            if isinstance(bins, int):
-                x_bins = y_bins = np.linspace(-180, 180, bins + 1)
-            elif isinstance(bins, list):
-                if len(bins) == 2:
-                    if (isinstance(bins[0], int)
-                    and isinstance(bins[1], int)):
-                        x_bins = np.linspace(-180, 180, bins[0] + 1)
-                        y_bins = np.linspace(-180, 180, bins[1] + 1)
-                    if (isinstance(bins[0], list)
-                    and isinstance(bins[1], list)):
-                        x_bins = np.array(bins[0])
-                        y_bins = np.array(bins[1])
-                else:
-                    x_bins = y_bins = np.array(bins)
-            elif isinstance(bins, np.ndarray):
-                x_bins = y_bins = bins
+            x_bins, y_bins = self.process_bins_arg(bins, dim=2)
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
 
+            # Option 1a: Use a histogram (fast but noisy)
             if mode == "hist":
                 hist_kw = dict(normed=True)
                 hist_kw.update(kwargs.get("hist_kw", {}))
@@ -148,6 +211,7 @@ class PDistDataset(Dataset):
                 probability, _, _ = np.histogram2d(
                   dataframe[phikey], dataframe[psikey], **hist_kw)
 
+            # Option 1b: Use a kernel density estimate (smooth but slow)
             elif mode == "kde":
                 from sklearn.neighbors import KernelDensity
 
@@ -166,49 +230,42 @@ class PDistDataset(Dataset):
                     y_index = np.where(y_centers == psi)[0][0]
                     probability[x_index, y_index] = p
 
+            # Normalize and calculate free energy
             probability /= np.nansum(probability)
             free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
 
+        # Option 2: Calculate mean value of a third observable as a
+        #   function of Φ, Ψ
         else:
-            if isinstance(bins, int):
-                bins = np.linspace(-180, 180, bins + 1)
-            
+            x_bins, y_bins, z_bins = self.process_bins_arg(bins, dim=3)
+            x_centers = (x_bins[:-1] + x_bins[1:]) / 2
+            y_centers = (y_bins[:-1] + y_bins[1:]) / 2
+            z_centers = (z_bins[:-1] + z_bins[1:]) / 2
+            x_width = np.mean(x_centers[1:] - x_centers[:-1])
+            y_width = np.mean(y_centers[1:] - y_centers[:-1])
+
+            # Option 2a: Use a histogram (fast but noisy)
             if mode == "hist":
-                hist_kw = multi_get_copy("hist_kw", kwargs, {})
-                if "bins" in hist_kw:
-                    bins = hist_kw.pop("bins")
+                hist_kw = dict(normed=True)
+                hist_kw.update(kwargs.get("hist_kw", {}))
+                hist_kw["bins"] = hist_kw.get("bins", [x_bins, y_bins, z_bins])
 
-                print(np.min(dataframe[zkey]))
-                if kwargs.get("zwrap", False):
+                if kwargs.get("wrap_z"):
                     dataframe[zkey][dataframe[zkey] < 0] += 360
-                print(np.min(dataframe[zkey]))
 
-                x_bins = bins
-                y_bins = bins
-                z_bins = bins+180
-                x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-                y_centers = (y_bins[:-1] + y_bins[1:]) / 2
-                z_centers = (z_bins[:-1] + z_bins[1:]) / 2
-                count, edges = np.histogramdd( np.column_stack((dataframe[phikey],
-                  dataframe[psikey], dataframe[zkey])),
-                  bins=[x_bins, y_bins, z_bins])
+                prob_xyz, _ = np.histogramdd(np.column_stack(
+                  (dataframe[phikey], dataframe[psikey], dataframe[zkey])),
+                  **hist_kw)
+                probability = np.sum(prob_xyz, axis=2)
+                prob_z_given_xy = prob_xyz / probability[:,:,np.newaxis]
+                weighted_z = prob_z_given_xy*z_centers[np.newaxis,np.newaxis,:]
 
-                prob_xyz          = count / np.nansum(count)
-                prob_z_given_xy   = np.sum(prob_xyz, axis=2)[:,:,np.newaxis]
-                weight_z_given_xy = prob_xyz / prob_z_given_xy
-                weighted_z        = np.zeros_like(prob_xyz) * np.nan
-                for i in range(prob_xyz.shape[0]):
-                    for j in range(prob_xyz.shape[1]):
-                        weighted_z[i,j] = weight_z_given_xy[i,j] * z_centers
                 mean_z = np.sum(weighted_z, axis=2)
-                loop_edges=False
-                
-                self.dist = mean_z
-
                 probability = np.sum(prob_xyz, axis=2)
 
+            # Option 2b: Use a kernel density estimate (smooth but slow)
             elif mode == "kde":
                 from sklearn.neighbors import KernelDensity
 
@@ -264,69 +321,23 @@ class PDistDataset(Dataset):
                 free_energy[np.isinf(free_energy)] = np.nan
                 free_energy -= np.nanmin(free_energy)
 
+            # Normalize and calculate free energy
             probability /= np.nansum(probability)
             free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
-            x_width = np.mean(x_centers[1:] - x_centers[:-1])
-            y_width = np.mean(y_centers[1:] - y_centers[:-1])
-    
-        if loop_edges:
-            x_centers = np.concatenate(([x_centers[0]  - x_width],
-                                         x_centers,
-                                        [x_centers[-1] + x_width]))
-            y_centers = np.concatenate(([y_centers[0]  - y_width],
-                                         y_centers,
-                                        [y_centers[-1] + y_width]))
-            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
-            temp[1:-1,1:-1]  = free_energy
-            temp[1:-1,-1]    = free_energy[:,0]
-            temp[-1,1:-1]    = free_energy[0,:]
-            temp[1:-1,0]     = free_energy[:,-1]
-            temp[0,1:-1]     = free_energy[-1,:]
-            temp[0,0]        = free_energy[-1,-1]
-            temp[-1,-1]      = free_energy[0,0]
-            temp[0,-1]       = free_energy[-1,0]
-            temp[-1,0]       = free_energy[0,-1]
-            free_energy = temp
-            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
-            temp[1:-1,1:-1] = probability
-            temp[1:-1,-1]   = probability[:,0]
-            temp[-1,1:-1]   = probability[0,:]
-            temp[1:-1,0]    = probability[:,-1]
-            temp[0,1:-1]    = probability[-1,:]
-            temp[0,0]       = probability[-1,-1]
-            temp[-1,-1]     = probability[0,0]
-            temp[0,-1]      = probability[-1,0]
-            temp[-1,0]      = probability[0,-1]
-            probability = temp
 
         self.x_centers = x_centers
         self.y_centers = y_centers
         self.x_width = x_width
         self.y_width = y_width
-        self.x_bins  = np.linspace(x_centers[0]  - x_width / 2,
-                                   x_centers[-1] + x_width / 2,
-                                   x_centers.size + 1)
-        self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
-                                   y_centers[-1] + y_width / 2,
-                                   y_centers.size + 1)
+        self.x_bins = x_bins
+        self.y_bins = y_bins
         self.x = dataframe[phikey]
         self.y = dataframe[psikey]
 
         # Prepare mask
-        if zkey == "free energy":
-            self.dist = free_energy
-            if mask_cutoff is not None:
-                self.mask = np.ma.masked_where(np.logical_and(
-                  free_energy <= mask_cutoff,
-                  np.logical_not(np.isnan(free_energy))),
-                  np.ones_like(free_energy))
-            else:
-                self.mask = np.ma.masked_where(
-                  np.logical_not(np.isnan(free_energy)),
-                  np.ones_like(free_energy))
-        elif zkey == "probability":
+        if zkey == "probability":
             self.dist = probability
             if mask_cutoff is not None:
                 self.mask = np.ma.masked_where(np.logical_and(
@@ -337,11 +348,30 @@ class PDistDataset(Dataset):
                 self.mask = np.ma.masked_where(
                   np.logical_not(np.isnan(free_energy)),
                   np.ones_like(free_energy))
+        elif zkey == "free energy":
+            self.dist = free_energy
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  free_energy <= mask_cutoff,
+                  np.logical_not(np.isnan(free_energy))),
+                  np.ones_like(free_energy))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(free_energy)),
+                  np.ones_like(free_energy))
         else:
-            self.mask = np.ma.masked_where(
-              np.logical_not(np.isnan(free_energy)),
-              np.ones_like(free_energy))
+            self.dist = mean_z
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  free_energy <= mask_cutoff,
+                  np.logical_not(np.isnan(free_energy))),
+                  np.ones_like(free_energy))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(free_energy)),
+                  np.ones_like(free_energy))
 
+        # Debug output
         debug=1
         if debug >= 1:
             from .myplotspec.debug import db_s
@@ -351,3 +381,4 @@ class PDistDataset(Dataset):
             db_s("Free energy min {0}".format(np.nanmin(free_energy)))
             db_s("Free energy max {0}".format(np.nanmax(free_energy)))
             db_s("Free energy nan {0}".format(np.sum(np.isnan(free_energy))))
+            db_s("Masked {0}".format(np.sum(self.mask)))
