@@ -233,7 +233,6 @@ class RamachandranFigureManager(FigureManager):
         class: content
         help: Plot average value of a bond as a function of Φ,Ψ
         draw_dataset:
-          kind: cdl
           heatmap_kw:
             cmap: RdBu
             vmin: 0
@@ -306,7 +305,6 @@ class RamachandranFigureManager(FigureManager):
         class: content
         help: Plot average value of an angle as a function of Φ,Ψ
         draw_dataset:
-          kind: cdl
           heatmap_kw:
             cmap: RdBu
             vmin: 110
@@ -405,6 +403,17 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zticks: [121,122,123,124]
             zlabel: O-C-N (°)
+      chi:
+        class: content
+        help: Plot average value of a Χ angle as a function of Φ,Ψ (work in
+              progress)
+        draw_dataset:
+          heatmap_kw:
+            cmap: cubehelix
+            vmin: -180
+            vmax:  180
+          contour_kw:
+            levels: [-180,-120,-60,0,60,120,180]
       omega:
         class: content
         help: Plot average value of omega as a function of Φ (i),Ψ (i-1)
@@ -412,7 +421,6 @@ class RamachandranFigureManager(FigureManager):
           xlabel: '$Φ_{i}$'
           ylabel: '$Ψ_{i-1}$'
         draw_dataset:
-          kind: cdl
           heatmap_kw:
             cmap: RdBu
             vmin: 170
