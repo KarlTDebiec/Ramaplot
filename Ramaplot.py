@@ -22,10 +22,6 @@ from .myplotspec.FigureManager import FigureManager
 class RamachandranFigureManager(FigureManager):
     """
     Manages the generation of Ramachandran figures.
-
-    .. todo:
-      - Consider moving 'loop edges' out of indivual datasets and inot
-        RamachandranFigureManager (de-duplicate)
     """
     from .myplotspec.manage_defaults_presets import manage_defaults_presets
     from .myplotspec.manage_kwargs import manage_kwargs
@@ -560,7 +556,7 @@ class RamachandranFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, label=None, kind="wham",
+    def draw_dataset(self, subplot, label=None, kind="wham", loop_edges=True,
         nan_to_max=True, heatmap=True, colorbar=False, contour=True,
         mask=False, outline=False, plot=False, verbose=1, debug=0, **kwargs):
         """
@@ -595,22 +591,65 @@ class RamachandranFigureManager(FigureManager):
                     verbose=verbose, debug=debug, **dataset_kw)
         if dataset is None:
             return
+        dist      = dataset.dist      if hasattr(dataset,"dist")      else None
+        x_bins    = dataset.x_bins    if hasattr(dataset,"x_bins")    else None
+        y_bins    = dataset.y_bins    if hasattr(dataset,"y_bins")    else None
+        x_width   = dataset.x_width   if hasattr(dataset,"x_width")   else None
+        y_width   = dataset.y_width   if hasattr(dataset,"y_width")   else None
+        x_centers = dataset.x_centers if hasattr(dataset,"x_centers") else None
+        y_centers = dataset.y_centers if hasattr(dataset,"y_centers") else None
+        dist_mask = dataset.mask      if hasattr(dataset,"mask")      else None
+        x         = dataset.x         if hasattr(dataset,"x")         else None
+        y         = dataset.y         if hasattr(dataset,"y")         else None
+        if loop_edges:
+            x_centers = np.concatenate(([x_centers[0]  - x_width], x_centers,
+                                        [x_centers[-1] + x_width]))
+            y_centers = np.concatenate(([y_centers[0]  - y_width], y_centers,
+                                        [y_centers[-1] + y_width]))
+            x_bins  = np.linspace(x_centers[0]  - x_width / 2,
+                                  x_centers[-1] + x_width / 2,
+                                  x_centers.size + 1)
+            y_bins  = np.linspace(y_centers[0]  - y_width / 2,
+                                  y_centers[-1] + y_width / 2,
+                                  y_centers.size + 1)
+            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
+            temp[1:-1,1:-1] = dist
+            temp[1:-1,-1]   = dist[:,0]
+            temp[-1,1:-1]   = dist[0,:]
+            temp[1:-1,0]    = dist[:,-1]
+            temp[0,1:-1]    = dist[-1,:]
+            temp[0,0]       = dist[-1,-1]
+            temp[-1,-1]     = dist[0,0]
+            temp[0,-1]      = dist[-1,0]
+            temp[-1,0]      = dist[0,-1]
+            dist = temp
+
+            temp = np.ma.empty(dist.shape)
+            temp[1:-1,1:-1] = dist_mask
+            temp[1:-1,-1]   = dist_mask[:,0]
+            temp[-1,1:-1]   = dist_mask[0,:]
+            temp[1:-1,0]    = dist_mask[:,-1]
+            temp[0,1:-1]    = dist_mask[-1,:]
+            temp[0,0]       = dist_mask[-1,-1]
+            temp[-1,-1]     = dist_mask[0,0]
+            temp[0,-1]      = dist_mask[-1,0]
+            temp[-1,0]      = dist_mask[0,-1]
+            dist_mask = temp
 
         # Draw heatmap and colorbar
         if heatmap:
-            if not (hasattr(dataset, "dist") and hasattr(dataset, "x_bins")
-            and     hasattr(dataset, "y_bins")):
+            if dist is None or x_bins is None or y_bins is None:
                 warn("'heatmap' is enabled but dataset does not have the "
                      "necessary attributes 'mask', 'x_bins', and 'y_bins', "
                      "skipping.")
             else:
                 heatmap_kw = copy(kwargs.get("heatmap_kw", {}))
-                heatmap_dist = copy(dataset.dist)
+                heatmap_dist = copy(dist)
                 if nan_to_max:
                     heatmap_dist[np.isnan(heatmap_dist)] = np.nanmax(
                       heatmap_dist)
-                pcolormesh = subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
-                  heatmap_dist.T, zorder=0.1, **heatmap_kw)
+                pcolormesh = subplot.pcolormesh(x_bins, y_bins, heatmap_dist.T,
+                  zorder=0.1, **heatmap_kw)
                 if colorbar:
                     if not hasattr(subplot, "_mps_partner_subplot"):
                         from .myplotspec.axes import add_partner_subplot
@@ -619,8 +658,7 @@ class RamachandranFigureManager(FigureManager):
 
         # Draw contour
         if contour:
-            if not (hasattr(dataset, "dist") and hasattr(dataset, "x_centers")
-            and     hasattr(dataset, "y_centers")):
+            if dist is None or x_centers is None or y_centers is None:
                 warn("'contour' is enabled but dataset does not have the "
                      "necessary attributes 'dist', 'x_centers', and "
                      "'y_centers', skipping.")
@@ -630,9 +668,11 @@ class RamachandranFigureManager(FigureManager):
                     contour_kw["levels"] = kwargs.pop("color")
                 elif "levels" not in contour_kw:
                     contour_kw["levels"] = range(0,
-                      int(np.ceil(np.nanmax(dataset.dist))))
-                contour = subplot.contour(dataset.x_centers, dataset.y_centers,
-                  dataset.dist.T, zorder=0.2, **contour_kw)
+                      int(np.ceil(np.nanmax(dist))))
+                contour = subplot.contour(x_centers, y_centers, dist.T,
+                  zorder=0.2, **contour_kw)
+
+                # Close bottom of contours
                 for collection in contour.collections:
                     for path in collection.get_paths():
                         if np.all(path.vertices[0] == path.vertices[-1]):
@@ -641,65 +681,63 @@ class RamachandranFigureManager(FigureManager):
 
         # Draw mask
         if mask:
-            if not (hasattr(dataset, "mask") and hasattr(dataset, "x_bins")
-            and     hasattr(dataset, "y_bins")):
+            if dist_mask is None or x_bins is None or y_bins is None:
                 warn("'mask' is enabled but dataset does not have the "
                      "necessary attributes 'mask', 'x_bins', and 'y_bins', "
                      "skipping.")
             else:
                 mask_kw = copy(kwargs.get("mask_kw", {}))
-                subplot.pcolormesh(dataset.x_bins, dataset.y_bins,
-                  dataset.mask.T, zorder=0.3, **mask_kw)
+                subplot.pcolormesh(x_bins, y_bins, dist_mask.T, zorder=0.3,
+                  **mask_kw)
 
         # Draw outline
         if outline:
-            if not (hasattr(dataset, "mask") and hasattr(dataset, "x_bins")
-            and     hasattr(dataset, "y_bins")):
+            if dist_mask is None or x_bins is None or y_bins is None:
                 warn("'outline' is enabled but dataset does not have the "
                      "necessary attributes 'mask', 'x_bins', and 'y_bins', "
                      "skipping.")
             else:
                 outline_kw = copy(kwargs.get("outline_kw", {}))
-                for x in range(dataset.dist.shape[0]):
-                    for y in range(dataset.dist.shape[1]):
-                        if not dataset.mask[x,y]:
+                for x in range(dist.shape[0]):
+                    for y in range(dist.shape[1]):
+                        if not dist_mask[x,y]:
                             if (x != 0
-                            and y != dataset.mask.shape[1]
-                            and dataset.mask[x-1,y]):
+                            and y != dist_mask.shape[1]
+                            and dist_mask[x-1,y]):
                                 subplot.plot(
-                                  [dataset.x_bins[x], dataset.x_bins[x]],
-                                  [dataset.y_bins[y], dataset.y_bins[y+1]],
+                                  [x_bins[x], x_bins[x]],
+                                  [y_bins[y], y_bins[y+1]],
                                   zorder=0.4, **outline_kw)
-                            if (x != dataset.mask.shape[0] - 1
-                            and y != dataset.mask.shape[1]
-                            and dataset.mask[x+1,y]):
+                            if (x != dist_mask.shape[0] - 1
+                            and y != dist_mask.shape[1]
+                            and dist_mask[x+1,y]):
                                 subplot.plot(
-                                  [dataset.x_bins[x+1], dataset.x_bins[x+1]],
-                                  [dataset.y_bins[y],   dataset.y_bins[y+1]],
+                                  [x_bins[x+1], x_bins[x+1]],
+                                  [y_bins[y],   y_bins[y+1]],
                                   zorder=0.4, **outline_kw)
-                            if (x != dataset.mask.shape[0]
+                            if (x != dist_mask.shape[0]
                             and y != 0
-                            and dataset.mask[x,y-1]):
+                            and dist_mask[x,y-1]):
                                 subplot.plot(
-                                  [dataset.x_bins[x], dataset.x_bins[x+1]],
-                                  [dataset.y_bins[y], dataset.y_bins[y]],
+                                  [x_bins[x], x_bins[x+1]],
+                                  [y_bins[y], y_bins[y]],
                                   zorder=0.4, **outline_kw)
-                            if (x != dataset.mask.shape[0]
-                            and y != dataset.mask.shape[1] - 1
-                            and dataset.mask[x,y+1]):
+                            if (x != dist_mask.shape[0]
+                            and y != dist_mask.shape[1] - 1
+                            and dist_mask[x,y+1]):
                                 subplot.plot(
-                                  [dataset.x_bins[x], dataset.x_bins[x+1]],
-                                  [dataset.y_bins[y+1], dataset.y_bins[y+1]],
+                                  [x_bins[x], x_bins[x+1]],
+                                  [y_bins[y+1], y_bins[y+1]],
                                   zorder=0.4, **outline_kw)
 
         # Draw plot
         if plot:
-            if not (hasattr(dataset, "x") and hasattr(dataset, "y")):
+            if x is None or y is None:
                 warn("'plot' is enabled but dataset does not have the "
                      "necessary attributes 'x' and 'y', skipping.")
             else:
                 plot_kw = copy(kwargs.get("plot_kw", {}))
-                subplot.plot(dataset.x, dataset.y, **plot_kw)
+                subplot.plot(x, y, **plot_kw)
 
         if label is not None:
             from .myplotspec.text import set_text

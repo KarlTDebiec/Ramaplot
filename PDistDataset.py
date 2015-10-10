@@ -372,7 +372,6 @@ class PDistDataset(Dataset):
                   np.ones_like(free_energy))
 
         # Debug output
-        debug=1
         if debug >= 1:
             from .myplotspec.debug import db_s
             db_s("Size {0}".format(probability.size))
