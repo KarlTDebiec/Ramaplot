@@ -77,8 +77,8 @@ class PDistDataset(Dataset):
             or ndarray, bins or grid directly
           bandwidth (float, optional): Bandwidth to use for kernel
             density estimate
-          wrap (bool): Wrap x and y coordinates between 180 and 360 to
-            between -180 and 0
+          wrap (bool): Wrap x and y coordinates between 180° and 360° to
+            between -180° and 0°
           loop_edges (bool): Mirror first and last row and column along
             edges of distribution; enables contours to be plotted
             smoothly to edge
@@ -106,7 +106,8 @@ class PDistDataset(Dataset):
         if mode not in ["hist", "kde"]:
             raise ValueError("Argument 'mode' does not support provided " +
               "value '{0}', may be 'hist' or 'kde'".format(mode))
-        read_csv_kw = dict(delim_whitespace=True, index_col=0)
+        read_csv_kw = dict(delim_whitespace=True, index_col=0,
+          nrows=10000)
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
         # Load data
@@ -117,120 +118,158 @@ class PDistDataset(Dataset):
             dataframe[psikey][dataframe[psikey] > 180] -= 360
 
         # Analyze
-        if mode == "hist" and zkey in ["free energy", "probability"]:
-            hist_kw = multi_get_copy("hist_kw", kwargs, {})
-            if "bins" in hist_kw:
-                bins = hist_kw.pop("bins")
-            if isinstance(bins, int):
-                bins = np.linspace(-180, 180, bins + 1)
-
-            count, x_bins, y_bins = np.histogram2d(
-              dataframe[phikey], dataframe[psikey], bins=bins, **hist_kw)
-
-            x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-            y_centers = (y_bins[:-1] + y_bins[1:]) / 2
-            x_width = np.mean(x_centers[1:] - x_centers[:-1])
-            y_width = np.mean(y_centers[1:] - y_centers[:-1])
-
-            probability = count / np.nansum(count)
-            probability /= np.nansum(probability)
-            free_energy = -1 * np.log(probability)
-            free_energy[np.isinf(free_energy)] = np.nan
-            free_energy -= np.nanmin(free_energy)
-
-        elif mode == "kde" and zkey in ["free energy", "probability"]:
-            from sklearn.neighbors import KernelDensity
-
-            kde_kw = multi_get_copy("kde_kw", kwargs, {})
-            kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
+        if zkey in ["free energy", "probability"]:
             if isinstance(bins, int):
                 x_bins = y_bins = np.linspace(-180, 180, bins + 1)
             elif isinstance(bins, list):
-                x_bins = y_bins = np.array(bins)
-            elif isintance(bins, np.ndarray):
+                if len(bins) == 2:
+                    if (isinstance(bins[0], int)
+                    and isinstance(bins[1], int)):
+                        x_bins = np.linspace(-180, 180, bins[0] + 1)
+                        y_bins = np.linspace(-180, 180, bins[1] + 1)
+                    if (isinstance(bins[0], list)
+                    and isinstance(bins[1], list)):
+                        x_bins = np.array(bins[0])
+                        y_bins = np.array(bins[1])
+                else:
+                    x_bins = y_bins = np.array(bins)
+            elif isinstance(bins, np.ndarray):
                 x_bins = y_bins = bins
-
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
-            xg, yg = np.meshgrid(x_centers, y_centers)
-            xyg = np.vstack([yg.ravel(), xg.ravel()]).T
-            samples = np.column_stack((dataframe[phikey], dataframe[psikey]))
 
-            kde = KernelDensity(**kde_kw)
-            kde.fit(samples)
-            probability_series = np.exp(kde.score_samples(xyg))
-            probability = np.zeros((x_centers.size, y_centers.size),
-                      np.float) * np.nan
-            for phi, psi, p in np.column_stack((xyg, probability_series)):
-                x_index = np.where(x_centers == phi)[0][0]
-                y_index = np.where(y_centers == psi)[0][0]
-                probability[x_index, y_index] = p
+            if mode == "hist":
+                hist_kw = dict(normed=True)
+                hist_kw.update(kwargs.get("hist_kw", {}))
+                hist_kw["bins"] = hist_kw.get("bins", [x_bins, y_bins])
+
+                probability, _, _ = np.histogram2d(
+                  dataframe[phikey], dataframe[psikey], **hist_kw)
+
+            elif mode == "kde":
+                from sklearn.neighbors import KernelDensity
+
+                kde_kw = multi_get_copy("kde_kw", kwargs, {})
+                kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
+                xg, yg = np.meshgrid(x_centers, y_centers)
+                xyg = np.vstack([yg.ravel(), xg.ravel()]).T
+                samples = np.column_stack((dataframe[phikey], dataframe[psikey]))
+
+                kde = KernelDensity(**kde_kw)
+                kde.fit(samples)
+                probability_series = np.exp(kde.score_samples(xyg))
+                probability = np.zeros((x_centers.size, y_centers.size))*np.nan
+                for phi, psi, p in np.column_stack((xyg, probability_series)):
+                    x_index = np.where(x_centers == phi)[0][0]
+                    y_index = np.where(y_centers == psi)[0][0]
+                    probability[x_index, y_index] = p
 
             probability /= np.nansum(probability)
             free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
 
-        elif mode == "hist" and zkey not in ["free energy", "probability"]:
-            raise TypeError("Support for 3D histogram calculation is not yet "
-              "implemented")
+        else:
+            if isinstance(bins, int):
+                bins = np.linspace(-180, 180, bins + 1)
+            
+            if mode == "hist":
+                hist_kw = multi_get_copy("hist_kw", kwargs, {})
+                if "bins" in hist_kw:
+                    bins = hist_kw.pop("bins")
 
-        elif mode == "kde" and zkey not in ["free energy", "probability"]:
-            from sklearn.neighbors import KernelDensity
+                print(np.min(dataframe[zkey]))
+                if kwargs.get("zwrap", False):
+                    dataframe[zkey][dataframe[zkey] < 0] += 360
+                print(np.min(dataframe[zkey]))
 
-            kde_kw = multi_get_copy("kde_kw", kwargs, {})
-            kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
-            # Only a single bandwidth is supported; scale z
-            #   dimension to span range of 120-240
-            scale_range = 340
-            z = copy(dist[z_key])
-            z -= z.min()        # shift bottom to 0
-            z_range = z.max()     # save max
+                x_bins = bins
+                y_bins = bins
+                z_bins = bins+180
+                x_centers = (x_bins[:-1] + x_bins[1:]) / 2
+                y_centers = (y_bins[:-1] + y_bins[1:]) / 2
+                z_centers = (z_bins[:-1] + z_bins[1:]) / 2
+                count, edges = np.histogramdd( np.column_stack((dataframe[phikey],
+                  dataframe[psikey], dataframe[zkey])),
+                  bins=[x_bins, y_bins, z_bins])
 
-            z *= (scale_range / z_range)
-            z += (360 - scale_range) / 2    # Give buffer on top and bottom
+                prob_xyz          = count / np.nansum(count)
+                prob_z_given_xy   = np.sum(prob_xyz, axis=2)[:,:,np.newaxis]
+                weight_z_given_xy = prob_xyz / prob_z_given_xy
+                weighted_z        = np.zeros_like(prob_xyz) * np.nan
+                for i in range(prob_xyz.shape[0]):
+                    for j in range(prob_xyz.shape[1]):
+                        weighted_z[i,j] = weight_z_given_xy[i,j] * z_centers
+                mean_z = np.sum(weighted_z, axis=2)
+                loop_edges=False
+                
+                self.dist = mean_z
 
-            if kwargs.get("left_half", False):
-                x_bins = np.linspace(-180, 0, (bins/2)+1)
-            else:
-                x_bins = np.linspace(-180, 180, bins+1)
-            y_bins = np.linspace(-180, 180, bins+1)
-            z_bins = np.linspace(   0, 360, bins+1)
-            x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-            y_centers = (y_bins[:-1] + y_bins[1:]) / 2
-            z_centers = (z_bins[:-1] + z_bins[1:]) / 2
-            x_width = np.mean(x_centers[1:] - x_centers[:-1])
-            y_width = np.mean(y_centers[1:] - y_centers[:-1])
-            z_width = np.mean(z_centers[1:] - z_centers[:-1])
-            xg, yg, zg = np.meshgrid(x_centers, y_centers, z_centers)
-            xyzg = np.vstack([xg.ravel(), yg.ravel(), zg.ravel()]).T
-            samples = np.column_stack((dist[phikey], dist[psikey], z))
+                probability = np.sum(prob_xyz, axis=2)
 
-            kde = KernelDensity(**kde_kw)
-            kde.fit(samples)
-            pdist_series = np.exp(kde.score_samples(xyzg))
-            pdist = np.zeros((x_centers.size, y_centers.size, z_centers.size),
-                      np.float) * np.nan
-            for phi, psi, z, p in np.column_stack((xyzg, pdist_series)):
-                x_index = np.where(x_centers == phi)[0][0]
-                y_index = np.where(y_centers == psi)[0][0]
-                z_index = np.where(z_centers == z)[0][0]
-                pdist[x_index, y_index, z_index] = p
-            pdist /= np.sum(pdist)                    # Normalize whole thing
-            a = np.sum(pdist, axis=2)[:,:,np.newaxis] # Total P in each x/y bin
-            b = pdist / a                             # Normalize each x/y bin
-            c = np.zeros_like(b) * np.nan
-            for i in range(b.shape[0]):
-                for j in range(b.shape[1]):
-                    c[i,j] = b[i,j] * z_centers # Scale each z bin by weight
-            free_energy = np.sum(c, axis=2)     # Weighted average
-            free_energy -= (360 - scale_range) / 2  # Shift back down
-            free_energy *= (z_range / scale_range) # Back from degrees to E
-            free_energy *= 627.503              # Convert to kcal/mol
+            elif mode == "kde":
+                from sklearn.neighbors import KernelDensity
+
+                kde_kw = multi_get_copy("kde_kw", kwargs, {})
+                kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
+                # Only a single bandwidth is supported; scale z
+                #   dimension to span range of 120-240
+                scale_range = 340
+                z = copy(dist[z_key])
+                z -= z.min()        # shift bottom to 0
+                z_range = z.max()     # save max
+
+                z *= (scale_range / z_range)
+                z += (360 - scale_range) / 2    # Give buffer on top and bottom
+
+                if kwargs.get("left_half", False):
+                    x_bins = np.linspace(-180, 0, (bins/2)+1)
+                else:
+                    x_bins = np.linspace(-180, 180, bins+1)
+                y_bins = np.linspace(-180, 180, bins+1)
+                z_bins = np.linspace(   0, 360, bins+1)
+                x_centers = (x_bins[:-1] + x_bins[1:]) / 2
+                y_centers = (y_bins[:-1] + y_bins[1:]) / 2
+                z_centers = (z_bins[:-1] + z_bins[1:]) / 2
+                x_width = np.mean(x_centers[1:] - x_centers[:-1])
+                y_width = np.mean(y_centers[1:] - y_centers[:-1])
+                z_width = np.mean(z_centers[1:] - z_centers[:-1])
+                xg, yg, zg = np.meshgrid(x_centers, y_centers, z_centers)
+                xyzg = np.vstack([xg.ravel(), yg.ravel(), zg.ravel()]).T
+                samples = np.column_stack((dist[phikey], dist[psikey], z))
+
+                kde = KernelDensity(**kde_kw)
+                kde.fit(samples)
+                pdist_series = np.exp(kde.score_samples(xyzg))
+                pdist = np.zeros((x_centers.size, y_centers.size, z_centers.size),
+                          np.float) * np.nan
+                for phi, psi, z, p in np.column_stack((xyzg, pdist_series)):
+                    x_index = np.where(x_centers == phi)[0][0]
+                    y_index = np.where(y_centers == psi)[0][0]
+                    z_index = np.where(z_centers == z)[0][0]
+                    pdist[x_index, y_index, z_index] = p
+                pdist /= np.sum(pdist)                    # Normalize whole thing
+                a = np.sum(pdist, axis=2)[:,:,np.newaxis] # Total P in each x/y bin
+                b = pdist / a                             # Normalize each x/y bin
+                c = np.zeros_like(b) * np.nan
+                for i in range(b.shape[0]):
+                    for j in range(b.shape[1]):
+                        c[i,j] = b[i,j] * z_centers # Scale each z bin by weight
+                free_energy = np.sum(c, axis=2)     # Weighted average
+                free_energy -= (360 - scale_range) / 2  # Shift back down
+                free_energy *= (z_range / scale_range) # Back from degrees to E
+                free_energy *= 627.503              # Convert to kcal/mol
+                free_energy[np.isinf(free_energy)] = np.nan
+                free_energy -= np.nanmin(free_energy)
+
+            probability /= np.nansum(probability)
+            free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
+            x_width = np.mean(x_centers[1:] - x_centers[:-1])
+            y_width = np.mean(y_centers[1:] - y_centers[:-1])
     
         if loop_edges:
             x_centers = np.concatenate(([x_centers[0]  - x_width],
@@ -296,13 +335,19 @@ class PDistDataset(Dataset):
                   np.ones_like(probability))
             else:
                 self.mask = np.ma.masked_where(
-                  np.logical_not(np.isnan(probability)),
-                  np.ones_like(probability))
+                  np.logical_not(np.isnan(free_energy)),
+                  np.ones_like(free_energy))
+        else:
+            self.mask = np.ma.masked_where(
+              np.logical_not(np.isnan(free_energy)),
+              np.ones_like(free_energy))
 
+        debug=1
         if debug >= 1:
             from .myplotspec.debug import db_s
-
+            db_s("Size {0}".format(probability.size))
             db_s("Probability min {0}".format(np.nanmin(probability)))
             db_s("Probability max {0}".format(np.nanmax(probability)))
             db_s("Free energy min {0}".format(np.nanmin(free_energy)))
             db_s("Free energy max {0}".format(np.nanmax(free_energy)))
+            db_s("Free energy nan {0}".format(np.sum(np.isnan(free_energy))))
