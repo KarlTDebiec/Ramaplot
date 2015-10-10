@@ -62,7 +62,7 @@ class CDLDataset(Dataset):
     @staticmethod
     def process_selection_arg(selection):
         """
-        Processes selection arguments
+        Processes selection argument.
 
         Arguments:
           selection (str, list): selection to be loaded from file
