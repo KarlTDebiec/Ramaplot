@@ -22,27 +22,42 @@ class WHAMDataset(Dataset):
     calculated using:
       Grossfield, Alan, WHAM: the weighted histogram analysis method,
       version 2.0.9, <http://membrane.urmc.rochester.edu/content/wham>_
+
+    Input data should be provided in the following format::
+
+      #X          Y           Free     Pro
+      -178.750000 -178.750000 6.442071 0.000000
+      -178.750000 -176.250000 6.559820 0.000000
+      ...         ...         ...      ...
+
     """
 
     @classmethod
-    def get_cache_key(cls, infile, zkey="free energy", wrap=True,
-        loop_edges=True, mask_cutoff=None, *args, **kwargs):
+    def get_cache_key(cls, infile, phikey="phi", psikey="psi",
+        zkey="free energy", wrap=True, loop_edges=True, mask_cutoff=None,
+        *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
+
+        Arguments documentented under :func:`__init__`.
         """
         from os.path import expandvars
 
-        return (cls, expandvars(infile), zkey, wrap, loop_edges, mask_cutoff)
+        return (cls, expandvars(infile), phikey, psikey, zkey, wrap,
+          loop_edges, mask_cutoff)
 
-    def __init__(self, zkey="free energy", wrap=True, loop_edges=True,
-        mask_cutoff=None, verbose=1, debug=0, **kwargs):
+    def __init__(self, phikey="phi", psikey="psi", zkey="free energy",
+        wrap=True, loop_edges=True, mask_cutoff=None, verbose=1, debug=0,
+        **kwargs):
         """
         Initializes dataset.
 
         Arguments:
           infile (str): Path to text input file, may contain environment
             variables
+          phikey (str): Key from which to load Φ
+          psikey (str): Key from which to load Ψ
           zkey (str): Key from which to load distribution; acceptable
             values are  'free energy' and 'probability'
           wrap (bool): Wrap x and y coordinates between 180 and 360 to
@@ -59,7 +74,6 @@ class WHAMDataset(Dataset):
           debug (int): Level of debug output
           kwargs (dict): Additional keyword arguments
         """
-        import pandas
         import numpy as np
 
         # Manage arguments
@@ -73,20 +87,20 @@ class WHAMDataset(Dataset):
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
         # Load data
-        dist = self.load_dataset(verbose=verbose, read_csv_kw=read_csv_kw,
+        dataframe = self.load_dataset(verbose=verbose, read_csv_kw=read_csv_kw,
           **kwargs).data
         if wrap:
-            dist["phi"][dist["phi"] > 180] -= 360
-            dist["psi"][dist["psi"] > 180] -= 360
+            dataframe[phikey][dataframe[phikey] > 180] -= 360
+            dataframe[psikey][dataframe[psikey] > 180] -= 360
 
         # Organize data
-        x_centers = np.unique(dist["phi"])
-        y_centers = np.unique(dist["psi"])
+        x_centers = np.unique(dataframe[phikey])
+        y_centers = np.unique(dataframe[psikey])
         free_energy = np.zeros((x_centers.size, y_centers.size),
                                     np.float) * np.nan
         probability = np.zeros((x_centers.size, y_centers.size),
                                     np.float) * np.nan
-        for index, phi, psi, fe, p in dist.itertuples():
+        for index, phi, psi, fe, p in dataframe.itertuples():
             if not np.isnan(fe):
                 x_index = np.where(x_centers == phi)[0][0]
                 y_index = np.where(y_centers == psi)[0][0]
@@ -163,3 +177,11 @@ class WHAMDataset(Dataset):
                 self.mask = np.ma.masked_where(
                   np.logical_not(np.isnan(probability)),
                   np.ones_like(probability))
+
+        if debug >= 1:
+            from .myplotspec.debug import db_s
+
+            db_s("Probability min {0}".format(np.nanmin(probability)))
+            db_s("Probability max {0}".format(np.nanmax(probability)))
+            db_s("Free energy min {0}".format(np.nanmin(free_energy)))
+            db_s("Free energy max {0}".format(np.nanmax(free_energy)))

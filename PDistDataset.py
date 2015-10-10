@@ -21,13 +21,21 @@ class PDistDataset(Dataset):
     representing either the probability of Φ/Ψ, or the expectation value
     of a selected measurement (e.g. energy) at that Φ/Ψ.
 
-    Input data may consit of  a whitespace-delimited text file including
-    columns for Φ, Ψ, and any additional data.
+    Input data should be providied in a whitespace-delimited text file
+    including columns for Φ, Ψ, and any additional data, such as this
+    output from `cpptraj`'s `multidihedral` command::
+
+      #Frame       phi:2     psi:2    chip:2 ...
+             1  -62.1431  144.6768   72.2964 ...
+             2  -63.2487  151.6551   71.9101 ...
+           ...       ...       ...       ...
+
     """
 
     @classmethod
-    def get_cache_key(cls, infile, loop_edges=True, mode="hist", bins=72,
-        phikey="phi", psikey="psi", max_fe=None, *args, **kwargs):
+    def get_cache_key(cls, infile, phikey="phi", psikey="psi",
+        zkey="free energy", mode="hist", bins=72, bandwidth=5, wrap=True,
+        loop_edges=True, mask_cutoff=None, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -37,113 +45,143 @@ class PDistDataset(Dataset):
         from os.path import expandvars
 
         if mode == "hist":
-            return (cls, expandvars(infile), loop_edges, mode, bins,
-                    phikey, psikey, max_fe)
+            return (cls, expandvars(infile), phikey, psikey, zkey, mode, bins,
+                    wrap, loop_edges, mask_cutoff)
         elif mode == "kde":
-            kde_kw = kwargs.get("kde_kw", {})
-            bandwidth = kde_kw.get("bandwidth", kwargs.get("bandwidth", 5))
-            return (cls, expandvars(infile), loop_edges, mode, bins,
-                    phikey, psikey, bandwidth, max_fe)
+            return (cls, expandvars(infile), phikey, psikey, zkey, mode, bins,
+                    bandwidth, wrap, loop_edges, mask_cutoff)
 
-    def __init__(self, mode="hist", phikey="phi", psikey="psi",
-        bins=72, loop_edges=True, max_fe=None, verbose=1, debug=0,
-        **kwargs):
+    def __init__(self, phikey="phi", psikey="psi", zkey="free energy",
+        mode="hist", bins=72, bandwidth=5, wrap=True, loop_edges=True,
+        mask_cutoff=None, verbose=1, debug=0, **kwargs):
         """
         Arguments:
+          infile (str): Path to text input file, may contain environment
+            variables
+          phikey (str): Key from which to load Φ
+          psikey (str): Key from which to load Ψ
+          zkey (str): Key from which to load distribution; if 'free
+            energy' or 'probability', the 2D probability density of Φ
+            and Ψ will be calculated and the selected representation
+            returned; for other values a third dimension will be loaded
+            from the `zkey` column of `infile`, the 3D probability
+            density of Φ, Ψ, and `zkey` will be calculated, and the
+            expectation value of `zkey` as a function of Φ and Ψ will be
+            returned
           mode (str): Method of calculating probability distribution;
             may be either 'hist', to use a histogram, or 'kde', to use a
             kernel density estimate
-          infile (str): Path to text input file, may contain environment
-            variables
-          phikey: 
-          psikey:
-          loop_edges (bool):
-          mode:
-          bins:
-          max_fe:
-          hist_kw:
-          bins:
+          bins (int, list, ndarray): Bins to use for histogram or grid
+            to use for kernel density estimate; if int, number of bins
+            or gride points between -180° and 180° in Φ and Ψ, if list
+            or ndarray, bins or grid directly
+          bandwidth (float, optional): Bandwidth to use for kernel
+            density estimate
+          wrap (bool): Wrap x and y coordinates between 180 and 360 to
+            between -180 and 0
+          loop_edges (bool): Mirror first and last row and column along
+            edges of distribution; enables contours to be plotted
+            smoothly to edge
+          mask_cutoff (float): Cutoff beyond which distribution is
+            masked, if `zkey` is 'free energy', this is a the maximum
+            free energy above which the mask will be set, and if `zkey`
+            is 'probability', this is the minimum probability below
+            which the mask will be set
+          hist_kw: Keyword arguments passed to numpy.histogram2d
+          kde_kw: Keyword arguments passed to
+            sklearn.neighbors.KernelDensity
           verbose (int): Level of verbose output
           debug (int): Level of debug output
           kwargs (dict): Additional keyword arguments
 
         .. todo:
-            - improve bins support
-            - auto-detect phikey and psikey
-            - support variable bandwidth
-            - PERIODICITY
-            - VARIABLE WIDTH
+            - Auto-detect phikey and psikey
+            - Support periodicty
+            - Support variable bandwidth
         """
-        from copy import copy
-        from os.path import expandvars
-        import pandas
         import numpy as np
+        from .myplotspec import multi_get_copy
 
         # Manage arguments
         if mode not in ["hist", "kde"]:
             raise ValueError("Argument 'mode' does not support provided " +
-              "value '{0}', must be 'hist' or 'kde'".format(mode))
+              "value '{0}', may be 'hist' or 'kde'".format(mode))
         read_csv_kw = dict(delim_whitespace=True, index_col=0)
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
         # Load data
-        dist = self.load_dataset(verbose=verbose,
+        dataframe = self.load_dataset(verbose=verbose, debug=debug,
           read_csv_kw=read_csv_kw, **kwargs).data
+        if wrap:
+            dataframe[phikey][dataframe[phikey] > 180] -= 360
+            dataframe[psikey][dataframe[psikey] > 180] -= 360
 
-        if mode == "hist":
-            hist_kw = copy(kwargs.get("hist_kw", {}))
+        # Analyze
+        if mode == "hist" and zkey in ["free energy", "probability"]:
+            hist_kw = multi_get_copy("hist_kw", kwargs, {})
             if "bins" in hist_kw:
                 bins = hist_kw.pop("bins")
             if isinstance(bins, int):
-                bins = np.linspace(-180, 180, bins)
+                bins = np.linspace(-180, 180, bins + 1)
 
             count, x_bins, y_bins = np.histogram2d(
-              dist[phikey], dist[psikey], bins=bins, **hist_kw)
+              dataframe[phikey], dataframe[psikey], bins=bins, **hist_kw)
+
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
 
-            free_energy = -1 * np.log(count / count.sum())
+            probability = count / np.nansum(count)
+            probability /= np.nansum(probability)
+            free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
 
-        elif mode == "kde":
+        elif mode == "kde" and zkey in ["free energy", "probability"]:
             from sklearn.neighbors import KernelDensity
 
-            kde_kw = copy(kwargs.get("kde_kw", {}))
-            kde_kw["bandwidth"] = kde_kw.get("bandwidth",
-              kwargs.get("bandwidth", 5))
-            x_bins = np.linspace(-180, 180, bins+1)
-            y_bins = np.linspace(-180, 180, bins+1)
+            kde_kw = multi_get_copy("kde_kw", kwargs, {})
+            kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
+            if isinstance(bins, int):
+                x_bins = y_bins = np.linspace(-180, 180, bins + 1)
+            elif isinstance(bins, list):
+                x_bins = y_bins = np.array(bins)
+            elif isintance(bins, np.ndarray):
+                x_bins = y_bins = bins
+
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
             xg, yg = np.meshgrid(x_centers, y_centers)
             xyg = np.vstack([yg.ravel(), xg.ravel()]).T
-            samples = np.column_stack((dist[phikey], dist[psikey]))
+            samples = np.column_stack((dataframe[phikey], dataframe[psikey]))
 
             kde = KernelDensity(**kde_kw)
             kde.fit(samples)
-            pdist_series = np.exp(kde.score_samples(xyg))
-            pdist = np.zeros((x_centers.size, y_centers.size),
+            probability_series = np.exp(kde.score_samples(xyg))
+            probability = np.zeros((x_centers.size, y_centers.size),
                       np.float) * np.nan
-            for phi, psi, p in np.column_stack((xyg, pdist_series)):
+            for phi, psi, p in np.column_stack((xyg, probability_series)):
                 x_index = np.where(x_centers == phi)[0][0]
                 y_index = np.where(y_centers == psi)[0][0]
-                pdist[x_index, y_index] = p
+                probability[x_index, y_index] = p
 
-            free_energy = -1 * np.log(pdist / pdist.sum())
+            probability /= np.nansum(probability)
+            free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
-        elif mode == "kde_3d":
+
+        elif mode == "hist" and zkey not in ["free energy", "probability"]:
+            raise TypeError("Support for 3D histogram calculation is not yet "
+              "implemented")
+
+        elif mode == "kde" and zkey not in ["free energy", "probability"]:
             from sklearn.neighbors import KernelDensity
 
-            kde_kw = copy(kwargs.get("kde_kw", {}))
-            kde_kw["bandwidth"] = kde_kw.get("bandwidth",
-              kwargs.get("bandwidth", 5))
-            z_key = kwargs.get("z_key", "energy")
+            kde_kw = multi_get_copy("kde_kw", kwargs, {})
+            kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
             # Only a single bandwidth is supported; scale z
             #   dimension to span range of 120-240
             scale_range = 340
@@ -193,8 +231,6 @@ class PDistDataset(Dataset):
             free_energy *= 627.503              # Convert to kcal/mol
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
-#            print(free_energy, free_energy.shape, free_energy.sum(),
-#              free_energy.min(), free_energy.max())
     
         if loop_edges:
             x_centers = np.concatenate(([x_centers[0]  - x_width],
@@ -214,6 +250,17 @@ class PDistDataset(Dataset):
             temp[0,-1]       = free_energy[-1,0]
             temp[-1,0]       = free_energy[0,-1]
             free_energy = temp
+            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
+            temp[1:-1,1:-1] = probability
+            temp[1:-1,-1]   = probability[:,0]
+            temp[-1,1:-1]   = probability[0,:]
+            temp[1:-1,0]    = probability[:,-1]
+            temp[0,1:-1]    = probability[-1,:]
+            temp[0,0]       = probability[-1,-1]
+            temp[-1,-1]     = probability[0,0]
+            temp[0,-1]      = probability[-1,0]
+            temp[-1,0]      = probability[0,-1]
+            probability = temp
 
         self.x_centers = x_centers
         self.y_centers = y_centers
@@ -225,17 +272,37 @@ class PDistDataset(Dataset):
         self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
                                    y_centers[-1] + y_width / 2,
                                    y_centers.size + 1)
-        self.dist = free_energy
-        self.x = dist[phikey]
-        self.y = dist[psikey]
+        self.x = dataframe[phikey]
+        self.y = dataframe[psikey]
 
         # Prepare mask
-        if max_fe is not None:
-            self.mask = np.ma.masked_where(np.logical_and(
-              free_energy <= max_fe,
-              np.logical_not(np.isnan(free_energy))),
-              np.ones_like(free_energy))
-        else:
-            self.mask = np.ma.masked_where(
-              np.logical_not(np.isnan(free_energy)),
-              np.ones_like(free_energy))
+        if zkey == "free energy":
+            self.dist = free_energy
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  free_energy <= mask_cutoff,
+                  np.logical_not(np.isnan(free_energy))),
+                  np.ones_like(free_energy))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(free_energy)),
+                  np.ones_like(free_energy))
+        elif zkey == "probability":
+            self.dist = probability
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  probability >= mask_cutoff,
+                  np.logical_not(np.isnan(probability))),
+                  np.ones_like(probability))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(probability)),
+                  np.ones_like(probability))
+
+        if debug >= 1:
+            from .myplotspec.debug import db_s
+
+            db_s("Probability min {0}".format(np.nanmin(probability)))
+            db_s("Probability max {0}".format(np.nanmax(probability)))
+            db_s("Free energy min {0}".format(np.nanmin(free_energy)))
+            db_s("Free energy max {0}".format(np.nanmax(free_energy)))
