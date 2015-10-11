@@ -23,6 +23,7 @@ class NDRDDataset(object):
       Ramachandran Probability Distributions of Amino Acids Developed
       from a Hierarchical Dirichlet Process Model. PLoS Computational
       Biology. 2010. 6. e1000763.
+
     Data for use with this class may be obtained from
     <http://dunbrack.fccc.edu/ndrd>_
     """
@@ -37,9 +38,9 @@ class NDRDDataset(object):
       "['ALA', 'CYS', 'ASP'], for which the  (ALA)-CYS-(ASP) "
       "distribution will be returned.")
 
-    @staticmethod
-    def get_cache_key(infile, selection="ALA", loop_edges=True, max_fe=None,
-        *args, **kwargs):
+    @classmethod
+    def get_cache_key(cls, infile, selection="ALA", mask_cutoff=None, *args,
+        **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -48,9 +49,8 @@ class NDRDDataset(object):
         """
         from os.path import expandvars
 
-        return (NDRDDataset, expandvars(infile),
-                NDRDDataset.process_selection_arg(selection), loop_edges,
-                max_fe)
+        return (cls, expandvars(infile), cls.process_selection_arg(selection),
+          mask_cutoff)
 
     @staticmethod
     def get_cache_message(cache_key):
@@ -63,7 +63,7 @@ class NDRDDataset(object):
               in dataset cache
 
         Returns:
-            cache_message (str): message to be used when reloading
+            cache_message (str): Message to be used when reloading
               previously-loaded dataset
         """
         return "previously loaded '{0}' from '{1}'".format(cache_key[2],
@@ -75,10 +75,10 @@ class NDRDDataset(object):
         Processes selection arguments
 
         Arguments:
-          selection (str, list): selection(s) to be loaded from file
+          selection (str, list): Selection(s) to be loaded from file
 
         Returns:
-          out_selection (tuple): processed selection(s)
+          out_selection (tuple): Processed selection(s)
         """
         import re
         import six
@@ -163,7 +163,7 @@ class NDRDDataset(object):
         return out_selection
 
     @staticmethod
-    def load_dataset(infile, selection, verbose=1, **kwargs):
+    def load_distribution(infile, selection, verbose=1, **kwargs):
         """
         Loads selected distribution from selected infile.
 
@@ -230,8 +230,8 @@ class NDRDDataset(object):
 
         return dataset
 
-    def __init__(self, infile, selection="ALA", loop_edges=True, max_fe=None,
-        **kwargs):
+    def __init__(self, infile, selection="ALA", loop_edges=True,
+        mask_cutoff=None, **kwargs):
         """
         Initializes dataset.
 
@@ -247,7 +247,7 @@ class NDRDDataset(object):
             be returned), or three amino acids (e.g. ['ALA', 'CYS',
             'ASP'], for which the (ALA)-CYS-(ASP) distribution will be
             returned)
-          kwargs (dict): additional keyword arguments
+          kwargs (dict): Additional keyword arguments
         """
         from os.path import expandvars
         import pandas
@@ -257,12 +257,12 @@ class NDRDDataset(object):
         selection = self.process_selection_arg(selection)
 
         if len(selection) == 1:
-            dataset = self.load_dataset(infile, selection[0])
+            dataset = self.load_distribution(infile, selection[0])
         elif len(selection) == 3:
             dataset = self.calculate_triplet(
-                     self.load_dataset(infile, selection[0]),
-                     self.load_dataset(infile, selection[1]),
-                     self.load_dataset(infile, selection[2]))
+                     self.load_distribution(infile, selection[0]),
+                     self.load_distribution(infile, selection[1]),
+                     self.load_distribution(infile, selection[2]))
         else:
             raise TypeError("Selection '{0}' not ".format(selection) +
                             "understood. " + self.type_error_text)
@@ -270,6 +270,8 @@ class NDRDDataset(object):
         # Organize data
         x_centers = np.unique(dataset["phi"])
         y_centers = np.unique(dataset["psi"])
+        x_width = np.mean(x_centers[1:] - x_centers[:-1])
+        y_width = np.mean(y_centers[1:] - y_centers[:-1])
         free_energy = np.zeros((x_centers.size, y_centers.size),
                                np.float) * np.nan
         probability = np.zeros((x_centers.size, y_centers.size),
@@ -281,45 +283,22 @@ class NDRDDataset(object):
             probability[x_index, y_index] = p
         free_energy -= np.nanmin(free_energy)
 
-        x_width = np.mean(x_centers[1:] - x_centers[:-1])
-        y_width = np.mean(y_centers[1:] - y_centers[:-1])
-
-        # Loop distribution to allow contour lines to be drawn to edges
-        if loop_edges:
-            x_centers = np.concatenate(([x_centers[0]  - x_width],
-                                         x_centers,
-                                        [x_centers[-1] + x_width]))
-            y_centers = np.concatenate(([y_centers[0] -  y_width],
-                                         y_centers,
-                                        [y_centers[-1] + y_width]))
-            temp = np.zeros((x_centers.size, y_centers.size), np.float)
-            temp[1:-1,1:-1]  = free_energy
-            temp[1:-1,-1]    = free_energy[:,0]
-            temp[-1,1:-1]    = free_energy[0,:]
-            temp[1:-1,0]     = free_energy[:,-1]
-            temp[0,1:-1]     = free_energy[-1,:]
-            temp[0,0]        = free_energy[-1,-1]
-            temp[-1,-1]      = free_energy[0,0]
-            temp[0,-1]       = free_energy[-1,0]
-            temp[-1,0]       = free_energy[0,-1]
-            free_energy = temp
-
-        self.x_centers = x_centers
-        self.y_centers = y_centers
-        self.x_width = x_width
-        self.y_width = y_width
         self.x_bins  = np.linspace(x_centers[0]  - x_width / 2,
                                    x_centers[-1] + x_width / 2,
                                    x_centers.size + 1)
         self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
                                    y_centers[-1] + y_width / 2,
                                    y_centers.size + 1)
+        self.x_centers = x_centers
+        self.y_centers = y_centers
+        self.x_width = x_width
+        self.y_width = y_width
         self.dist = free_energy
 
         # Prepare mask
-        if max_fe is not None:
+        if mask_cutoff is not None:
             self.mask = np.ma.masked_where(np.logical_and(
-              free_energy <= max_fe,
+              free_energy <= mask_cutoff,
               np.logical_not(np.isnan(free_energy))),
               np.ones_like(free_energy))
         else:
