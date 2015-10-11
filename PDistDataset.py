@@ -64,7 +64,6 @@ class PDistDataset(Dataset):
         Processes bin argument.
 
         Arguments:
-          selection (str, list): selection to be loaded from file
           bins (int, list, ndarray): Bins to use for histogram or grid
             to use for kernel density estimate; if int, number of bins
             or gride points between -180° and 180° in Φ and Ψ, if list
