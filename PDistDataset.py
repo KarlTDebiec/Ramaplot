@@ -186,8 +186,7 @@ class PDistDataset(Dataset):
         if mode not in ["hist", "kde"]:
             raise ValueError("Argument 'mode' does not support provided " +
               "value '{0}', may be 'hist' or 'kde'".format(mode))
-        read_csv_kw = dict(delim_whitespace=True, index_col=0,
-          nrows=10000)
+        read_csv_kw = dict(delim_whitespace=True, index_col=0)
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
         # Load data
