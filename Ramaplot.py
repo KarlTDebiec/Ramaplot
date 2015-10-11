@@ -556,7 +556,7 @@ class RamachandranFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, label=None, kind="wham", loop_edges=True,
+    def draw_dataset(self, subplot, kind, label=None, loop_edges=True,
         nan_to_max=True, heatmap=True, colorbar=False, contour=True,
         mask=False, outline=False, plot=False, verbose=1, debug=0, **kwargs):
         """
@@ -564,7 +564,7 @@ class RamachandranFigureManager(FigureManager):
         from copy import copy
         from warnings import warn
         import numpy as np
-        from .myplotspec import get_color
+        from .myplotspec import get_color, multi_get_copy
         from .myplotspec.axes import set_colorbar
         from .AnalyticalDataset import AnalyticalDataset
         from .CDLDataset import CDLDataset
@@ -583,13 +583,17 @@ class RamachandranFigureManager(FigureManager):
 
         # Load data
         kind = kind.lower()
-        dataset_kw = kwargs.get("dataset_kw", kwargs)
+        dataset_kw = multi_get_copy("dataset_kw", kwargs, {})
         if "infile" in kwargs:
             dataset_kw["infile"] = kwargs["infile"]
-        dataset = self.load_dataset(dataset_classes[kind],
-                    dataset_classes=dataset_classes,
-                    verbose=verbose, debug=debug, **dataset_kw)
-        if dataset is None:
+        try:
+            dataset = self.load_dataset(dataset_classes[kind],
+                        dataset_classes=dataset_classes,
+                        verbose=verbose, debug=debug, **dataset_kw)
+        except TypeError:
+            from warnings import warn
+            warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
+              "error; skipping this dataset.")
             return
         dist      = dataset.dist      if hasattr(dataset,"dist")      else None
         x_bins    = dataset.x_bins    if hasattr(dataset,"x_bins")    else None
