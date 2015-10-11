@@ -40,7 +40,7 @@ class PDistDataset(Dataset):
         Generates tuple of arguments to be used as key for dataset
         cache.
 
-        Arguments documentented under :func:`__init__`.
+        Arguments documented under :func:`__init__`.
         """
         from os.path import expandvars
 
@@ -159,12 +159,15 @@ class PDistDataset(Dataset):
             density estimate
           wrap (bool): Wrap x and y coordinates between 180° and 360° to
             between -180° and 0°
+          wrap_z (bool): Wrap z coordinates between -180° and 0 to between 180°
+            and 360°; probably only useful for plotting ω
           mask_cutoff (float): Cutoff beyond which distribution is
             masked, if `zkey` is 'free energy', this is a the maximum
             free energy above which the mask will be set, and if `zkey`
             is 'probability', this is the minimum probability below
             which the mask will be set
-          hist_kw: Keyword arguments passed to numpy.histogram2d
+          hist_kw: Keyword arguments passed to numpy.histogram2d or
+            numpy.histogramdd
           kde_kw: Keyword arguments passed to
             sklearn.neighbors.KernelDensity
           verbose (int): Level of verbose output
@@ -172,9 +175,10 @@ class PDistDataset(Dataset):
           kwargs (dict): Additional keyword arguments
 
         .. todo:
-            - Auto-detect phikey and psikey
-            - Support periodicic kernel density estimate
-            - Support variable bandwidth kernel density estimate
+          - Fix and validate 3D KDE
+          - Auto-detect phikey and psikey
+          - Support periodicic kernel density estimate
+          - Support variable bandwidth kernel density estimate
         """
         import numpy as np
         from .myplotspec import multi_get_copy
@@ -219,7 +223,8 @@ class PDistDataset(Dataset):
                 kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
                 xg, yg = np.meshgrid(x_centers, y_centers)
                 xyg = np.vstack([yg.ravel(), xg.ravel()]).T
-                samples = np.column_stack((dataframe[phikey], dataframe[psikey]))
+                samples = np.column_stack((dataframe[phikey],
+                  dataframe[psikey]))
 
                 kde = KernelDensity(**kde_kw)
                 kde.fit(samples)

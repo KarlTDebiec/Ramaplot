@@ -8,10 +8,6 @@
 #   BSD license. See the LICENSE file for details.
 """
 Manages Conformation-Dependent Library datasets.
-
-.. todo
-    - Write type_error_text
-    - Improve error checking
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
@@ -32,6 +28,7 @@ class CDLDataset(Dataset):
       are Common and Conserved but not Biased Toward Active Sites. Proceedings
       of the National Acadedemy of the Sciences of the United States of
       America. 2012. 109. 449-453.
+
     Data for use with this class may be obtained from
     `<http://dunbrack.fccc.edu/nmhrcm>`_ and
     `<http://dunbrack.fccc.edu/omega>`_.
@@ -46,18 +43,17 @@ class CDLDataset(Dataset):
       "angle distribution will be returned).")
 
     @classmethod
-    def get_cache_key(cls, infile, selection="NonPGIV_nonxpro",
-        loop_edges=True, *args, **kwargs):
+    def get_cache_key(cls, infile, selection="NonPGIV_nonxpro", *args,
+        **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
 
-        Arguments documentented under :func:`__init__`.
+        Arguments documented under :func:`__init__`.
         """
         from os.path import expandvars
 
-        return (cls, expandvars(infile), cls.process_selection_arg(selection),
-          loop_edges)
+        return (cls, expandvars(infile), cls.process_selection_arg(selection))
 
     @staticmethod
     def process_selection_arg(selection):
@@ -152,14 +148,15 @@ class CDLDataset(Dataset):
         Returns:
           dist (DataFrame): Selected distribution
         """
+        from os.path import expandvars
         from cStringIO import StringIO
-        import pandas
+        import pandas as pd
 
         if verbose >= 1:
             print("loading '{0}' from '{1}'".format(selection, infile))
 
         s = StringIO()
-        with open(infile) as f:
+        with open(expandvars(infile)) as f:
             omega = True if "omega" in f.readline() else False
             for line in f:
                 if line.startswith(selection):
@@ -167,19 +164,18 @@ class CDLDataset(Dataset):
         s.seek(0)
 
         if omega:
-            return pandas.read_csv(s, delim_whitespace=True, header=None,
+            return pd.read_csv(s, delim_whitespace=True, header=None,
               usecols=range(1,7), names=["phi", "psi", "mode", "N",
               "W mean", "W sd", ])
         else:
-            return pandas.read_csv(s, delim_whitespace=True, header=None,
+            return pd.read_csv(s, delim_whitespace=True, header=None,
               usecols=range(1,29), names=["phi", "psi", "mode", "N",
               "CNA mean", "CNA sd", "NAB mean", "NAB sd", "NAC mean", "NAC sd",
               "BAC mean", "BAC sd", "ACO mean", "ACO sd", "ACN mean", "ACN sd",
               "OCN mean", "OCN sd", "CN mean",  "CN sd",  "NA mean",  "NA sd",
               "AB mean",  "AB sd",  "AC mean",  "AC sd",  "CO mean",  "CO sd"])
 
-    def __init__(self, infile, selection="NonPGIV_nonxpro", loop_edges=True,
-        **kwargs):
+    def __init__(self, selection="NonPGIV_nonxpro", **kwargs):
         """
         Initializes dataset.
 
@@ -193,18 +189,17 @@ class CDLDataset(Dataset):
             returned; if list, must be a pair of class and field (e.g.
             '['IleVal_xpro', 'BAC']', for which the isoleucine/valine CB-CA-C
             angle distribution will be returned)
-          loop_edges (bool): Copy edges to enable plotting to edge of
-            plot
           kwargs (dict): additional keyword arguments
         """
         from os.path import expandvars
-        import pandas
         import numpy as np
 
-        infile = expandvars(infile)
+        # Manage arguments
         selection = self.process_selection_arg(selection)
 
-        dataframe = self.load_cdl_distribution(infile, selection[0])
+        # Load data
+        dataframe = self.load_cdl_distribution(selection=selection[0],
+          **kwargs)
 
         # Organize data
         x_centers = np.unique(dataframe["phi"])
@@ -219,37 +214,6 @@ class CDLDataset(Dataset):
             dist[x_index, y_index] = row[selection[1]]
             if row["mode"] == "B":
                 mask[x_index, y_index] = True
-
-        # Loop distribution to allow contour lines to be drawn to edges
-        if loop_edges:
-            x_centers = np.concatenate(([x_centers[0] - x_width],
-                                         x_centers,
-                                        [x_centers[-1] + x_width]))
-            y_centers = np.concatenate(([y_centers[0] - y_width],
-                                         y_centers,
-                                        [y_centers[-1] + y_width]))
-            temp = np.zeros((x_centers.size, y_centers.size), np.float)
-            temp[1:-1,1:-1] = dist
-            temp[1:-1,-1]   = dist[:,0]
-            temp[-1,1:-1]   = dist[0,:]
-            temp[1:-1,0]    = dist[:,-1]
-            temp[0,1:-1]    = dist[-1,:]
-            temp[0,0]       = dist[-1,-1]
-            temp[-1,-1]     = dist[0,0]
-            temp[0,-1]      = dist[-1,0]
-            temp[-1,0]      = dist[0,-1]
-            dist = temp
-            temp = np.zeros((x_centers.size, y_centers.size), np.bool)
-            temp[1:-1,1:-1] = mask
-            temp[1:-1,-1]   = mask[:,0]
-            temp[-1,1:-1]   = mask[0,:]
-            temp[1:-1,0]    = mask[:,-1]
-            temp[0,1:-1]    = mask[-1,:]
-            temp[0,0]       = mask[-1,-1]
-            temp[-1,-1]     = mask[0,0]
-            temp[0,-1]      = mask[-1,0]
-            temp[-1,0]      = mask[0,-1]
-            mask = temp
 
         self.x_centers = x_centers
         self.y_centers = y_centers

@@ -39,7 +39,7 @@ class WHAMDataset(Dataset):
         Generates tuple of arguments to be used as key for dataset
         cache.
 
-        Arguments documentented under :func:`__init__`.
+        Arguments documented under :func:`__init__`.
         """
         from os.path import expandvars
 
