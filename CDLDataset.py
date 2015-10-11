@@ -136,7 +136,7 @@ class CDLDataset(Dataset):
         return resclass, field
 
     @staticmethod
-    def load_cdl_distribution(infile, selection, verbose=1, **kwargs):
+    def load_distribution(infile, selection, verbose=1, **kwargs):
         """
         Loads selected distribution from selected infile.
 
@@ -198,7 +198,7 @@ class CDLDataset(Dataset):
         selection = self.process_selection_arg(selection)
 
         # Load data
-        dataframe = self.load_cdl_distribution(selection=selection[0],
+        dataframe = self.load_distribution(selection=selection[0],
           **kwargs)
 
         # Organize data
@@ -226,4 +226,6 @@ class CDLDataset(Dataset):
                                   y_centers[-1] + y_width / 2,
                                   y_centers.size + 1)
         self.dist = dist
+
+        # Prepare mask
         self.mask = np.ma.masked_where(mask, np.ones_like(dist))
