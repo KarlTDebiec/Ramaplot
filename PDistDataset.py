@@ -227,7 +227,7 @@ class PDistDataset(Dataset):
                 kde = KernelDensity(**kde_kw)
                 kde.fit(samples)
                 probability_series = np.exp(kde.score_samples(xyg))
-                probability = np.zeros((x_centers.size, y_centers.size))*np.nan
+                probability = np.zeros((x_centers.size, y_centers.size))
                 for phi, psi, p in np.column_stack((xyg, probability_series)):
                     x_index = np.where(x_centers == phi)[0][0]
                     y_index = np.where(y_centers == psi)[0][0]
@@ -249,14 +249,14 @@ class PDistDataset(Dataset):
             x_width = np.mean(x_centers[1:] - x_centers[:-1])
             y_width = np.mean(y_centers[1:] - y_centers[:-1])
 
+            if kwargs.get("wrap_z"):
+                dataframe[zkey][dataframe[zkey] < 0] += 360
+
             # Option 2a: Use a histogram (fast but noisy)
             if mode == "hist":
                 hist_kw = dict(normed=True)
                 hist_kw.update(kwargs.get("hist_kw", {}))
                 hist_kw["bins"] = hist_kw.get("bins", [x_bins, y_bins, z_bins])
-
-                if kwargs.get("wrap_z"):
-                    dataframe[zkey][dataframe[zkey] < 0] += 360
 
                 prob_xyz, _ = np.histogramdd(np.column_stack(
                   (dataframe[phikey], dataframe[psikey], dataframe[zkey])),
@@ -264,65 +264,49 @@ class PDistDataset(Dataset):
                 probability = np.sum(prob_xyz, axis=2)
                 prob_z_given_xy = prob_xyz / probability[:,:,np.newaxis]
                 weighted_z = prob_z_given_xy*z_centers[np.newaxis,np.newaxis,:]
-
                 mean_z = np.sum(weighted_z, axis=2)
-                probability = np.sum(prob_xyz, axis=2)
 
             # Option 2b: Use a kernel density estimate (smooth but slow)
             elif mode == "kde":
+                from copy import copy
                 from sklearn.neighbors import KernelDensity
 
                 kde_kw = multi_get_copy("kde_kw", kwargs, {})
                 kde_kw["bandwidth"] = kde_kw.get("bandwidth", bandwidth)
                 # Only a single bandwidth is supported; scale z
                 #   dimension to span range of 120-240
-                scale_range = 340
-                z = copy(dist[z_key])
-                z -= z.min()        # shift bottom to 0
-                z_range = z.max()     # save max
+#                scale_range = 340
+                z = copy(dataframe[zkey])
+#                z -= z.min()        # shift bottom to 0
+#                z_range = z.max()     # save max
 
-                z *= (scale_range / z_range)
-                z += (360 - scale_range) / 2    # Give buffer on top and bottom
+#                z *= (scale_range / z_range)
+#                z += (360 - scale_range) / 2    # Give buffer on top and bottom
 
-                if kwargs.get("left_half", False):
-                    x_bins = np.linspace(-180, 0, (bins/2)+1)
-                else:
-                    x_bins = np.linspace(-180, 180, bins+1)
-                y_bins = np.linspace(-180, 180, bins+1)
-                z_bins = np.linspace(   0, 360, bins+1)
-                x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-                y_centers = (y_bins[:-1] + y_bins[1:]) / 2
-                z_centers = (z_bins[:-1] + z_bins[1:]) / 2
-                x_width = np.mean(x_centers[1:] - x_centers[:-1])
-                y_width = np.mean(y_centers[1:] - y_centers[:-1])
-                z_width = np.mean(z_centers[1:] - z_centers[:-1])
                 xg, yg, zg = np.meshgrid(x_centers, y_centers, z_centers)
                 xyzg = np.vstack([xg.ravel(), yg.ravel(), zg.ravel()]).T
-                samples = np.column_stack((dist[phikey], dist[psikey], z))
+                samples = np.column_stack((dataframe[phikey],
+                  dataframe[psikey], z))
 
                 kde = KernelDensity(**kde_kw)
                 kde.fit(samples)
-                pdist_series = np.exp(kde.score_samples(xyzg))
-                pdist = np.zeros((x_centers.size, y_centers.size, z_centers.size),
+                probability_series = np.exp(kde.score_samples(xyzg))
+                prob_xyz = np.zeros((x_centers.size, y_centers.size, z_centers.size),
                           np.float) * np.nan
-                for phi, psi, z, p in np.column_stack((xyzg, pdist_series)):
+                for phi,psi,z,p in np.column_stack((xyzg, probability_series)):
                     x_index = np.where(x_centers == phi)[0][0]
                     y_index = np.where(y_centers == psi)[0][0]
                     z_index = np.where(z_centers == z)[0][0]
-                    pdist[x_index, y_index, z_index] = p
-                pdist /= np.sum(pdist)                    # Normalize whole thing
-                a = np.sum(pdist, axis=2)[:,:,np.newaxis] # Total P in each x/y bin
-                b = pdist / a                             # Normalize each x/y bin
-                c = np.zeros_like(b) * np.nan
-                for i in range(b.shape[0]):
-                    for j in range(b.shape[1]):
-                        c[i,j] = b[i,j] * z_centers # Scale each z bin by weight
-                free_energy = np.sum(c, axis=2)     # Weighted average
-                free_energy -= (360 - scale_range) / 2  # Shift back down
-                free_energy *= (z_range / scale_range) # Back from degrees to E
-                free_energy *= 627.503              # Convert to kcal/mol
-                free_energy[np.isinf(free_energy)] = np.nan
-                free_energy -= np.nanmin(free_energy)
+                    prob_xyz[x_index, y_index, z_index] = p
+                prob_xyz /= np.sum(prob_xyz)
+                probability = np.sum(prob_xyz, axis=2)
+                prob_z_given_xy = prob_xyz / probability[:,:,np.newaxis]
+                weighted_z = prob_z_given_xy*z_centers[np.newaxis,np.newaxis,:]
+                mean_z = np.sum(weighted_z, axis=2)
+
+#                mean_z -= (360 - scale_range) / 2  # Shift back down
+#                mean_z *= (z_range / scale_range) # Back from degrees to E
+#                free_energy *= 627.503              # Convert to kcal/mol
 
             # Normalize and calculate free energy
             probability /= np.nansum(probability)
