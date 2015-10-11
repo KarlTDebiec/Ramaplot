@@ -141,7 +141,7 @@ class RamachandranFigureManager(FigureManager):
             vmax: 5
           colorbar_kw:
             zticks: [0,1,2,3,4,5]
-            zlabel: 'ΔU (kcal/mol)'
+            zlabel: ΔU (kcal/mol)
           contour: True
           contour_kw:
             colors: '0.25'
@@ -163,7 +163,7 @@ class RamachandranFigureManager(FigureManager):
             vmax: 5
           colorbar_kw:
             zticks: [0,1,2,3,4,5]
-            zlabel: 'ΔG (kcal/mol)'
+            zlabel: ΔG (kcal/mol)
           contour: True
           contour_kw:
             colors: '0.25'
@@ -185,7 +185,7 @@ class RamachandranFigureManager(FigureManager):
             vmax: 0.02
           colorbar_kw:
             zticks: [0.000,0.005,0.010,0.015,0.02]
-            zlabel: 'Probability'
+            zlabel: Probability
           contour: True
           contour_kw:
             colors: '0.25'
@@ -198,14 +198,15 @@ class RamachandranFigureManager(FigureManager):
         help: Plot difference between two datasets
         draw_dataset:
           kind: diff
-          max_fe: 5
+          dataset_kw:
+            mask_cutoff: 5
           heatmap_kw:
             cmap: RdBu_r
             vmin: -5
             vmax:  5
           colorbar_kw:
             zticks: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
-            zlabel: 'ΔΔG (kcal/mol)'
+            zlabel: ΔΔG (kcal/mol)
           contour_kw:
             levels: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
           mask: True
@@ -586,6 +587,10 @@ class RamachandranFigureManager(FigureManager):
         dataset_kw = multi_get_copy("dataset_kw", kwargs, {})
         if "infile" in kwargs:
             dataset_kw["infile"] = kwargs["infile"]
+        if "dataset_1_kw" in kwargs:
+            dataset_kw["dataset_1_kw"] = kwargs["dataset_1_kw"]
+        if "dataset_2_kw" in kwargs:
+            dataset_kw["dataset_2_kw"] = kwargs["dataset_2_kw"]
         try:
             dataset = self.load_dataset(dataset_classes[kind],
                         dataset_classes=dataset_classes,
@@ -595,16 +600,16 @@ class RamachandranFigureManager(FigureManager):
             warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
               "error; skipping this dataset.")
             return
-        dist      = dataset.dist      if hasattr(dataset,"dist")      else None
-        x_bins    = dataset.x_bins    if hasattr(dataset,"x_bins")    else None
-        y_bins    = dataset.y_bins    if hasattr(dataset,"y_bins")    else None
-        x_width   = dataset.x_width   if hasattr(dataset,"x_width")   else None
-        y_width   = dataset.y_width   if hasattr(dataset,"y_width")   else None
+        dist = dataset.dist if hasattr(dataset,"dist") else None
+        x_bins = dataset.x_bins if hasattr(dataset,"x_bins") else None
+        y_bins = dataset.y_bins if hasattr(dataset,"y_bins") else None
+        x_width = dataset.x_width if hasattr(dataset,"x_width") else None
+        y_width = dataset.y_width if hasattr(dataset,"y_width") else None
         x_centers = dataset.x_centers if hasattr(dataset,"x_centers") else None
         y_centers = dataset.y_centers if hasattr(dataset,"y_centers") else None
-        dist_mask = dataset.mask      if hasattr(dataset,"mask")      else None
-        x         = dataset.x         if hasattr(dataset,"x")         else None
-        y         = dataset.y         if hasattr(dataset,"y")         else None
+        dist_mask = dataset.mask if hasattr(dataset,"mask") else None
+        x = dataset.x if hasattr(dataset,"x") else None
+        y = dataset.y if hasattr(dataset,"y") else None
         if loop_edges:
             x_centers = np.concatenate(([x_centers[0]  - x_width], x_centers,
                                         [x_centers[-1] + x_width]))
