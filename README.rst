@@ -66,8 +66,7 @@ The distribution of observed Φ and Ψ dihedral angles from a molecular dynamics
 simulation may be calculated from a text file containing a timeseries,
 typically calculated from the trajectory using `cpptraj
 <https://github.com/Amber-MD/cpptraj>`_. Alternatively, the average value of
-another property as a function of Φ and Ψ may be calculated. (Work in
-progress)
+another property as a function of Φ and Ψ may be calculated.
 
 `Roe, Daniel R., Cheatham III, Thomas E. PTRAJ and CPPTRAJ: Software for
 Processing and Analysis of Molecular Dynamics Trajectory Data. Journal of
