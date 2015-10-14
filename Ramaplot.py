@@ -198,7 +198,9 @@ class RamachandranFigureManager(FigureManager):
         help: Plot difference between two datasets
         draw_dataset:
           kind: diff
-          dataset_kw:
+          dataset_1_kw:
+            mask_cutoff: 5
+          dataset_2_kw:
             mask_cutoff: 5
           heatmap_kw:
             cmap: RdBu_r
