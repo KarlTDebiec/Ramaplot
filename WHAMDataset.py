@@ -76,12 +76,12 @@ class WHAMDataset(Dataset):
             raise ValueError("Argument 'zkey' does not support provided " +
               "value '{0}', must be 'free energy or ".format(zkey) +
               "probability.")
+
+        # Load data
         read_csv_kw = dict(delim_whitespace=True, header=0,
           names=("phi", "psi", "free energy", "probability"),
           na_values=(9999999.000000))
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
-
-        # Load data
         dataframe = self.load_dataset(verbose=verbose, read_csv_kw=read_csv_kw,
           **kwargs).data
         if wrap:
