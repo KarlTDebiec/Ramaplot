@@ -563,6 +563,11 @@ class RamachandranFigureManager(FigureManager):
         nan_to_max=True, heatmap=True, colorbar=False, contour=True,
         mask=False, outline=False, plot=False, verbose=1, debug=0, **kwargs):
         """
+        Draws a dataset.
+
+        Arguments:
+          subplot (Axes): Axes on which to draw
+          kwargs (dict): Additional keyword arguments
         """
         from copy import copy
         from warnings import warn
