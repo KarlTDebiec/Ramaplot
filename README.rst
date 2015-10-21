@@ -26,7 +26,7 @@ solved structures. In addition to distributions for all 20 amino acids, left-
 and right-neighbor distributions are available for each pair of amino acids,
 which may be used to calculate distributions of each amino-acid triplet. The
 complete dataset includes residues identified as turn, coil, bridge, π helix,
-and 310 helix; versions including only turn, coil, and bridge, only turn, and
+and 3\ :sub:`10` helix; versions including only turn, coil, and bridge, only turn, and
 only coil are available as well. This dataset may be obtained from
 `<http://dunbrack.fccc.edu/ndrd>`_.
 
