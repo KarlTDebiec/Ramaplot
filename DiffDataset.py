@@ -26,29 +26,35 @@ class DiffDataset(Dataset):
 
         Arguments documented under :func:`__init__`.
         """
-        dataset_1_kw = kwargs.get("dataset_1_kw")
-        dataset_2_kw = kwargs.get("dataset_2_kw")
-        dataset_classes = kwargs.get("dataset_classes")
-        dataset_1_class = dataset_classes[dataset_1_kw["kind"].lower()]
-        dataset_2_class = dataset_classes[dataset_1_kw["kind"].lower()]
-
         try:
-            return (cls, 
-                    dataset_1_class.get_cache_key(**dataset_1_kw),
-                    dataset_2_class.get_cache_key(**dataset_2_kw))
+            dataset_classes = kwargs.get("dataset_classes")
+            minuend_kw = kwargs.get("minuend_kw")
+            minuend_class = dataset_classes[minuend_kw["kind"].lower()]
+            key = [cls, minuend_class.get_cache_key(**minuend_kw)]
+
+            subtrahend_kw = kwargs.get("subtrahend_kw")
+            if isinstance(subtrahend_kw, dict):
+                subtrahend_kw = [subtrahend_kw]
+            for sh_kw in subtrahend_kw:
+                sh_class = dataset_classes[sh_kw.pop("kind").lower()]
+                key.append(sh_class.get_cache_key(**sh_kw))
+
+            return tuple(key)
         except TypeError:
             return None
 
-    def __init__(self, dataset_1_kw=None, dataset_2_kw=None,
-        dataset_classes=None, dataset_cache=None, mask_cutoff=None, **kwargs):
+    def __init__(self, minuend_kw=None, subtrahend_kw=None,
+        dataset_classes=None, mask_cutoff=None, **kwargs):
         """
         Initializes dataset.
 
         Arguments:
-          dataset_1_kw (dict): Keyword arguments used to generate first
+          minuend_kw (dict): Keyword arguments used to generate first
             dataset
-          dataset_2_kw (dict): Keyword arguments used to generate second
-            dataset
+          subtrahend_kw (dict, list): Keyword arguments used to generate
+            second dataset; if dict, arguments for single dataset; if
+            list, list of dicts of keyword arguments used to generate
+            subtracted datasets
           dataset_cache (dict, optional): Cache of previously-loaded
             datasets
           mask_cutoff (float): Maximum free energy; points in the
@@ -60,58 +66,65 @@ class DiffDataset(Dataset):
         """
         from copy import copy
         import numpy as np
+        from .myplotspec import multi_get_copy
 
-        # Load datasets
-        kind_1 = dataset_1_kw.pop("kind")
-        kind_2 = dataset_2_kw.pop("kind")
-        dataset_1 = self.load_dataset(dataset_classes[kind_1],
-        dataset_cache=dataset_cache, **dataset_1_kw)
-        dataset_2 = self.load_dataset(dataset_classes[kind_2],
-        dataset_cache=dataset_cache, **dataset_2_kw)
-
-        # Validate comparability of datasets
-        if not ((dataset_1.x_centers == dataset_2.x_centers).all()
-        and     (dataset_1.y_centers == dataset_2.x_centers).all()
-        and      dataset_1.x_width   == dataset_2.x_width
-        and      dataset_1.y_width   == dataset_2.y_width
-        and     (dataset_1.x_bins    == dataset_2.x_bins).all()
-        and     (dataset_1.y_bins    == dataset_2.y_bins).all()):
-            raise TypeError()
-
-        # Prepare data
-        self.x_centers = copy(dataset_1.x_centers)
-        self.y_centers = copy(dataset_1.y_centers)
-        self.x_width = copy(dataset_1.x_width)
-        self.y_width = copy(dataset_1.y_width)
-        self.x_bins = copy(dataset_1.x_bins)
-        self.y_bins = copy(dataset_1.y_bins)
-        self.dist = copy(dataset_1.dist) - dataset_2.dist
+        # Load minuend
+        minuend_kw = multi_get_copy(["minuend", "minuend_kw"], kwargs, {})
+        minuend_class = dataset_classes[minuend_kw.pop("kind").lower()]
+        minuend = self.load_dataset(minuend_class, **minuend_kw)
+        self.x_centers = copy(minuend.x_centers)
+        self.y_centers = copy(minuend.y_centers)
+        self.x_width = copy(minuend.x_width)
+        self.y_width = copy(minuend.y_width)
+        self.x_bins = copy(minuend.x_bins)
+        self.y_bins = copy(minuend.y_bins)
+        self.dist = copy(minuend.dist)
 
         # Prepare mask
-        #   Values that are NaN are all masked, as are values that are
-        #   masked in both source datasets; two boolean arrays are
-        #   prepared manually; np.logical_and() and np.logical_or()
-        #   yield the same result when passed masked arrays, and are
-        #   either broken or not intended to be used for this purpose,
-        #   and np.ma.mask_or() does not appear to be usable either.
-        temp1 = np.zeros_like(dataset_1.dist)
-        temp2 = np.zeros_like(dataset_2.dist)
         if mask_cutoff is None:
-            dataset_1_mask = dataset_1.mask
-            dataset_2_mask = dataset_2.mask
+            self.mask = minuend.mask
         else:
-            dataset_1_mask = np.ma.masked_where(np.logical_and(
-              dataset_1.dist <= mask_cutoff,
-              np.logical_not(np.isnan(dataset_1.dist))),
-              np.ones_like(dataset_1.dist))
-            dataset_2_mask = np.ma.masked_where(np.logical_and(
-              dataset_2.dist <= mask_cutoff,
-              np.logical_not(np.isnan(dataset_2.dist))),
-              np.ones_like(dataset_2.dist))
-        temp1[dataset_1_mask != 1] = 1
-        temp2[dataset_2_mask != 1] = 1
-        self.mask = np.ma.masked_where(
-          np.logical_and(
-            np.logical_not(np.isnan(self.dist)),
-            np.logical_or(temp1, temp2)),
-          np.ones_like(self.dist))
+            self.mask = np.ma.masked_where(np.logical_and(
+              self.dist <= mask_cutoff,
+              np.logical_not(np.isnan(self.dist))),
+              np.ones_like(self.dist))
+
+        # Subtract subtrahends
+        subtrahend_kw = multi_get_copy(["subtrahend", "subtrahend_kw"],
+          kwargs, {})
+        if isinstance(subtrahend_kw, dict):
+            subtrahend_kw = [subtrahend_kw]
+        for sh_kw in subtrahend_kw:
+            sh_class = dataset_classes[sh_kw.pop("kind").lower()]
+            sh = self.load_dataset(sh_class, **sh_kw)
+
+            # Validate comparability of datasets
+            if not ((minuend.x_centers == sh.x_centers).all()
+            and     (minuend.y_centers == sh.x_centers).all()
+            and      minuend.x_width   == sh.x_width
+            and      minuend.y_width   == sh.y_width
+            and     (minuend.x_bins    == sh.x_bins).all()
+            and     (minuend.y_bins    == sh.y_bins).all()):
+                raise TypeError()
+
+            # Prepare data
+            self.dist -= sh.dist
+
+            # Prepare mask
+            #   Values that are NaN are all masked, as are values that
+            #   are masked in both source datasets; two boolean arrays
+            #   are prepared manually; np.logical_and() and
+            #   np.logical_or() yield the same result when passed masked
+            #   arrays, and are either broken or not intended to be used
+            #   for this purpose, and np.ma.mask_or() does not appear to
+            #   be usable either.
+            if mask_cutoff is None:
+                sh_mask = sh.mask
+            else:
+                sh_mask = np.ma.masked_where(np.logical_and(
+                  sh.dist <= mask_cutoff,
+                  np.logical_not(np.isnan(sh.dist))),
+                  np.ones_like(sh.dist))
+            self.mask = np.ma.masked_where(
+              np.logical_or(self.mask != 1, sh_mask  != 1),
+              np.ones_like(self.dist))

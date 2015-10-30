@@ -578,35 +578,33 @@ class RamachandranFigureManager(FigureManager):
         from .CDLDataset import CDLDataset
         from .DiffDataset import DiffDataset
         from .ImageDataset import ImageDataset
+        from .MeanDataset import MeanDataset
         from .NDRDDataset import NDRDDataset
         from .PDistDataset import PDistDataset
         from .WHAMDataset import WHAMDataset
         dataset_classes = {"analytical": AnalyticalDataset,
-                           "cdl":        CDLDataset,
-                           "diff":       DiffDataset,
-                           "image":      ImageDataset,
-                           "ndrd":       NDRDDataset,
-                           "pdist":      PDistDataset,
-                           "wham":       WHAMDataset}
+                           "cdl": CDLDataset,
+                           "diff": DiffDataset,
+                           "image": ImageDataset,
+                           "mean": MeanDataset,
+                           "ndrd": NDRDDataset,
+                           "pdist": PDistDataset,
+                           "wham": WHAMDataset}
 
         # Load data
         kind = kind.lower()
         dataset_kw = multi_get_copy("dataset_kw", kwargs, {})
         if "infile" in kwargs:
             dataset_kw["infile"] = kwargs["infile"]
-        if "dataset_1_kw" in kwargs:
-            dataset_kw["dataset_1_kw"] = kwargs["dataset_1_kw"]
-        if "dataset_2_kw" in kwargs:
-            dataset_kw["dataset_2_kw"] = kwargs["dataset_2_kw"]
-        try:
-            dataset = self.load_dataset(dataset_classes[kind],
-                        dataset_classes=dataset_classes,
-                        verbose=verbose, debug=debug, **dataset_kw)
-        except TypeError:
-            from warnings import warn
-            warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
-              "error; skipping this dataset.")
-            return
+#        try:
+        dataset = self.load_dataset(dataset_classes[kind],
+                    dataset_classes=dataset_classes,
+                    verbose=verbose, debug=debug, **dataset_kw)
+#        except TypeError:
+#            from warnings import warn
+#            warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
+#              "error; skipping this dataset.")
+#            return
         dist = dataset.dist if hasattr(dataset,"dist") else None
         x_bins = dataset.x_bins if hasattr(dataset,"x_bins") else None
         y_bins = dataset.y_bins if hasattr(dataset,"y_bins") else None

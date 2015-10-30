@@ -206,7 +206,7 @@ class PDistDataset(Dataset):
 
             # Option 1a: Use a histogram (fast but noisy)
             if mode == "hist":
-                hist_kw = dict(normed=True)
+                hist_kw = dict(normed=False)
                 hist_kw.update(kwargs.get("hist_kw", {}))
                 hist_kw["bins"] = hist_kw.get("bins", [x_bins, y_bins])
 
@@ -291,8 +291,8 @@ class PDistDataset(Dataset):
                 kde = KernelDensity(**kde_kw)
                 kde.fit(samples)
                 probability_series = np.exp(kde.score_samples(xyzg))
-                prob_xyz = np.zeros((x_centers.size, y_centers.size, z_centers.size),
-                          np.float) * np.nan
+                prob_xyz = np.zeros((x_centers.size, y_centers.size,
+                  z_centers.size), np.float) * np.nan
                 for phi,psi,z,p in np.column_stack((xyzg, probability_series)):
                     x_index = np.where(x_centers == phi)[0][0]
                     y_index = np.where(y_centers == psi)[0][0]
