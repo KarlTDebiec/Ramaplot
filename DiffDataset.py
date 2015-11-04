@@ -52,9 +52,9 @@ class DiffDataset(Dataset):
           minuend_kw (dict): Keyword arguments used to generate first
             dataset
           subtrahend_kw (dict, list): Keyword arguments used to generate
-            second dataset; if dict, arguments for single dataset; if
-            list, list of dicts of keyword arguments used to generate
-            subtracted datasets
+            datasets to subtract; if dict, arguments for single dataset;
+            if list, list of dicts of keyword arguments used to generate
+            multiple datasets
           dataset_cache (dict, optional): Cache of previously-loaded
             datasets
           mask_cutoff (float): Maximum free energy; points in the
