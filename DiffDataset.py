@@ -71,6 +71,8 @@ class DiffDataset(Dataset):
         # Load minuend
         minuend_kw = multi_get_copy(["minuend", "minuend_kw"], kwargs, {})
         minuend_class = dataset_classes[minuend_kw.pop("kind").lower()]
+        if not "dataset_cache" in minuend_kw:
+            minuend_kw["dataset_cache"] = kwargs.get("dataset_cache", {})
         minuend = self.load_dataset(minuend_class, **minuend_kw)
         self.x_centers = copy(minuend.x_centers)
         self.y_centers = copy(minuend.y_centers)
@@ -95,6 +97,8 @@ class DiffDataset(Dataset):
         if isinstance(subtrahend_kw, dict):
             subtrahend_kw = [subtrahend_kw]
         for sh_kw in subtrahend_kw:
+            if not "dataset_cache" in sh_kw:
+                sh_kw["dataset_cache"] = kwargs.get("dataset_cache", {})
             sh_class = dataset_classes[sh_kw.pop("kind").lower()]
             sh = self.load_dataset(sh_class, **sh_kw)
 
