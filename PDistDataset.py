@@ -179,6 +179,7 @@ class PDistDataset(Dataset):
           - Support periodicic kernel density estimate
           - Support variable bandwidth kernel density estimate
         """
+        from os.path import expandvars
         import numpy as np
         from .myplotspec import multi_get_copy
 
@@ -206,6 +207,10 @@ class PDistDataset(Dataset):
 
             # Option 1a: Use a histogram (fast but noisy)
             if mode == "hist":
+                if verbose >= 1:
+                    print("calculating probability distribution of " +
+                          "'{0}' and '{1}' using a ".format(phikey, psikey) +
+                          "histogram")
                 hist_kw = dict(normed=False)
                 hist_kw.update(kwargs.get("hist_kw", {}))
                 hist_kw["bins"] = hist_kw.get("bins", [x_bins, y_bins])
@@ -215,6 +220,10 @@ class PDistDataset(Dataset):
 
             # Option 1b: Use a kernel density estimate (smooth but slow)
             elif mode == "kde":
+                if verbose >= 1:
+                    print("calculating probability distribution of " +
+                          "'{0}' and '{1}' using a ".format(phikey, psikey) +
+                          "kernel density estimate")
                 from sklearn.neighbors import KernelDensity
 
                 kde_kw = multi_get_copy("kde_kw", kwargs, {})
@@ -254,6 +263,10 @@ class PDistDataset(Dataset):
 
             # Option 2a: Use a histogram (fast but noisy)
             if mode == "hist":
+                if verbose >= 1:
+                    print("calculating mean value  of '{0}'".format(zkey) +
+                          "as a function of '{0}' and ".format(phikey) +
+                          "'{0}' using a histogram".format(psikey))
                 hist_kw = dict(normed=True)
                 hist_kw.update(kwargs.get("hist_kw", {}))
                 hist_kw["bins"] = hist_kw.get("bins", [x_bins, y_bins, z_bins])
@@ -268,6 +281,7 @@ class PDistDataset(Dataset):
 
             # Option 2b: Use a kernel density estimate (smooth but slow)
             elif mode == "kde":
+                raise()
                 from copy import copy
                 from sklearn.neighbors import KernelDensity
 

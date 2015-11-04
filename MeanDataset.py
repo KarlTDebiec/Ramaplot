@@ -26,29 +26,30 @@ class MeanDataset(Dataset):
 
         Arguments documented under :func:`__init__`.
         """
-        dataset_1_kw = kwargs.get("dataset_1_kw")
-        dataset_2_kw = kwargs.get("dataset_2_kw")
-        dataset_classes = kwargs.get("dataset_classes")
-        dataset_1_class = dataset_classes[dataset_1_kw["kind"].lower()]
-        dataset_2_class = dataset_classes[dataset_1_kw["kind"].lower()]
-
         try:
-            return (cls, 
-                    dataset_1_class.get_cache_key(**dataset_1_kw),
-                    dataset_2_class.get_cache_key(**dataset_2_kw))
+            dataset_classes = kwargs.get("dataset_classes")
+
+            observation_kw = kwargs.get("observation_kw")
+            if isinstance(observation_kw, dict):
+                observation_kw = [observation_kw]
+            for ob_kw in observation_kw:
+                ob_class = dataset_classes[ob_kw.pop("kind").lower()]
+                key.append(ob_class.get_cache_key(**ob_kw))
+
+            return tuple(key)
         except TypeError:
             return None
 
-    def __init__(self, dataset_1_kw=None, dataset_2_kw=None,
-        dataset_classes=None, dataset_cache=None, mask_cutoff=None, **kwargs):
+    def __init__(self, 
+        dataset_classes=None, mask_cutoff=None, **kwargs):
         """
         Initializes dataset.
 
         Arguments:
-          dataset_1_kw (dict): Keyword arguments used to generate first
-            dataset
-          dataset_2_kw (dict): Keyword arguments used to generate second
-            dataset
+          observation_kw (dict, list): Keyword arguments used to
+            generate datasets to average ; if dict, arguments for single
+            dataset; if list, list of dicts of keyword arguments used to
+            generate multiple datasets
           dataset_cache (dict, optional): Cache of previously-loaded
             datasets
           mask_cutoff (float): Maximum free energy; points in the
@@ -60,58 +61,75 @@ class MeanDataset(Dataset):
         """
         from copy import copy
         import numpy as np
+        from .myplotspec import multi_get_copy
 
-        # Load datasets
-        kind_1 = dataset_1_kw.pop("kind")
-        kind_2 = dataset_2_kw.pop("kind")
-        dataset_1 = self.load_dataset(dataset_classes[kind_1],
-        dataset_cache=dataset_cache, **dataset_1_kw)
-        dataset_2 = self.load_dataset(dataset_classes[kind_2],
-        dataset_cache=dataset_cache, **dataset_2_kw)
+        # Load dataset arguments
+        observation_kw = multi_get_copy(["observation", "observation_kw"],
+          kwargs, {})
+        if isinstance(observation_kw, dict):
+            observation_kw = [observation_kw]
 
-        # Validate comparability of datasets
-        if not ((dataset_1.x_centers == dataset_2.x_centers).all()
-        and     (dataset_1.y_centers == dataset_2.x_centers).all()
-        and      dataset_1.x_width   == dataset_2.x_width
-        and      dataset_1.y_width   == dataset_2.y_width
-        and     (dataset_1.x_bins    == dataset_2.x_bins).all()
-        and     (dataset_1.y_bins    == dataset_2.y_bins).all()):
-            raise TypeError()
-
-        # Prepare data
-        self.x_centers = copy(dataset_1.x_centers)
-        self.y_centers = copy(dataset_1.y_centers)
-        self.x_width = copy(dataset_1.x_width)
-        self.y_width = copy(dataset_1.y_width)
-        self.x_bins = copy(dataset_1.x_bins)
-        self.y_bins = copy(dataset_1.y_bins)
-        self.dist = (copy(dataset_1.dist) + dataset_2.dist) / 2
+        # Load first dataset
+        n_observations = 1
+        ob_kw = observation_kw.pop()
+        ob_class = dataset_classes[ob_kw.pop("kind").lower()]
+        if not "dataset_cache" in ob_kw:
+            ob_kw["dataset_cache"] = kwargs.get("dataset_cache", {})
+        ob = self.load_dataset(ob_class, **ob_kw)
+        self.x_centers = copy(ob.x_centers)
+        self.y_centers = copy(ob.y_centers)
+        self.x_width   = copy(ob.x_width)
+        self.y_width   = copy(ob.y_width)
+        self.x_bins    = copy(ob.x_bins)
+        self.y_bins    = copy(ob.y_bins)
+        self.dist      = copy(ob.dist)
 
         # Prepare mask
-        #   Values that are NaN are all masked, as are values that are
-        #   masked in both source datasets; two boolean arrays are
-        #   prepared manually; np.logical_and() and np.logical_or()
-        #   yield the same result when passed masked arrays, and are
-        #   either broken or not intended to be used for this purpose,
-        #   and np.ma.mask_or() does not appear to be usable either.
-        temp1 = np.zeros_like(dataset_1.dist)
-        temp2 = np.zeros_like(dataset_2.dist)
         if mask_cutoff is None:
-            dataset_1_mask = dataset_1.mask
-            dataset_2_mask = dataset_2.mask
+            self.mask = ob.mask
         else:
-            dataset_1_mask = np.ma.masked_where(np.logical_and(
-              dataset_1.dist <= mask_cutoff,
-              np.logical_not(np.isnan(dataset_1.dist))),
-              np.ones_like(dataset_1.dist))
-            dataset_2_mask = np.ma.masked_where(np.logical_and(
-              dataset_2.dist <= mask_cutoff,
-              np.logical_not(np.isnan(dataset_2.dist))),
-              np.ones_like(dataset_2.dist))
-        temp1[dataset_1_mask != 1] = 1
-        temp2[dataset_2_mask != 1] = 1
-        self.mask = np.ma.masked_where(
-          np.logical_and(
-            np.logical_not(np.isnan(self.dist)),
-            np.logical_or(temp1, temp2)),
-          np.ones_like(self.dist))
+            self.mask = np.ma.masked_where(np.logical_and(
+              self.dist <= mask_cutoff,
+              np.logical_not(np.isnan(self.dist))),
+              np.ones_like(self.dist))
+
+        for ob_kw in observation_kw:
+            n_observations += 1
+            if not "dataset_cache" in ob_kw:
+                ob_kw["dataset_cache"] = kwargs.get("dataset_cache", {})
+            ob_class = dataset_classes[ob_kw.pop("kind").lower()]
+            ob = self.load_dataset(ob_class, **ob_kw)
+
+            # Validate comparability of datasets
+            if not ((self.x_centers == ob.x_centers).all()
+            and     (self.y_centers == ob.x_centers).all()
+            and      self.x_width   == ob.x_width
+            and      self.y_width   == ob.y_width
+            and     (self.x_bins    == ob.x_bins).all()
+            and     (self.y_bins    == ob.y_bins).all()):
+                raise TypeError()
+
+            # Prepare data
+            self.dist += ob.dist
+
+            # Prepare mask
+            #   Values that are NaN are all masked, as are values that
+            #   are masked in both source datasets; two boolean arrays
+            #   are prepared manually; np.logical_and() and
+            #   np.logical_or() yield the same result when passed masked
+            #   arrays, and are either broken or not intended to be used
+            #   for this purpose, and np.ma.mask_or() does not appear to
+            #   be usable either.
+            if mask_cutoff is None:
+                ob_mask = ob.mask
+            else:
+                ob_mask = np.ma.masked_where(np.logical_and(
+                  ob.dist <= mask_cutoff,
+                  np.logical_not(np.isnan(ob.dist))),
+                  np.ones_like(ob.dist))
+            self.mask = np.ma.masked_where(
+              np.logical_or(self.mask != 1, ob_mask  != 1),
+              np.ones_like(self.dist))
+
+        # Average
+        self.dist /= n_observations
