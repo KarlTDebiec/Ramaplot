@@ -23,9 +23,11 @@ figures:
                 title: ff14SB - CHARMM36
                 datasets: 
                     0:
-                        dataset_1_kw:
-                            kind: wham
-                            infile: examples/ff14SB.dat
-                        dataset_2_kw:
-                            kind: wham
-                            infile: examples/charmm36.dat
+                        dataset_kw:
+                            minuend:
+                                kind: wham
+                                infile: examples/ff14SB.dat
+                            subtrahend:
+                                kind: wham
+                                infile: examples/charmm36.dat
+                            mask_cutoff: 5
