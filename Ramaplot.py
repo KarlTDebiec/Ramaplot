@@ -596,15 +596,14 @@ class RamachandranFigureManager(FigureManager):
         dataset_kw = multi_get_copy("dataset_kw", kwargs, {})
         if "infile" in kwargs:
             dataset_kw["infile"] = kwargs["infile"]
-#        try:
-        dataset = self.load_dataset(dataset_classes[kind],
-                    dataset_classes=dataset_classes,
-                    verbose=verbose, debug=debug, **dataset_kw)
-#        except TypeError:
-#            from warnings import warn
-#            warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
-#              "error; skipping this dataset.")
-#            return
+        try:
+            dataset = self.load_dataset(dataset_classes[kind],
+                        dataset_classes=dataset_classes,
+                        verbose=verbose, debug=debug, **dataset_kw)
+        except TypeError as e:
+            warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
+              "error: {0}; skipping this dataset.".format(e))
+            return
         dist = dataset.dist if hasattr(dataset,"dist") else None
         x_bins = dataset.x_bins if hasattr(dataset,"x_bins") else None
         y_bins = dataset.y_bins if hasattr(dataset,"y_bins") else None
