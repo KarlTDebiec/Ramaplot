@@ -116,6 +116,7 @@ example.yml
 ~~~~~~~~~~~
 
 ::
+
     preset: notebook
     figures:
         0:
