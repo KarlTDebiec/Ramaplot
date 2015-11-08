@@ -603,8 +603,9 @@ class RamachandranFigureManager(FigureManager):
                         dataset_classes=dataset_classes,
                         verbose=verbose, debug=debug, **dataset_kw)
         except MPSDatasetCacheError as error:
-            warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
-              "error: {0}; skipping this dataset.".format(error))
+            if verbose >= 1:
+                warn("{0} has ".format(dataset_classes[kind].__name__) +
+                  "raised an error: {0}; skipping this dataset.".format(error))
             return
         dist = dataset.dist if hasattr(dataset,"dist") else None
         x_bins = dataset.x_bins if hasattr(dataset,"x_bins") else None
@@ -668,7 +669,8 @@ class RamachandranFigureManager(FigureManager):
                 if colorbar:
                     if not hasattr(subplot, "_mps_partner_subplot"):
                         from .myplotspec.axes import add_partner_subplot
-                        add_partner_subplot(subplot, **kwargs)
+                        add_partner_subplot(subplot, verbose=verbose,
+                          debug=debug, **kwargs)
                     set_colorbar(subplot, pcolormesh, **kwargs)
 
         # Draw contour

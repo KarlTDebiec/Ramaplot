@@ -66,8 +66,8 @@ class NDRDDataset(object):
             cache_message (str): Message to be used when reloading
               previously-loaded dataset
         """
-        return "previously loaded '{0}' from '{1}'".format(cache_key[2],
-          cache_key[1])
+        return "previously loaded '{0}' from '{1}'".format(
+          str(cache_key[2]).replace("u'","").replace("'",""), cache_key[1])
 
     @staticmethod
     def process_selection_arg(selection):
@@ -231,7 +231,7 @@ class NDRDDataset(object):
         return dataset
 
     def __init__(self, infile, selection="ALA", loop_edges=True,
-        mask_cutoff=None, **kwargs):
+        mask_cutoff=None, verbose=1, **kwargs):
         """
         Initializes dataset.
 
@@ -257,12 +257,16 @@ class NDRDDataset(object):
         selection = self.process_selection_arg(selection)
 
         if len(selection) == 1:
-            dataset = self.load_distribution(infile, selection[0])
+            dataset = self.load_distribution(infile, selection[0],
+              verbose=verbose)
         elif len(selection) == 3:
             dataset = self.calculate_triplet(
-                     self.load_distribution(infile, selection[0]),
-                     self.load_distribution(infile, selection[1]),
-                     self.load_distribution(infile, selection[2]))
+                         self.load_distribution(infile, selection[0],
+                           verbose=verbose),
+                         self.load_distribution(infile, selection[1],
+                           verbose=verbose),
+                         self.load_distribution(infile, selection[2],
+                           verbose=verbose))
         else:
             raise TypeError("Selection '{0}' not ".format(selection) +
                             "understood. " + self.type_error_text)

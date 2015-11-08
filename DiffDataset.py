@@ -19,32 +19,32 @@ class DiffDataset(Dataset):
     """
 
     @classmethod
-    def get_cache_key(cls, *args, **kwargs):
+    def get_cache_key(cls, dataset_classes=None, mask_cutoff=None, *args,
+        **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
 
         Arguments documented under :func:`__init__`.
         """
-        try:
-            dataset_classes = kwargs.get("dataset_classes")
-            minuend_kw = kwargs.get("minuend_kw")
-            minuend_class = dataset_classes[minuend_kw["kind"].lower()]
-            key = [cls, minuend_class.get_cache_key(**minuend_kw)]
+        from .myplotspec import multi_get_copy
 
-            subtrahend_kw = kwargs.get("subtrahend_kw")
-            if isinstance(subtrahend_kw, dict):
-                subtrahend_kw = [subtrahend_kw]
-            for sh_kw in subtrahend_kw:
-                sh_class = dataset_classes[sh_kw.pop("kind").lower()]
-                key.append(sh_class.get_cache_key(**sh_kw))
+        minuend_kw = multi_get_copy(["minuend", "minuend_kw"], kwargs, {})
+        minuend_class = dataset_classes[minuend_kw["kind"].lower()]
+        key = [cls, mask_cutoff, minuend_class.get_cache_key(**minuend_kw)]
 
-            return tuple(key)
-        except TypeError:
-            return None
+        subtrahend_kw = multi_get_copy(["subtrahend", "subtrahend_kw"],
+          kwargs, {})
+        if isinstance(subtrahend_kw, dict):
+            subtrahend_kw = [subtrahend_kw]
+        for sh_kw in subtrahend_kw:
+            sh_class = dataset_classes[sh_kw.pop("kind").lower()]
+            key.append(sh_class.get_cache_key(**sh_kw))
 
-    def __init__(self, minuend_kw=None, subtrahend_kw=None,
-        dataset_classes=None, mask_cutoff=None, **kwargs):
+        return tuple(key)
+
+    def __init__(self, dataset_classes=None, mask_cutoff=None, verbose=1,
+        debug=0, **kwargs):
         """
         Initializes dataset.
 
@@ -73,7 +73,8 @@ class DiffDataset(Dataset):
         minuend_class = dataset_classes[minuend_kw.pop("kind").lower()]
         if not "dataset_cache" in minuend_kw:
             minuend_kw["dataset_cache"] = kwargs.get("dataset_cache", {})
-        minuend = self.load_dataset(minuend_class, **minuend_kw)
+        minuend = self.load_dataset(minuend_class, verbose=verbose,
+                    debug=debug, **minuend_kw)
         self.x_centers = copy(minuend.x_centers)
         self.y_centers = copy(minuend.y_centers)
         self.x_width = copy(minuend.x_width)
@@ -100,7 +101,8 @@ class DiffDataset(Dataset):
             if not "dataset_cache" in sh_kw:
                 sh_kw["dataset_cache"] = kwargs.get("dataset_cache", {})
             sh_class = dataset_classes[sh_kw.pop("kind").lower()]
-            sh = self.load_dataset(sh_class, **sh_kw)
+            sh = self.load_dataset(sh_class, verbose=verbose, debug=debug,
+              **sh_kw)
 
             # Validate comparability of datasets
             if not ((minuend.x_centers == sh.x_centers).all()
