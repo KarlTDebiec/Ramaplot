@@ -574,6 +574,8 @@ class RamachandranFigureManager(FigureManager):
         import numpy as np
         from .myplotspec import get_color, multi_get_copy
         from .myplotspec.axes import set_colorbar
+        from .myplotspec.error import (MPSArgumentError, MPSDatasetError,
+                                       MPSDatasetCacheError)
         from .AnalyticalDataset import AnalyticalDataset
         from .CDLDataset import CDLDataset
         from .DiffDataset import DiffDataset
@@ -600,9 +602,9 @@ class RamachandranFigureManager(FigureManager):
             dataset = self.load_dataset(dataset_classes[kind],
                         dataset_classes=dataset_classes,
                         verbose=verbose, debug=debug, **dataset_kw)
-        except TypeError as e:
+        except MPSDatasetCacheError as error:
             warn("{0} has raised an ".format(dataset_classes[kind].__name__) +
-              "error: {0}; skipping this dataset.".format(e))
+              "error: {0}; skipping this dataset.".format(error))
             return
         dist = dataset.dist if hasattr(dataset,"dist") else None
         x_bins = dataset.x_bins if hasattr(dataset,"x_bins") else None
