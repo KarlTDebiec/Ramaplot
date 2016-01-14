@@ -567,6 +567,17 @@ class RamachandranFigureManager(FigureManager):
 
         Arguments:
           subplot (Axes): Axes on which to draw
+          heatmap (bool): Draw heatmap; requires that dataset has
+            attributes 'dist', 'x_bins', and 'y_bins'
+          colorbar (bool): Draw colorbar; requires `heatmap` to be True
+          contour (bool): Draw contours; requires that dataset has
+            attributes 'dist', 'x_centers', and 'y_centers'
+          mask (bool): Draw mask; requires that dataset has attributes
+            'mask', 'x_bins', and 'y_bins'
+          outline (bool): Draw outline; requires that dataset has
+            attributes 'mask', 'x_bins', and 'y_bins'
+          plot (bool): Draw points; requires that dataset has attributes
+            'x' and 'y'
           kwargs (dict): Additional keyword arguments
         """
         from copy import copy
@@ -756,6 +767,7 @@ class RamachandranFigureManager(FigureManager):
                 plot_kw = copy(kwargs.get("plot_kw", {}))
                 subplot.plot(x, y, **plot_kw)
 
+        # Draw label
         if label is not None:
             from .myplotspec.text import set_text
 
