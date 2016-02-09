@@ -67,8 +67,6 @@ class RamachandranFigureManager(FigureManager):
             rasterized: True
             vmin: 0
             vmax: 5
-          partner_kw:
-            position: right
           colorbar_kw:
             zticks: [0,1,2,3,4,5]
             ztick_params:
@@ -584,7 +582,6 @@ class RamachandranFigureManager(FigureManager):
         from warnings import warn
         import numpy as np
         from .myplotspec import get_color, multi_get_copy
-        from .myplotspec.axes import set_colorbar
         from .myplotspec.error import (MPSArgumentError, MPSDatasetError,
                                        MPSDatasetCacheError)
         from .AnalyticalDataset import AnalyticalDataset
@@ -678,6 +675,7 @@ class RamachandranFigureManager(FigureManager):
                 pcolormesh = subplot.pcolormesh(x_bins, y_bins, heatmap_dist.T,
                   zorder=0.1, **heatmap_kw)
                 if colorbar:
+                    from .myplotspec.axes import set_colorbar
                     if not hasattr(subplot, "_mps_partner_subplot"):
                         from .myplotspec.axes import add_partner_subplot
                         add_partner_subplot(subplot, verbose=verbose,
