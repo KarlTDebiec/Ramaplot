@@ -34,6 +34,8 @@ class RamachandranFigureManager(FigureManager):
           multi_xticklabels: [-180,-90,0,90,180]
           multi_yticklabels: [-180,-90,0,90,180]
         draw_subplot:
+          title_kw:
+            verticalalignment: bottom
           xlabel: Φ
           xticks: [-180,-90,0,90,180]
           ylabel: Ψ
@@ -454,6 +456,51 @@ class RamachandranFigureManager(FigureManager):
         draw_subplot:
           ylabel_kw:
             rotation: horizontal
+      manuscript:
+        class: target
+        inherits: manuscript
+        draw_figure:
+          left:       0.35
+          sub_width:  0.89
+          wspace:     0.05
+          right:      0.12
+          bottom:     0.35
+          sub_height: 0.89
+          hspace:     0.05
+          top:        0.25
+          multiplot: True
+          multi_xticklabels: [-180,"",0,"",180]
+          multi_yticklabels: [-180,"",0,"",180]
+          multi_tick_params:
+            left: on
+            right: off
+            bottom: on
+            top: off
+          title_kw:
+            top: -0.1
+        draw_subplot:
+          legend: False
+          xlabel_kw:
+            labelpad: 3
+          ylabel_kw:
+            labelpad: 3
+            rotation: horizontal
+          y2label_kw:
+            labelpad: 3
+          grid_kw:
+            alpha: 0.3
+        draw_dataset:
+          partner_kw:
+            hspace:    0.05
+            wspace:    0.05
+            sub_width: 0.05
+          colorbar_kw:
+            ztick_fp: 6r
+            zlabel_fp: 8b
+          contour_kw:
+            linewidths: 0.7
+          label_kw:
+            fp: 6b
       notebook:
         class: target
         inherits: notebook
