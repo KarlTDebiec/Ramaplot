@@ -117,19 +117,6 @@ class RamachandranFigureManager(FigureManager):
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
           contour: False
-      tick_out:
-        class: appearance
-        help: Draw ticks extending out from left and bottom sides
-        draw_figure:
-          multi_tick_params:
-            left: on
-            right: off
-            bottom: on
-            top: off
-            inner: off
-        draw_subplot:
-          tick_params:
-            direction: out
       potential_energy:
         class: content
         help: Plot potential energy as a function of Φ,Ψ
@@ -218,16 +205,25 @@ class RamachandranFigureManager(FigureManager):
         help: Plot sampling as a function of Φ,Ψ
         draw_dataset:
           heatmap: False
-          heatmap_kw:
-            cmap: afmhot_r
-            vmin: 0
-            vmax: 5
           contour: False
           mask: True
           mask_kw:
             cmap: Greys
           outline: False
           plot: True
+      structure:
+        class: content
+        help: Plot observed Φ,Ψ from a known structure
+        draw_dataset:
+          heatmap: False
+          contour: False
+          mask: False
+          outline: False
+          plot: True
+          plot_kw:
+            mfc: [0.7,0.7,0.7]
+            rasterized: False
+            zorder: 1000
       bond:
         class: content
         help: Plot average value of a bond as a function of Φ,Ψ
@@ -499,6 +495,8 @@ class RamachandranFigureManager(FigureManager):
             zlabel_fp: 8b
           contour_kw:
             linewidths: 0.7
+          plot_kw:
+            ms: 2
           label_kw:
             fp: 6b
       notebook:
@@ -662,50 +660,56 @@ class RamachandranFigureManager(FigureManager):
                 warn("{0} has ".format(dataset_classes[kind].__name__) +
                   "raised an error: {0}; skipping this dataset.".format(error))
             return
-        dist = dataset.dist if hasattr(dataset,"dist") else None
-        x_bins = dataset.x_bins if hasattr(dataset,"x_bins") else None
-        y_bins = dataset.y_bins if hasattr(dataset,"y_bins") else None
-        x_width = dataset.x_width if hasattr(dataset,"x_width") else None
-        y_width = dataset.y_width if hasattr(dataset,"y_width") else None
+        dist      = dataset.dist      if hasattr(dataset,"dist")      else None
+        x_bins    = dataset.x_bins    if hasattr(dataset,"x_bins")    else None
+        y_bins    = dataset.y_bins    if hasattr(dataset,"y_bins")    else None
+        x_width   = dataset.x_width   if hasattr(dataset,"x_width")   else None
+        y_width   = dataset.y_width   if hasattr(dataset,"y_width")   else None
         x_centers = dataset.x_centers if hasattr(dataset,"x_centers") else None
         y_centers = dataset.y_centers if hasattr(dataset,"y_centers") else None
-        dist_mask = dataset.mask if hasattr(dataset,"mask") else None
-        x = dataset.x if hasattr(dataset,"x") else None
-        y = dataset.y if hasattr(dataset,"y") else None
+        dist_mask = dataset.mask      if hasattr(dataset,"mask")      else None
+        x         = dataset.x         if hasattr(dataset,"x")         else None
+        y         = dataset.y         if hasattr(dataset,"y")         else None
         if loop_edges:
-            x_centers = np.concatenate(([x_centers[0]  - x_width], x_centers,
-                                        [x_centers[-1] + x_width]))
-            y_centers = np.concatenate(([y_centers[0]  - y_width], y_centers,
-                                        [y_centers[-1] + y_width]))
-            x_bins  = np.linspace(x_centers[0]  - x_width / 2,
-                                  x_centers[-1] + x_width / 2,
-                                  x_centers.size + 1)
-            y_bins  = np.linspace(y_centers[0]  - y_width / 2,
-                                  y_centers[-1] + y_width / 2,
-                                  y_centers.size + 1)
-            temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
-            temp[1:-1,1:-1] = dist
-            temp[1:-1,-1]   = dist[:,0]
-            temp[-1,1:-1]   = dist[0,:]
-            temp[1:-1,0]    = dist[:,-1]
-            temp[0,1:-1]    = dist[-1,:]
-            temp[0,0]       = dist[-1,-1]
-            temp[-1,-1]     = dist[0,0]
-            temp[0,-1]      = dist[-1,0]
-            temp[-1,0]      = dist[0,-1]
-            dist = temp
+            if x_centers is not None and y_centers is not None:
+                x_centers = np.concatenate(
+                              ([x_centers[0]  - x_width], x_centers,
+                               [x_centers[-1] + x_width]))
+                y_centers = np.concatenate(
+                              ([y_centers[0]  - y_width], y_centers,
+                               [y_centers[-1] + y_width]))
+            if x_bins is not None and y_bins is not None:
+                x_bins  = np.linspace(x_centers[0]  - x_width / 2,
+                                      x_centers[-1] + x_width / 2,
+                                      x_centers.size + 1)
+                y_bins  = np.linspace(y_centers[0]  - y_width / 2,
+                                      y_centers[-1] + y_width / 2,
+                                      y_centers.size + 1)
+            if dist is not None:
+                temp = np.zeros((x_centers.size, y_centers.size)) * np.nan
+                temp[1:-1,1:-1] = dist
+                temp[1:-1,-1]   = dist[:,0]
+                temp[-1,1:-1]   = dist[0,:]
+                temp[1:-1,0]    = dist[:,-1]
+                temp[0,1:-1]    = dist[-1,:]
+                temp[0,0]       = dist[-1,-1]
+                temp[-1,-1]     = dist[0,0]
+                temp[0,-1]      = dist[-1,0]
+                temp[-1,0]      = dist[0,-1]
+                dist = temp
 
-            temp = np.ma.empty(dist.shape)
-            temp[1:-1,1:-1] = dist_mask
-            temp[1:-1,-1]   = dist_mask[:,0]
-            temp[-1,1:-1]   = dist_mask[0,:]
-            temp[1:-1,0]    = dist_mask[:,-1]
-            temp[0,1:-1]    = dist_mask[-1,:]
-            temp[0,0]       = dist_mask[-1,-1]
-            temp[-1,-1]     = dist_mask[0,0]
-            temp[0,-1]      = dist_mask[-1,0]
-            temp[-1,0]      = dist_mask[0,-1]
-            dist_mask = temp
+            if dist_mask is not None:
+                temp = np.ma.empty(dist.shape)
+                temp[1:-1,1:-1] = dist_mask
+                temp[1:-1,-1]   = dist_mask[:,0]
+                temp[-1,1:-1]   = dist_mask[0,:]
+                temp[1:-1,0]    = dist_mask[:,-1]
+                temp[0,1:-1]    = dist_mask[-1,:]
+                temp[0,0]       = dist_mask[-1,-1]
+                temp[-1,-1]     = dist_mask[0,0]
+                temp[0,-1]      = dist_mask[-1,0]
+                temp[-1,0]      = dist_mask[0,-1]
+                dist_mask = temp
 
         # Draw heatmap and colorbar
         if heatmap:

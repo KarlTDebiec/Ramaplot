@@ -184,9 +184,9 @@ class PDistDataset(Dataset):
         from .myplotspec import multi_get_copy
 
         # Manage arguments
-        if mode not in ["hist", "kde"]:
+        if str(mode.lower()) not in ["hist", "kde", "none"]:
             raise ValueError("Argument 'mode' does not support provided " +
-              "value '{0}', may be 'hist' or 'kde'".format(mode))
+              "value '{0}', may be 'hist', 'kde', or 'none'".format(mode))
         read_csv_kw = dict(delim_whitespace=True, index_col=0)
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
 
@@ -197,8 +197,15 @@ class PDistDataset(Dataset):
             dataframe[phikey][dataframe[phikey] > 180] -= 360
             dataframe[psikey][dataframe[psikey] > 180] -= 360
 
+        # Option 0: Store Φ, Ψ
+        if mode == "none":
+
+            # Store data in instance variable
+            self.x = dataframe[phikey]
+            self.y = dataframe[psikey]
+
         # Option 1: Calculate probability and free energy of Φ, Ψ
-        if zkey in ["free energy", "probability"]:
+        elif zkey in ["free energy", "probability"]:
             x_bins, y_bins = self.process_bins_arg(bins, dim=2)
             x_centers = (x_bins[:-1] + x_bins[1:]) / 2
             y_centers = (y_bins[:-1] + y_bins[1:]) / 2
@@ -247,6 +254,16 @@ class PDistDataset(Dataset):
             free_energy = -1 * np.log(probability)
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
+
+            # Store data in instance variable
+            self.x_centers = x_centers
+            self.y_centers = y_centers
+            self.x_width = x_width
+            self.y_width = y_width
+            self.x_bins = x_bins
+            self.y_bins = y_bins
+            self.x = dataframe[phikey]
+            self.y = dataframe[psikey]
 
         # Option 2: Calculate mean value of a third observable as a
         #   function of Φ, Ψ
@@ -328,17 +345,20 @@ class PDistDataset(Dataset):
             free_energy[np.isinf(free_energy)] = np.nan
             free_energy -= np.nanmin(free_energy)
 
-        self.x_centers = x_centers
-        self.y_centers = y_centers
-        self.x_width = x_width
-        self.y_width = y_width
-        self.x_bins = x_bins
-        self.y_bins = y_bins
-        self.x = dataframe[phikey]
-        self.y = dataframe[psikey]
+            # Store data in instance variable
+            self.x_centers = x_centers
+            self.y_centers = y_centers
+            self.x_width = x_width
+            self.y_width = y_width
+            self.x_bins = x_bins
+            self.y_bins = y_bins
+            self.x = dataframe[phikey]
+            self.y = dataframe[psikey]
 
         # Prepare mask
-        if zkey == "probability":
+        if mode == "none":
+            pass
+        elif zkey == "probability":
             self.dist = probability
             if mask_cutoff is not None:
                 self.mask = np.ma.masked_where(np.logical_and(
