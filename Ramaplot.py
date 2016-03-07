@@ -498,6 +498,8 @@ class RamachandranFigureManager(FigureManager):
             zlabel_fp: 8b
           contour_kw:
             linewidths: 0.7
+          outline_kw:
+            lw: 0.7
           plot_kw:
             ms: 2
           label_kw:
@@ -756,8 +758,11 @@ class RamachandranFigureManager(FigureManager):
                 for collection in contour.collections:
                     for path in collection.get_paths():
                         if np.all(path.vertices[0] == path.vertices[-1]):
-                            path.vertices = np.append(path.vertices,
-                              [path.vertices[1]], axis=0)
+                            try:
+                                path.vertices = np.append(path.vertices,
+                                  [path.vertices[1]], axis=0)
+                            except IndexError:
+                                continue
 
         # Draw mask
         if mask:
