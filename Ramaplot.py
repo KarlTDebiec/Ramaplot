@@ -215,6 +215,9 @@ class RamachandranFigureManager(FigureManager):
         class: content
         help: Plot observed Φ,Ψ from a known structure
         draw_dataset:
+          kind: pdist
+          dataset_kw:
+            mode: none
           heatmap: False
           contour: False
           mask: False
