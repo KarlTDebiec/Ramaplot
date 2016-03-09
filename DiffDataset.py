@@ -84,13 +84,11 @@ class DiffDataset(Dataset):
         self.dist = copy(minuend.dist)
 
         # Prepare mask
-        if mask_cutoff is None:
-            self.mask = minuend.mask
-        else:
-            self.mask = np.ma.masked_where(np.logical_and(
-              self.dist <= mask_cutoff,
-              np.logical_not(np.isnan(self.dist))),
-              np.ones_like(self.dist))
+        cutmask = np.zeros_like(self.dist)
+        nanmask = np.zeros_like(self.dist)
+        if mask_cutoff is not None:
+            cutmask[self.dist >= mask_cutoff ] = 1
+        nanmask[np.isnan(self.dist)] = 1
 
         # Subtract subtrahends
         subtrahend_kw = multi_get_copy(["subtrahend", "subtrahend_kw"],
@@ -117,20 +115,9 @@ class DiffDataset(Dataset):
             self.dist -= sh.dist
 
             # Prepare mask
-            #   Values that are NaN are all masked, as are values that
-            #   are masked in both source datasets; two boolean arrays
-            #   are prepared manually; np.logical_and() and
-            #   np.logical_or() yield the same result when passed masked
-            #   arrays, and are either broken or not intended to be used
-            #   for this purpose, and np.ma.mask_or() does not appear to
-            #   be usable either.
-            if mask_cutoff is None:
-                sh_mask = sh.mask
-            else:
-                sh_mask = np.ma.masked_where(np.logical_and(
-                  sh.dist <= mask_cutoff,
-                  np.logical_not(np.isnan(sh.dist))),
-                  np.ones_like(sh.dist))
-            self.mask = np.ma.masked_where(
-              np.logical_or(self.mask != 1, sh_mask  != 1),
-              np.ones_like(self.dist))
+            if mask_cutoff is not None:
+                cutmask[np.logical_and(cutmask==1, sh.dist<=mask_cutoff)] = 0
+            nanmask[np.isnan(sh.dist)] = 1
+
+        self.mask = np.ma.masked_array(np.ones_like(self.dist),
+          np.logical_not(np.logical_or(cutmask, nanmask)))
