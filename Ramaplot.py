@@ -608,8 +608,10 @@ class RamachandranFigureManager(FigureManager):
     @manage_defaults_presets()
     @manage_kwargs()
     def draw_dataset(self, subplot, kind, label=None, loop_edges=True,
-        nan_to_max=True, heatmap=True, colorbar=False, contour=True,
-        mask=False, outline=False, plot=False, verbose=1, debug=0, **kwargs):
+        nan_to_max=True,
+        heatmap=True, colorbar=False, contour=True, mask=False, outline=False,
+        plot=False,
+        verbose=1, debug=0, **kwargs):
         """
         Draws a dataset.
 
