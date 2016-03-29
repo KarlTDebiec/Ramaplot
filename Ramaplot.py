@@ -517,6 +517,11 @@ class RamachandranFigureManager(FigureManager):
           hspace:     0.10
           top:        0.25
           multiplot: True
+          multi_tick_params:
+            left: on
+            right: off
+            bottom: on
+            top: off
           title_kw:
             top: -0.1
         draw_subplot:
@@ -599,7 +604,7 @@ class RamachandranFigureManager(FigureManager):
           colorbar: True
           partner_kw:
             position: bottom
-            hspace: 0.4
+            hspace: 0.5
           colorbar_kw:
             zlabel_kw:
               labelpad: 3

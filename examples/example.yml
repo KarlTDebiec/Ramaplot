@@ -3,7 +3,7 @@ figures:
     0:
         outfile: examples/example.png
         ncols: 3
-        bottom: 0.9
+        bottom: 1.0
         subplots:
             0:
                 preset: colorbar_bottom
