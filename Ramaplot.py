@@ -541,6 +541,47 @@ class RamachandranFigureManager(FigureManager):
             zlabel_fp: 10b
           label_kw:
             fp: 10b
+      presentation:
+        class: target
+        inherits: presentation
+        draw_figure:
+          left:       1.20
+          sub_width:  1.50
+          wspace:     0.10
+          fig_height:
+          bottom:     0.60
+          sub_height: 1.50
+          hspace:     0.10
+          top:        0.30
+          multi_xticklabels: [-180,"",0,"",180]
+          multi_yticklabels: [-180,"",0,"",180]
+        draw_subplot:
+          ylabel_kw:
+            rotation: horizontal
+            labelpad: 10
+          y2label_kw:
+            labelpad: 20
+        draw_dataset:
+          contour_kw:
+            linewidths: 1
+          plot_kw:
+            ms: 5
+            mew: 1
+            mec: black
+          colorbar_kw:
+            ztick_fp:  14r
+            zlabel_fp: 18r
+            ztick_params:
+              pad: 5
+            zlw: 2
+          label_kw:
+            fp: 14r
+            border_lw: 3
+            x: 165
+            y: 165
+            text_kw:
+              ha: right
+              va: top
       presentation_wide:
         class: target
         inherits: presentation_wide
