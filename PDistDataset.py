@@ -192,7 +192,7 @@ class PDistDataset(Dataset):
 
         # Load data
         dataframe = self.load_dataset(verbose=verbose, debug=debug,
-          read_csv_kw=read_csv_kw, **kwargs).data
+          read_csv_kw=read_csv_kw, **kwargs).dataframe
         if wrap:
             dataframe[phikey][dataframe[phikey] > 180] -= 360
             dataframe[psikey][dataframe[psikey] > 180] -= 360

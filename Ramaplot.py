@@ -33,6 +33,12 @@ class RamachandranFigureManager(FigureManager):
           multiplot: False
           multi_xticklabels: [-180,-90,0,90,180]
           multi_yticklabels: [-180,-90,0,90,180]
+          multi_tick_params:
+            direction: out
+            left: on
+            right: off
+            bottom: on
+            top: off
         draw_subplot:
           title_kw:
             verticalalignment: bottom
@@ -47,11 +53,11 @@ class RamachandranFigureManager(FigureManager):
           y2label_kw:
             rotation: 270
           tick_params:
-            left: off
+            direction: out
+            left: on
             right: off
-            bottom: off
+            bottom: on
             top: off
-            width: 1
           y2tick_params:
             left: off
             right: off
@@ -467,16 +473,11 @@ class RamachandranFigureManager(FigureManager):
           sub_height: 0.89
           hspace:     0.05
           top:        0.25
-          multiplot: True
           multi_xticklabels: [-180,"",0,"",180]
           multi_yticklabels: [-180,"",0,"",180]
-          multi_tick_params:
-            left: on
-            right: off
-            bottom: on
-            top: off
           title_kw:
             top: -0.1
+            title_fp: 8b
         draw_subplot:
           legend: False
           xlabel_kw:
@@ -485,7 +486,7 @@ class RamachandranFigureManager(FigureManager):
             labelpad: 3
             rotation: horizontal
           y2label_kw:
-            labelpad: 3
+            labelpad: 8
           grid_kw:
             alpha: 0.3
         draw_dataset:

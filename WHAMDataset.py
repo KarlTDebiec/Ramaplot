@@ -83,7 +83,7 @@ class WHAMDataset(Dataset):
           na_values=(9999999.000000))
         read_csv_kw.update(kwargs.pop("read_csv_kw", {}))
         dataframe = self.load_dataset(verbose=verbose, read_csv_kw=read_csv_kw,
-          **kwargs).data
+          **kwargs).dataframe
         if wrap:
             dataframe[phikey][dataframe[phikey] > 180] -= 360
             dataframe[psikey][dataframe[psikey] > 180] -= 360
