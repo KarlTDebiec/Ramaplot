@@ -663,6 +663,7 @@ class RamachandranFigureManager(FigureManager):
         nan_to_max=True,
         heatmap=True, colorbar=False, contour=True, mask=False, outline=False,
         plot=False,
+        draw_label=True,
         verbose=1, debug=0, **kwargs):
         """
         Draws a dataset.
@@ -685,6 +686,7 @@ class RamachandranFigureManager(FigureManager):
         from copy import copy
         from warnings import warn
         import numpy as np
+        import six
         from .myplotspec import get_color, multi_get_copy
         from .myplotspec.error import (MPSArgumentError, MPSDatasetError,
                                        MPSDatasetCacheError)
@@ -878,11 +880,19 @@ class RamachandranFigureManager(FigureManager):
                 subplot.plot(x, y, **plot_kw)
 
         # Draw label
-        if label is not None:
+        if draw_label and label is not None:
             from .myplotspec.text import set_text
 
             label_kw = kwargs.get("label_kw", {})
-            set_text(subplot, s=label, **label_kw)
+            if (isinstance(label, six.string_types)
+            and isinstance(label_kw, dict)):
+                set_text(subplot, s=label, **label_kw)
+            elif (isinstance(label, list) and isinstance(label_kw, list)
+            and len(label) == len(label_kw)):
+                for l, kw in zip(label, label_kw):
+                    set_text(subplot, s=l, **kw)
+            else:
+                raise Exception("bad label arguments")
 
     def main(self):
         """
