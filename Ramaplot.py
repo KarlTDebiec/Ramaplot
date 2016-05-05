@@ -687,7 +687,7 @@ class RamachandranFigureManager(FigureManager):
         from warnings import warn
         import numpy as np
         import six
-        from .myplotspec import get_color, multi_get_copy
+        from .myplotspec import get_colors, multi_get_copy
         from .myplotspec.error import (MPSArgumentError, MPSDatasetError,
                                        MPSDatasetCacheError)
         from .AnalyticalDataset import AnalyticalDataset
