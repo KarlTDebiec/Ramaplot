@@ -502,6 +502,8 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             ztick_fp: 6r
             zlabel_fp: 8b
+            zlabel_kw:
+              labelpad: 10
           contour_kw:
             linewidths: 0.7
           outline_kw:
@@ -515,8 +517,8 @@ class RamachandranFigureManager(FigureManager):
         extends: manuscript
         help: Tighter formatting for 9 columns rather than 7
         draw_figure:
-          sub_width:  0.63
-          sub_height: 0.63
+          sub_width:  0.625
+          sub_height: 0.625
         draw_dataset:
           colorbar_kw:
             zlabel_fp: 7b
@@ -648,7 +650,6 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zlabel_kw:
               rotation: 270
-              labelpad: 14
       colorbar_top:
         class: appearance
         help: Draw colorbar above plot
@@ -659,7 +660,6 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zlabel_kw:
               rotation: 0
-              labelpad: 5
       colorbar_bottom:
         class: appearance
         help: Draw colorbar below plot
