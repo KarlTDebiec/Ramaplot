@@ -75,6 +75,7 @@ class RamachandranFigureManager(FigureManager):
             rasterized: True
             vmin: 0
             vmax: 5
+            zorder: 0.1
           colorbar_kw:
             zticks: [0,1,2,3,4,5]
             ztick_params:
@@ -87,14 +88,17 @@ class RamachandranFigureManager(FigureManager):
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
+            zorder: 0.2
           mask_kw:
             cmap: Greys_r
             edgecolors: none
             rasterized: True
             vmin: 0
             vmax: 1
+            zorder: 0.3
           outline_kw:
             color: black
+            zorder: 0.4
           plot_kw:
             marker: 'o'
             ls: None
@@ -102,6 +106,7 @@ class RamachandranFigureManager(FigureManager):
             mfc: [0.5,0.5,0.5]
             ms: 0.5
             rasterized: True
+            zorder: 0.5
           label_kw:
             x: 165
             y: -170
@@ -778,7 +783,7 @@ class RamachandranFigureManager(FigureManager):
                     heatmap_dist[np.isnan(heatmap_dist)] = np.nanmax(
                       heatmap_dist)
                 pcolormesh = subplot.pcolormesh(x_bins, y_bins, heatmap_dist.T,
-                  zorder=0.1, **heatmap_kw)
+                  **heatmap_kw)
                 if colorbar:
                     from .myplotspec.axes import set_colorbar
                     if not hasattr(subplot, "_mps_partner_subplot"):
@@ -801,7 +806,7 @@ class RamachandranFigureManager(FigureManager):
                     contour_kw["levels"] = range(0,
                       int(np.ceil(np.nanmax(dist))))
                 contour = subplot.contour(x_centers, y_centers, dist.T,
-                  zorder=0.2, **contour_kw)
+                  **contour_kw)
 
                 # Close bottom of contours
                 for collection in contour.collections:
@@ -821,8 +826,7 @@ class RamachandranFigureManager(FigureManager):
                      "skipping.")
             else:
                 mask_kw = copy(kwargs.get("mask_kw", {}))
-                subplot.pcolormesh(x_bins, y_bins, dist_mask.T, zorder=0.3,
-                  **mask_kw)
+                subplot.pcolormesh(x_bins, y_bins, dist_mask.T, **mask_kw)
 
         # Draw outline
         if outline:
@@ -841,28 +845,28 @@ class RamachandranFigureManager(FigureManager):
                                 subplot.plot(
                                   [x_bins[x], x_bins[x]],
                                   [y_bins[y], y_bins[y+1]],
-                                  zorder=0.4, **outline_kw)
+                                  **outline_kw)
                             if (x != dist_mask.shape[0] - 1
                             and y != dist_mask.shape[1]
                             and dist_mask[x+1,y]):
                                 subplot.plot(
                                   [x_bins[x+1], x_bins[x+1]],
                                   [y_bins[y],   y_bins[y+1]],
-                                  zorder=0.4, **outline_kw)
+                                  **outline_kw)
                             if (x != dist_mask.shape[0]
                             and y != 0
                             and dist_mask[x,y-1]):
                                 subplot.plot(
                                   [x_bins[x], x_bins[x+1]],
                                   [y_bins[y], y_bins[y]],
-                                  zorder=0.4, **outline_kw)
+                                  **outline_kw)
                             if (x != dist_mask.shape[0]
                             and y != dist_mask.shape[1] - 1
                             and dist_mask[x,y+1]):
                                 subplot.plot(
                                   [x_bins[x], x_bins[x+1]],
                                   [y_bins[y+1], y_bins[y+1]],
-                                  zorder=0.4, **outline_kw)
+                                  **outline_kw)
 
         # Draw plot
         if plot:
