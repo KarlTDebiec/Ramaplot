@@ -510,6 +510,22 @@ class RamachandranFigureManager(FigureManager):
             ms: 2
           label_kw:
             fp: 6b
+      manuscript_tight:
+        class: target
+        extends: manuscript
+        help: Tighter formatting for 9 columns rather than 7
+        draw_figure:
+          sub_width:  0.63
+          sub_height: 0.63
+        draw_dataset:
+          colorbar_kw:
+            zlabel_fp: 7b
+            zlabel_kw:
+              labelpad: 10
+          contour_kw:
+            linewidths: 0.5
+          plot_kw:
+            ms: 1.5
       notebook:
         class: target
         inherits: notebook
