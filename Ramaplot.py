@@ -515,7 +515,7 @@ class RamachandranFigureManager(FigureManager):
       manuscript_tight:
         class: target
         extends: manuscript
-        help: Tighter formatting for 9 columns rather than 7
+        help: Tighter formatting for nine columns rather than seven
         draw_figure:
           sub_width:  0.625
           sub_height: 0.625
