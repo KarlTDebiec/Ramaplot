@@ -68,6 +68,11 @@ class RamachandranFigureManager(FigureManager):
             b: True
             linestyle: '-'
             alpha: 0.1
+          label_kw:
+            border_lw: 1
+            horizontalalignment: right
+            verticalalignment: bottom
+            zorder: 10
         draw_dataset:
           heatmap_kw:
             cmap: afmhot
@@ -237,7 +242,7 @@ class RamachandranFigureManager(FigureManager):
           plot_kw:
             mfc: [0.7,0.7,0.7]
             rasterized: False
-            zorder: 1000
+            zorder: 9
       bond:
         class: content
         help: Plot average value of a bond as a function of Φ,Ψ
@@ -494,6 +499,13 @@ class RamachandranFigureManager(FigureManager):
             labelpad: 8
           grid_kw:
             alpha: 0.3
+          draw_label: True
+          label_kw:
+            fp: 7b
+            x: null
+            y: null
+            xabs: -0.020
+            yabs:  0.015
         draw_dataset:
           partner_kw:
             hspace:    0.05
@@ -519,6 +531,13 @@ class RamachandranFigureManager(FigureManager):
         draw_figure:
           sub_width:  0.625
           sub_height: 0.625
+        draw_subplot:
+          label_kw:
+            fp: 6b
+            x: null
+            y: null
+            xabs: -0.020
+            yabs:  0.015
         draw_dataset:
           colorbar_kw:
             zlabel_fp: 7b
@@ -603,9 +622,8 @@ class RamachandranFigureManager(FigureManager):
             border_lw: 3
             x: 165
             y: 165
-            text_kw:
-              ha: right
-              va: top
+            ha: right
+            va: top
       presentation_wide:
         class: target
         inherits: presentation_wide
@@ -893,6 +911,7 @@ class RamachandranFigureManager(FigureManager):
                      "necessary attributes 'x' and 'y', skipping.")
             else:
                 plot_kw = copy(kwargs.get("plot_kw", {}))
+                get_colors(plot_kw, kwargs)
                 subplot.plot(x, y, **plot_kw)
 
         # Draw label
