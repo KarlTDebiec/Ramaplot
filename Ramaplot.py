@@ -132,12 +132,12 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           heatmap_kw:
             cmap: !!python/object/apply:ramaplot.cmap_ff99SB []
-          contour: False
+          draw_contour: False
       potential_energy:
         class: content
         help: Plot potential energy as a function of Φ,Ψ
         draw_dataset:
-          heatmap: True
+          draw_heatmap: True
           heatmap_kw:
             cmap: bone
             vmin: 0
@@ -145,13 +145,13 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zticks: [0,1,2,3,4,5]
             zlabel: ΔU (kcal/mol)
-          contour: True
+          draw_contour: True
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
-          mask: True
-          outline: False
+          draw_mask: True
+          draw_outline: False
       free_energy:
         class: content
         help: Plot free energy as a function of Φ,Ψ
@@ -159,7 +159,7 @@ class RamachandranFigureManager(FigureManager):
           dataset_kw:
             zkey: free energy
             mask_cutoff: 5
-          heatmap: True
+          draw_heatmap: True
           heatmap_kw:
             cmap: afmhot
             vmin: 0
@@ -167,13 +167,13 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zticks: [0,1,2,3,4,5]
             zlabel: ΔG (kcal/mol)
-          contour: True
+          draw_contour: True
           contour_kw:
             colors: '0.25'
             levels: [1, 2, 3, 4, 5]
             linestyles: solid
-          mask: False
-          outline: False
+          draw_mask: False
+          draw_outline: False
       probability:
         class: content
         help: Plot probability as a function of Φ,Ψ
@@ -181,7 +181,7 @@ class RamachandranFigureManager(FigureManager):
           dataset_kw:
             zkey: probability
             mask_cutoff: 0.001
-          heatmap: True
+          draw_heatmap: True
           heatmap_kw:
             cmap: summer
             vmin: 0
@@ -189,13 +189,42 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zticks: [0.000,0.005,0.010,0.015,0.02]
             zlabel: Probability
-          contour: True
+          draw_contour: True
           contour_kw:
             colors: '0.25'
             levels: [0.000,0.005,0.010,0.015,0.020]
             linestyles: solid
-          mask: True
-          outline: True
+          draw_mask: True
+          draw_outline: True
+      state_populations:
+        class: content
+        help: Calculate state populations; plot 
+        draw_dataset:
+          dataset_kw:
+            calc_populations: True
+            state_radius: 45
+            plot_populations: True
+          heatmap_kw:
+            vmax: 9
+            cmap: cubehelix
+          colorbar_kw:
+            zticks: [0,1,2,3,4,5,6,7,8]
+            zticklabels:
+              - "β"
+              - "$PP_{II}$"
+              - "ξ"
+              - "γ'"
+              - "α"
+              - "$L_α$"
+              - "γ"
+              - "$PP_{II}$'"
+              - "plateau"
+          contour_kw:
+            levels: [0,1,2,3,4,5,6,7,8]
+          draw_contour: False
+          draw_outline: True
+          draw_mask:    True
+          draw_plot:    True
       diff:
         class: content
         help: Plot difference between two datasets
@@ -214,19 +243,19 @@ class RamachandranFigureManager(FigureManager):
             zlabel: ΔΔG (kcal/mol)
           contour_kw:
             levels: [-5,-4,-3,-2,-1,0,1,2,3,4,5]
-          mask: True
-          outline: True
+          draw_mask: True
+          draw_outline: True
       sampling:
         class: content
         help: Plot sampling as a function of Φ,Ψ
         draw_dataset:
-          heatmap: False
-          contour: False
-          mask: True
+          draw_heatmap: False
+          draw_contour: False
+          draw_mask: True
           mask_kw:
             cmap: Greys
-          outline: False
-          plot: True
+          draw_outline: False
+          draw_plot: True
       structure:
         class: content
         help: Plot observed Φ,Ψ from a known structure
@@ -234,11 +263,11 @@ class RamachandranFigureManager(FigureManager):
           kind: pdist
           dataset_kw:
             mode: none
-          heatmap: False
-          contour: False
-          mask: False
-          outline: False
-          plot: True
+          draw_heatmap: False
+          draw_contour: False
+          draw_mask: False
+          draw_outline: False
+          draw_plot: True
           plot_kw:
             mfc: [0.7,0.7,0.7]
             rasterized: False
@@ -251,9 +280,9 @@ class RamachandranFigureManager(FigureManager):
             cmap: RdBu
             vmin: 0
             vmax: 3
-          contour: False
-          mask: True
-          outline: True
+          draw_contour: False
+          draw_mask: True
+          draw_outline: True
       bond_CN:
         help: Plot average C-N bond as a function of Φ,Ψ
         extends: angle
@@ -442,9 +471,9 @@ class RamachandranFigureManager(FigureManager):
           colorbar_kw:
             zticks: [170,175,180,185,190]
             zlabel: ω
-          contour: False
-          mask: True
-          outline: True
+          draw_contour: False
+          draw_mask: True
+          draw_outline: True
       image:
         class: content
         help: Plot image of a Ramachandran plot, typically from a publication
@@ -454,9 +483,9 @@ class RamachandranFigureManager(FigureManager):
             cmap: Greys_r
             vmin: 0
             vmax: 1
-          contour: False
-          mask: False
-          outline: False
+          draw_contour: False
+          draw_mask: False
+          draw_outline: False
       poster:
         class: target
         help: Poster (width = 4.6", height = 4.3")
@@ -662,7 +691,7 @@ class RamachandranFigureManager(FigureManager):
         class: appearance
         help: Draw colorbar to right of plot
         draw_dataset:
-          colorbar: True
+          draw_colorbar: True
           partner_kw:
             position: right
           colorbar_kw:
@@ -672,7 +701,7 @@ class RamachandranFigureManager(FigureManager):
         class: appearance
         help: Draw colorbar above plot
         draw_dataset:
-          colorbar: True
+          draw_colorbar: True
           partner_kw:
             position: top
           colorbar_kw:
@@ -682,7 +711,7 @@ class RamachandranFigureManager(FigureManager):
         class: appearance
         help: Draw colorbar below plot
         draw_dataset:
-          colorbar: True
+          draw_colorbar: True
           partner_kw:
             position: bottom
             hspace: 0.5
@@ -695,9 +724,8 @@ class RamachandranFigureManager(FigureManager):
     @manage_kwargs()
     def draw_dataset(self, subplot, kind, label=None, loop_edges=True,
         nan_to_max=True,
-        heatmap=True, colorbar=False, contour=True, mask=False, outline=False,
-        plot=False,
-        draw_label=True,
+        draw_heatmap=True, draw_colorbar=False, draw_contour=True,
+        draw_mask=False, draw_outline=False, draw_plot=False, draw_label=True,
         verbose=1, debug=0, **kwargs):
         """
         Draws a dataset.
@@ -807,7 +835,7 @@ class RamachandranFigureManager(FigureManager):
                 dist_mask = temp
 
         # Draw heatmap and colorbar
-        if heatmap:
+        if draw_heatmap:
             if dist is None or x_bins is None or y_bins is None:
                 warn("'heatmap' is enabled but dataset does not have the "
                      "necessary attributes 'mask', 'x_bins', and 'y_bins', "
@@ -820,7 +848,7 @@ class RamachandranFigureManager(FigureManager):
                       heatmap_dist)
                 pcolormesh = subplot.pcolormesh(x_bins, y_bins, heatmap_dist.T,
                   **heatmap_kw)
-                if colorbar:
+                if draw_colorbar:
                     from .myplotspec.axes import set_colorbar
                     if not hasattr(subplot, "_mps_partner_subplot"):
                         from .myplotspec.axes import add_partner_subplot
@@ -829,7 +857,7 @@ class RamachandranFigureManager(FigureManager):
                     set_colorbar(subplot, pcolormesh, **kwargs)
 
         # Draw contour
-        if contour:
+        if draw_contour:
             if dist is None or x_centers is None or y_centers is None:
                 warn("'contour' is enabled but dataset does not have the "
                      "necessary attributes 'dist', 'x_centers', and "
@@ -855,7 +883,7 @@ class RamachandranFigureManager(FigureManager):
                                 continue
 
         # Draw mask
-        if mask:
+        if draw_mask:
             if dist_mask is None or x_bins is None or y_bins is None:
                 warn("'mask' is enabled but dataset does not have the "
                      "necessary attributes 'mask', 'x_bins', and 'y_bins', "
@@ -865,47 +893,47 @@ class RamachandranFigureManager(FigureManager):
                 subplot.pcolormesh(x_bins, y_bins, dist_mask.T, **mask_kw)
 
         # Draw outline
-        if outline:
+        if draw_outline:
             if dist_mask is None or x_bins is None or y_bins is None:
                 warn("'outline' is enabled but dataset does not have the "
                      "necessary attributes 'mask', 'x_bins', and 'y_bins', "
                      "skipping.")
             else:
                 outline_kw = copy(kwargs.get("outline_kw", {}))
-                for x in range(dist.shape[0]):
-                    for y in range(dist.shape[1]):
-                        if not dist_mask[x,y]:
-                            if (x != 0
-                            and y != dist_mask.shape[1]
-                            and dist_mask[x-1,y]):
+                for xo in range(dist.shape[0]):
+                    for yo in range(dist.shape[1]):
+                        if not dist_mask[xo,yo]:
+                            if (xo != 0
+                            and yo != dist_mask.shape[1]
+                            and dist_mask[xo-1,yo]):
                                 subplot.plot(
-                                  [x_bins[x], x_bins[x]],
-                                  [y_bins[y], y_bins[y+1]],
+                                  [x_bins[xo], x_bins[xo]],
+                                  [y_bins[yo], y_bins[yo+1]],
                                   **outline_kw)
-                            if (x != dist_mask.shape[0] - 1
-                            and y != dist_mask.shape[1]
-                            and dist_mask[x+1,y]):
+                            if (xo != dist_mask.shape[0] - 1
+                            and yo != dist_mask.shape[1]
+                            and dist_mask[xo+1,yo]):
                                 subplot.plot(
-                                  [x_bins[x+1], x_bins[x+1]],
-                                  [y_bins[y],   y_bins[y+1]],
+                                  [x_bins[xo+1], x_bins[xo+1]],
+                                  [y_bins[yo],   y_bins[yo+1]],
                                   **outline_kw)
-                            if (x != dist_mask.shape[0]
-                            and y != 0
-                            and dist_mask[x,y-1]):
+                            if (xo != dist_mask.shape[0]
+                            and yo != 0
+                            and dist_mask[xo,yo-1]):
                                 subplot.plot(
-                                  [x_bins[x], x_bins[x+1]],
-                                  [y_bins[y], y_bins[y]],
+                                  [x_bins[xo], x_bins[xo+1]],
+                                  [y_bins[yo], y_bins[yo]],
                                   **outline_kw)
-                            if (x != dist_mask.shape[0]
-                            and y != dist_mask.shape[1] - 1
-                            and dist_mask[x,y+1]):
+                            if (xo != dist_mask.shape[0]
+                            and yo != dist_mask.shape[1] - 1
+                            and dist_mask[xo,yo+1]):
                                 subplot.plot(
-                                  [x_bins[x], x_bins[x+1]],
-                                  [y_bins[y+1], y_bins[y+1]],
+                                  [x_bins[xo],   x_bins[xo+1]],
+                                  [y_bins[yo+1], y_bins[yo+1]],
                                   **outline_kw)
 
         # Draw plot
-        if plot:
+        if draw_plot:
             if x is None or y is None:
                 warn("'plot' is enabled but dataset does not have the "
                      "necessary attributes 'x' and 'y', skipping.")

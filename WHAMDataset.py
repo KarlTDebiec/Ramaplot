@@ -47,7 +47,9 @@ class WHAMDataset(Dataset):
           mask_cutoff)
 
     def __init__(self, phikey="phi", psikey="psi", zkey="free energy",
-        wrap=True, mask_cutoff=None, verbose=1, debug=0, **kwargs):
+        wrap=True, mask_cutoff=None,
+        calc_populations=False,
+        verbose=1, debug=0, **kwargs):
         """
         Initializes dataset.
 
@@ -70,6 +72,7 @@ class WHAMDataset(Dataset):
           kwargs (dict): Additional keyword arguments
         """
         import numpy as np
+        import pandas as pd
 
         # Manage arguments
         if zkey not in ["free energy", "probability"]:
@@ -142,10 +145,61 @@ class WHAMDataset(Dataset):
                   np.logical_not(np.isnan(probability)),
                   np.ones_like(probability))
 
-        if debug >= 1:
-            from .myplotspec.debug import db_s
+        # Calculate state populations
+        if calc_populations:
+            states = kwargs.get("states",  [
+              ("β",       -151,  151),
+              ("PPII",     -66,  140),
+              ("ξ",       -145,   55),
+              ("γ'",       -81,   65),
+              ("α",        -70,  -25),
+              ("$L_α$",     55,   45),
+              ("γ",         73,  -35),
+              ("PPII'",     56, -124),
+              ("plateau", -100, -130)])
+            state_radius = kwargs.get("state_radius", 45)
+            plot_populations = kwargs.get("plot_populations", False)
 
-            db_s("Probability min {0}".format(np.nanmin(probability)))
-            db_s("Probability max {0}".format(np.nanmax(probability)))
-            db_s("Free energy min {0}".format(np.nanmin(free_energy)))
-            db_s("Free energy max {0}".format(np.nanmax(free_energy)))
+            distances = np.zeros((len(states), len(x_centers), len(y_centers)))
+            xs = []
+            ys = []
+            for i, (state, x, y) in enumerate(states):
+                xs += [x]
+                ys += [y]
+                # There must be a better way to do this, but this works
+                for j, xc in enumerate(x_centers):
+                    for k, yc in enumerate(y_centers):
+                        dx = (xc - x)
+                        if dx <= -180 or dx >= 180:
+                            dx = 360 - dx
+                        else:
+                            dx = dx
+                        dy = (yc - y)
+                        if dy <= -180 or dy >= 180:
+                            dy = 360 - dy
+                        else:
+                            dy = dy
+                        distances[i,j,k] = np.sqrt(dx**2 + dy**2)
+            assignments = np.argmin(distances, axis=0)
+            assignments[np.min(distances, axis=0) >= state_radius] = \
+              len(states) + 1
+
+            index, state_populations = [], []
+            for i, (state, x, y) in enumerate(states):
+                index += [state]
+                state_populations += [(x, y,
+                  np.nansum(probability[assignments==i]))]
+            state_populations = pd.DataFrame(state_populations, index=index,
+              columns=["Φ center", "Ψ center", "population"])
+            self.state_populations = state_populations
+
+            if verbose >= 1:
+                print(state_populations)
+
+            if plot_populations:
+                self.dist = assignments
+                self.mask = np.ma.masked_where(
+                  np.logical_not(assignments == len(states) + 1),
+                  np.ones_like(assignments))
+                self.x = np.array(xs)
+                self.y = np.array(ys)
