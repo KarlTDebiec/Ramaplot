@@ -198,7 +198,7 @@ class RamachandranFigureManager(FigureManager):
           draw_outline: True
       state_populations:
         class: content
-        help: Calculate state populations; plot 
+        help: Calculate state populations; plot state centers and cutoffs
         draw_dataset:
           dataset_kw:
             calc_populations: True
