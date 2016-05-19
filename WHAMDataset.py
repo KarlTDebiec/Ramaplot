@@ -38,7 +38,8 @@ class WHAMDataset(Dataset):
     @classmethod
     def get_cache_key(cls, infile, phikey="phi", psikey="psi",
         zkey="free energy", wrap=True, mask_cutoff=None,
-        calc_populations=False, plot_populations=False, *args, **kwargs):
+        calc_populations=False, plot_populations=False,
+        *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -98,6 +99,8 @@ class WHAMDataset(Dataset):
         # Organize data
         x_centers = np.unique(dataframe[phikey])
         y_centers = np.unique(dataframe[psikey])
+        x_width = np.mean(x_centers[1:] - x_centers[:-1])
+        y_width = np.mean(y_centers[1:] - y_centers[:-1])
         free_energy = np.zeros((x_centers.size, y_centers.size),
                                     np.float) * np.nan
         probability = np.zeros((x_centers.size, y_centers.size),
@@ -110,9 +113,6 @@ class WHAMDataset(Dataset):
                 probability[x_index, y_index] = p
         free_energy -= np.nanmin(free_energy)
         probability /= np.nansum(probability)
-
-        x_width = np.mean(x_centers[1:] - x_centers[:-1])
-        y_width = np.mean(y_centers[1:] - y_centers[:-1])
 
         self.x_centers = x_centers
         self.y_centers = y_centers

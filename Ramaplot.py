@@ -536,6 +536,12 @@ class RamachandranFigureManager(FigureManager):
         draw_dataset:
           dataset_kw:
             cls: ramaplot.WHAMDataset.WHAMDataset
+      ndrd:
+        class: content
+        help: Neighbor-Dependent Ramachandran Dristribution
+        draw_dataset:
+          dataset_kw:
+            cls: ramaplot.NDRDDataset.NDRDDataset
       manuscript:
         class: target
         inherits: manuscript

@@ -39,8 +39,10 @@ class NDRDDataset(object):
       "distribution will be returned.")
 
     @classmethod
-    def get_cache_key(cls, infile, selection="ALA", mask_cutoff=None, *args,
-        **kwargs):
+    def get_cache_key(cls, infile, selection="ALA", zkey="free energy",
+        mask_cutoff=None,
+        calc_populations=False, plot_populations=False,
+        *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -50,7 +52,7 @@ class NDRDDataset(object):
         from os.path import expandvars
 
         return (cls, expandvars(infile), cls.process_selection_arg(selection),
-          mask_cutoff)
+          zkey, mask_cutoff, calc_populations, plot_populations)
 
     @staticmethod
     def get_cache_message(cache_key):
@@ -176,7 +178,7 @@ class NDRDDataset(object):
           dataset (DataFrame): Selected dataset
         """
         from six import StringIO
-        import pandas
+        import pandas as pd
 
         if verbose >= 1:
             print("loading '{0}' from '{1}'".format(selection, infile))
@@ -188,7 +190,7 @@ class NDRDDataset(object):
                     s.write(line)
         s.seek(0)
 
-        dataset = pandas.read_csv(s, delim_whitespace=True, header=None,
+        dataset = pd.read_csv(s, delim_whitespace=True, header=None,
           usecols=[3,4,5,6], names=["phi", "psi", "probability",
           "free energy"])
 
@@ -225,13 +227,15 @@ class NDRDDataset(object):
         dataset = copy(dataset_1)
         dataset["free energy"] += dataset_2["free energy"]
         dataset["free energy"] -= dataset_3["free energy"]
-        dataset["probability"]  = np.exp(dataset["free energy"])
+        dataset["probability"]  = np.exp(-1 * dataset["free energy"])
         dataset["probability"] /= np.sum(dataset["probability"])
 
         return dataset
 
-    def __init__(self, infile, selection="ALA", loop_edges=True,
-        mask_cutoff=None, verbose=1, **kwargs):
+    def __init__(self, infile, selection="ALA", zkey="free energy",
+        loop_edges=True, mask_cutoff=None,
+        calc_populations=False, plot_populations=False,
+        verbose=1, **kwargs):
         """
         Initializes dataset.
 
@@ -250,8 +254,14 @@ class NDRDDataset(object):
           kwargs (dict): Additional keyword arguments
         """
         from os.path import expandvars
-        import pandas
+        import pandas as pd
         import numpy as np
+
+        # Manage arguments
+        if zkey not in ["free energy", "probability"]:
+            raise ValueError("Argument 'zkey' does not support provided " +
+              "value '{0}', must be 'free energy or ".format(zkey) +
+              "probability.")
 
         infile = expandvars(infile)
         selection = self.process_selection_arg(selection)
@@ -286,26 +296,121 @@ class NDRDDataset(object):
             free_energy[x_index, y_index] = fe
             probability[x_index, y_index] = p
         free_energy -= np.nanmin(free_energy)
+        probability /= np.nansum(probability)
 
+        self.x_centers = x_centers
+        self.y_centers = y_centers
+        self.x_width = x_width
+        self.y_width = y_width
+        self.dist = free_energy
         self.x_bins  = np.linspace(x_centers[0]  - x_width / 2,
                                    x_centers[-1] + x_width / 2,
                                    x_centers.size + 1)
         self.y_bins  = np.linspace(y_centers[0]  - y_width / 2,
                                    y_centers[-1] + y_width / 2,
                                    y_centers.size + 1)
-        self.x_centers = x_centers
-        self.y_centers = y_centers
-        self.x_width = x_width
-        self.y_width = y_width
-        self.dist = free_energy
 
-        # Prepare mask
-        if mask_cutoff is not None:
-            self.mask = np.ma.masked_where(np.logical_and(
-              free_energy <= mask_cutoff,
-              np.logical_not(np.isnan(free_energy))),
-              np.ones_like(free_energy))
-        else:
-            self.mask = np.ma.masked_where(
-              np.logical_not(np.isnan(free_energy)),
-              np.ones_like(free_energy))
+        # Store distribution in instance variable and create mask
+        if zkey == "free energy":
+            self.dist = free_energy
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  free_energy <= mask_cutoff,
+                  np.logical_not(np.isnan(free_energy))),
+                  np.ones_like(free_energy))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(free_energy)),
+                  np.ones_like(free_energy))
+        elif zkey == "probability":
+            self.dist = probability
+            if mask_cutoff is not None:
+                self.mask = np.ma.masked_where(np.logical_and(
+                  probability >= mask_cutoff,
+                  np.logical_not(np.isnan(probability))),
+                  np.ones_like(probability))
+            else:
+                self.mask = np.ma.masked_where(
+                  np.logical_not(np.isnan(probability)),
+                  np.ones_like(probability))
+
+#        # Prepare mask
+#        if mask_cutoff is not None:
+#            self.mask = np.ma.masked_where(np.logical_and(
+#              free_energy <= mask_cutoff,
+#              np.logical_not(np.isnan(free_energy))),
+#              np.ones_like(free_energy))
+#        else:
+#            self.mask = np.ma.masked_where(
+#              np.logical_not(np.isnan(free_energy)),
+#              np.ones_like(free_energy))
+
+        # Calculate state populations
+        if calc_populations:
+            states = kwargs.get("states",  [
+              ("β",       -151,  151),
+              ("PPII",     -66,  140),
+              ("ξ",       -145,   55),
+              ("γ'",       -81,   65),
+              ("α",        -70,  -25),
+              ("$L_α$",     55,   45),
+              ("γ",         73,  -35),
+              ("PPII'",     56, -124),
+              ("plateau", -100, -130)])
+            state_radius = kwargs.get("state_radius", 45)
+
+            distances = np.zeros((len(states), len(x_centers), len(y_centers)))
+            xs = []
+            ys = []
+            for i, (state, x, y) in enumerate(states):
+                xs += [x]
+                ys += [y]
+                # There must be a better way to do this, but this works
+                for j, xc in enumerate(x_centers):
+                    for k, yc in enumerate(y_centers):
+                        dx = (xc - x)
+                        if dx <= -180 or dx >= 180:
+                            dx = 360 - dx
+                        else:
+                            dx = dx
+                        dy = (yc - y)
+                        if dy <= -180 or dy >= 180:
+                            dy = 360 - dy
+                        else:
+                            dy = dy
+                        distances[i,j,k] = np.sqrt(dx**2 + dy**2)
+            assignments = np.argmin(distances, axis=0)
+            assignments[np.min(distances, axis=0) >= state_radius] = \
+              len(states) + 1
+
+            index, state_populations = [], []
+            for i, (state, x, y) in enumerate(states):
+                index += [state]
+                state_populations += [(x, y,
+                  np.nansum(probability[assignments==i]))]
+            state_populations = pd.DataFrame(state_populations, index=index,
+              columns=["Φ center", "Ψ center", "population"])
+            self.state_populations = state_populations
+
+            if verbose >= 1:
+                print(state_populations)
+
+            if plot_populations:
+                self.dist = assignments
+                self.mask = np.ma.masked_where(
+                  np.logical_not(assignments == len(states) + 1),
+                  np.ones_like(assignments))
+                self.x = np.array(xs)
+                self.y = np.array(ys)
+                label, label_kw = [], []
+                from .myplotspec import multi_get_copy
+                default_label_kw = multi_get_copy(["default_label_kw",
+                  "label_kw"], kwargs, {})
+                for index, row in state_populations.iterrows():
+                    label += ["{0}\n{1:2d}%".format(index,
+                     int(row["population"]*100))]
+                    label_kw += [default_label_kw.copy()]
+                    label_kw[-1]["x"] = row["Φ center"]
+                    label_kw[-1]["y"] = row["Ψ center"]
+                self.label = label
+                self.label_kw = label_kw
