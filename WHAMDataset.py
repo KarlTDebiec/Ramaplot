@@ -11,6 +11,9 @@ Manages weighted histogram analysis method datasets.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
+if __name__ == "__main__":
+    __package__ = str("ramaplot")
+    import ramaplot
 from .myplotspec.Dataset import Dataset
 ################################### CLASSES ###################################
 class WHAMDataset(Dataset):
@@ -203,3 +206,15 @@ class WHAMDataset(Dataset):
                   np.ones_like(assignments))
                 self.x = np.array(xs)
                 self.y = np.array(ys)
+                label, label_kw = [], []
+                from .myplotspec import multi_get_copy
+                default_label_kw = multi_get_copy(["default_label_kw",
+                  "label_kw"], kwargs, {})
+                for index, row in state_populations.iterrows():
+                    label += ["{0}\n{1:2d}%".format(index,
+                     int(row["population"]*100))]
+                    label_kw += [default_label_kw.copy()]
+                    label_kw[-1]["x"] = row["Φ center"]
+                    label_kw[-1]["y"] = row["Ψ center"]
+                self.label = label
+                self.label_kw = label_kw

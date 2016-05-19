@@ -13,7 +13,6 @@ a YAML file.
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
-import matplotlib
 if __name__ == "__main__":
     __package__ = str("ramaplot")
     import ramaplot
@@ -204,10 +203,17 @@ class RamachandranFigureManager(FigureManager):
             calc_populations: True
             state_radius: 45
             plot_populations: True
+            default_label_kw:
+              border_lw: 1
+              text_kw:
+                horizontalalignment: center
+                verticalalignment: center
+                fp: 6b
           heatmap_kw:
             vmax: 9
             cmap: cubehelix
           colorbar_kw:
+            zlabel: "Assigned Conformation"
             zticks: [0,1,2,3,4,5,6,7,8]
             zticklabels:
               - "β"
@@ -224,12 +230,14 @@ class RamachandranFigureManager(FigureManager):
           draw_contour: False
           draw_outline: True
           draw_mask:    True
-          draw_plot:    True
+          draw_plot:    False
+          draw_label:   True
       diff:
         class: content
         help: Plot difference between two datasets
         draw_dataset:
-          kind: diff
+          dataset_kw:
+            cls: ramaplot.DiffDataset.DiffDataset
           dataset_1_kw:
             mask_cutoff: 5
           dataset_2_kw:
@@ -249,6 +257,8 @@ class RamachandranFigureManager(FigureManager):
         class: content
         help: Plot sampling as a function of Φ,Ψ
         draw_dataset:
+          dataset_kw:
+            cls: ramaplot.CpptrajDataset.CpptrajDataset
           draw_heatmap: False
           draw_contour: False
           draw_mask: True
@@ -260,8 +270,8 @@ class RamachandranFigureManager(FigureManager):
         class: content
         help: Plot observed Φ,Ψ from a known structure
         draw_dataset:
-          kind: pdist
           dataset_kw:
+            cls: ramaplot.CpptrajDataset.CpptrajDataset
             mode: none
           draw_heatmap: False
           draw_contour: False
@@ -500,6 +510,11 @@ class RamachandranFigureManager(FigureManager):
         draw_subplot:
           ylabel_kw:
             rotation: horizontal
+      wham:
+        class: content
+        draw_dataset:
+          dataset_kw:
+            cls: ramaplot.WHAMDataset.WHAMDataset
       manuscript:
         class: target
         inherits: manuscript
@@ -722,7 +737,7 @@ class RamachandranFigureManager(FigureManager):
 
     @manage_defaults_presets()
     @manage_kwargs()
-    def draw_dataset(self, subplot, kind, label=None, loop_edges=True,
+    def draw_dataset(self, subplot, label=None, loop_edges=True,
         nan_to_max=True,
         draw_heatmap=True, draw_colorbar=False, draw_contour=True,
         draw_mask=False, draw_outline=False, draw_plot=False, draw_label=True,
@@ -750,39 +765,12 @@ class RamachandranFigureManager(FigureManager):
         import numpy as np
         import six
         from .myplotspec import get_colors, multi_get_copy
-        from .myplotspec.error import (MPSArgumentError, MPSDatasetError,
-                                       MPSDatasetCacheError)
-        from .AnalyticalDataset import AnalyticalDataset
-        from .CDLDataset import CDLDataset
-        from .DiffDataset import DiffDataset
-        from .ImageDataset import ImageDataset
-        from .MeanDataset import MeanDataset
-        from .NDRDDataset import NDRDDataset
-        from .PDistDataset import PDistDataset
-        from .WHAMDataset import WHAMDataset
-        dataset_classes = {"analytical": AnalyticalDataset,
-                           "cdl": CDLDataset,
-                           "diff": DiffDataset,
-                           "image": ImageDataset,
-                           "mean": MeanDataset,
-                           "ndrd": NDRDDataset,
-                           "pdist": PDistDataset,
-                           "wham": WHAMDataset}
 
         # Load data
-        kind = kind.lower()
         dataset_kw = multi_get_copy("dataset_kw", kwargs, {})
         if "infile" in kwargs:
             dataset_kw["infile"] = kwargs["infile"]
-        try:
-            dataset = self.load_dataset(dataset_classes[kind],
-                        dataset_classes=dataset_classes,
-                        verbose=verbose, debug=debug, **dataset_kw)
-        except MPSDatasetCacheError as error:
-            if verbose >= 1:
-                warn("{0} has ".format(dataset_classes[kind].__name__) +
-                  "raised an error: {0}; skipping this dataset.".format(error))
-            return
+        dataset = self.load_dataset(verbose=verbose, debug=debug, **dataset_kw)
         dist      = dataset.dist      if hasattr(dataset,"dist")      else None
         x_bins    = dataset.x_bins    if hasattr(dataset,"x_bins")    else None
         y_bins    = dataset.y_bins    if hasattr(dataset,"y_bins")    else None
@@ -942,20 +930,33 @@ class RamachandranFigureManager(FigureManager):
                 get_colors(plot_kw, kwargs)
                 subplot.plot(x, y, **plot_kw)
 
-        # Draw label
-        if draw_label and label is not None:
+        # Draw label (need to clean this up)
+        if draw_label:
             from .myplotspec.text import set_text
+            if label is not None:
+                label_kw = kwargs.get("label_kw", {})
+                if (isinstance(label, six.string_types)
+                and isinstance(label_kw, dict)):
+                    set_text(subplot, s=label, **label_kw)
+                elif (isinstance(label, list) and isinstance(label_kw, list)
+                and len(label) == len(label_kw)):
+                    for l, kw in zip(label, label_kw):
+                        set_text(subplot, s=l, **kw)
+                else:
+                    raise Exception("bad label arguments")
+            elif hasattr(dataset, "label") and dataset.label is not None:
+                label = dataset.label
+                label_kw = dataset.label_kw
+                if (isinstance(label, six.string_types)
+                and isinstance(label_kw, dict)):
+                    set_text(subplot, s=label, **label_kw)
+                elif (isinstance(label, list) and isinstance(label_kw, list)
+                and len(label) == len(label_kw)):
+                    for l, kw in zip(label, label_kw):
+                        set_text(subplot, s=l, **kw)
+                else:
+                    raise Exception("bad label arguments")
 
-            label_kw = kwargs.get("label_kw", {})
-            if (isinstance(label, six.string_types)
-            and isinstance(label_kw, dict)):
-                set_text(subplot, s=label, **label_kw)
-            elif (isinstance(label, list) and isinstance(label_kw, list)
-            and len(label) == len(label_kw)):
-                for l, kw in zip(label, label_kw):
-                    set_text(subplot, s=l, **kw)
-            else:
-                raise Exception("bad label arguments")
 
     def main(self):
         """
