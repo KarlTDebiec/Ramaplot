@@ -73,6 +73,8 @@ class RamachandranFigureManager(FigureManager):
             verticalalignment: bottom
             zorder: 10
         draw_dataset:
+          dataset_kw:
+            cls: ramaplot.PDistDataset.PDistDataset
           heatmap_kw:
             cmap: afmhot
             edgecolors: none
@@ -510,8 +512,26 @@ class RamachandranFigureManager(FigureManager):
         draw_subplot:
           ylabel_kw:
             rotation: horizontal
+      analytical:
+        class: content
+        extends: potential_energy
+        help: Potential energy calculated directly from force field
+        draw_dataset:
+          dataset_kw:
+            cls: ramaplot.AnalyticalDataset.AnalyticalDataset
+            draw_heatmap: True
+            draw_contour: True
+            contour_kw:
+              colors: "0.7"
+              levels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            draw_mask: False
+            draw_outline: False
+            draw_plot: False
       wham:
         class: content
+        extends: free_energy
+        help: Free energy calculated from umbrella sampling using the Weighted
+          Histogram Analysis Method
         draw_dataset:
           dataset_kw:
             cls: ramaplot.WHAMDataset.WHAMDataset

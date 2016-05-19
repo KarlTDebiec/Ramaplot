@@ -97,18 +97,38 @@ class AnalyticalDataset(object):
         elif isinstance(terms, six.string_types):
             out_terms.append([terms, 0.0])
         elif isinstance(terms, list):
-            # May be ["C -N -CX-C ", 120]
-            if (len(terms) == 2
+            # May be ["C -N -CX-C "]
+            if (len(terms) == 1
             and isinstance(terms[0], six.string_types)):
+                out_terms.append([terms[0], 0.0])
+
+            # May be ["C -N -CX-C ", 120]
+            elif (len(terms) == 2
+            and   isinstance(terms[0], six.string_types)
+            and  (isinstance(terms[1], float)
+            or    isinstance(terms[1], int))):
                 out_terms.append(terms)
-            else:
+
             # May be [["C -N -CX-C ", 120], "C -TN-CX -C "]
+            else:
                 for in_term in terms:
                     if isinstance(in_term, six.string_types):
                         out_terms.append([in_term, 0.0])
+                    elif isinstance(in_term, list):
+                        if (len(in_term) == 1
+                        and isinstance(in_term[0], six.string_types)):
+                            out_terms.append([in_term[0], 0.0])
+                        elif (len(in_term) == 2
+                        and   isinstance(in_term[0], six.string_types)
+                        and  (isinstance(in_term[1], float)
+                        or    isinstance(in_term[1], int))):
+                            out_terms.append(in_term)
+                        else:
+                            raise()
                     else:
-                        out_terms.append(in_term)
-
+                        raise()
+        else:
+            raise()
         return tuple(tuple(x) for x in out_terms)
 
     def __init__(self, infile, verbose=1, **kwargs):
@@ -169,7 +189,7 @@ class AnalyticalDataset(object):
                           "Term '{0:2}-{1:2}-{2:2}-{3:2}' ".format(
                           type_4, type_3, type_2, type_1) +
                           "is present and will be used")
-                if verbose >= 1:
+                if verbose >= 2:
                     print(dim_torsions[["type_1", "type_2", "type_3", "type_4",
                       "divider", "barrier", "phase", "periodicity"]])
                 for index, torsion in dim_torsions.iterrows():
