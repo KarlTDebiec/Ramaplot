@@ -10,6 +10,10 @@
 """
 Generates one or more Ramachandran figures to specifications provided in
 a YAML file.
+
+.. todo:
+    - Fix contour closing; worked in some instances when I wrote it but
+      does not seem to work in all instances
 """
 ################################### MODULES ###################################
 from __future__ import absolute_import,division,print_function,unicode_literals
@@ -68,7 +72,6 @@ class RamachandranFigureManager(FigureManager):
             linestyle: '-'
             alpha: 0.1
           label_kw:
-            border_lw: 1
             horizontalalignment: right
             verticalalignment: bottom
             zorder: 10
@@ -514,7 +517,6 @@ class RamachandranFigureManager(FigureManager):
             rotation: horizontal
       analytical:
         class: content
-        extends: potential_energy
         help: Potential energy calculated directly from force field
         draw_dataset:
           dataset_kw:
@@ -529,8 +531,7 @@ class RamachandranFigureManager(FigureManager):
             draw_plot: False
       wham:
         class: content
-        extends: free_energy
-        help: Free energy calculated from umbrella sampling using the Weighted
+        help: Distribution calculated from umbrella sampling using the Weighted
           Histogram Analysis Method
         draw_dataset:
           dataset_kw:
@@ -572,9 +573,10 @@ class RamachandranFigureManager(FigureManager):
             yabs:  0.015
         draw_dataset:
           partner_kw:
-            hspace:    0.05
-            wspace:    0.05
-            sub_width: 0.05
+            sub_width:  0.05
+            wspace:     0.05
+            sub_height: 0.05
+            hspace:     0.05
           colorbar_kw:
             ztick_fp: 6r
             zlabel_fp: 8b
@@ -729,6 +731,7 @@ class RamachandranFigureManager(FigureManager):
           draw_colorbar: True
           partner_kw:
             position: right
+            sub_height: null
           colorbar_kw:
             zlabel_kw:
               rotation: 270
@@ -739,6 +742,7 @@ class RamachandranFigureManager(FigureManager):
           draw_colorbar: True
           partner_kw:
             position: top
+            sub_width: null
           colorbar_kw:
             zlabel_kw:
               rotation: 0
@@ -749,10 +753,10 @@ class RamachandranFigureManager(FigureManager):
           draw_colorbar: True
           partner_kw:
             position: bottom
-            hspace: 0.5
+            sub_width: null
           colorbar_kw:
             zlabel_kw:
-              labelpad: 3
+              rotation: 0
     """
 
     @manage_defaults_presets()
