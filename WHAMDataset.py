@@ -37,7 +37,8 @@ class WHAMDataset(Dataset):
 
     @classmethod
     def get_cache_key(cls, infile, phikey="phi", psikey="psi",
-        zkey="free energy", wrap=True, mask_cutoff=None, *args, **kwargs):
+        zkey="free energy", wrap=True, mask_cutoff=None,
+        calc_populations=False, plot_populations=False, *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -47,11 +48,11 @@ class WHAMDataset(Dataset):
         from os.path import expandvars
 
         return (cls, expandvars(infile), phikey, psikey, zkey, wrap,
-          mask_cutoff)
+          mask_cutoff, calc_populations, plot_populations)
 
     def __init__(self, phikey="phi", psikey="psi", zkey="free energy",
         wrap=True, mask_cutoff=None,
-        calc_populations=False,
+        calc_populations=False, plot_populations=False,
         verbose=1, debug=0, **kwargs):
         """
         Initializes dataset.
@@ -161,7 +162,6 @@ class WHAMDataset(Dataset):
               ("PPII'",     56, -124),
               ("plateau", -100, -130)])
             state_radius = kwargs.get("state_radius", 45)
-            plot_populations = kwargs.get("plot_populations", False)
 
             distances = np.zeros((len(states), len(x_centers), len(y_centers)))
             xs = []
