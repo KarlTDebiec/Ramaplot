@@ -263,7 +263,7 @@ class RamachandranFigureManager(FigureManager):
         help: Plot sampling as a function of Φ,Ψ
         draw_dataset:
           dataset_kw:
-            cls: ramaplot.CpptrajDataset.CpptrajDataset
+            cls: ramaplot.PDistDataset.PDistDataset
           draw_heatmap: False
           draw_contour: False
           draw_mask: True
@@ -276,7 +276,7 @@ class RamachandranFigureManager(FigureManager):
         help: Plot observed Φ,Ψ from a known structure
         draw_dataset:
           dataset_kw:
-            cls: ramaplot.CpptrajDataset.CpptrajDataset
+            cls: ramaplot.PDistDataset.PDistDataset
             mode: none
           draw_heatmap: False
           draw_contour: False
@@ -577,6 +577,7 @@ class RamachandranFigureManager(FigureManager):
             y: null
             xabs: -0.020
             yabs:  0.015
+            border_lw: 1
         draw_dataset:
           partner_kw:
             sub_width:  0.05

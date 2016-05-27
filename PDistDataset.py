@@ -35,7 +35,9 @@ class PDistDataset(Dataset):
     @classmethod
     def get_cache_key(cls, infile, phikey="phi", psikey="psi",
         zkey="free energy", mode="hist", bins=72, bandwidth=5, wrap=True,
-        mask_cutoff=None, *args, **kwargs):
+        mask_cutoff=None,
+        calc_populations=False, plot_populations=False,
+        *args, **kwargs):
         """
         Generates tuple of arguments to be used as key for dataset
         cache.
@@ -53,10 +55,11 @@ class PDistDataset(Dataset):
 
         if mode == "hist":
             return (cls, expandvars(infile), phikey, psikey, zkey, mode, bins,
-                    wrap, mask_cutoff)
+                    wrap, mask_cutoff, calc_populations, plot_populations)
         elif mode == "kde":
             return (cls, expandvars(infile), phikey, psikey, zkey, mode, bins,
-                    bandwidth, wrap, mask_cutoff)
+                    bandwidth, wrap, mask_cutoff, calc_populations,
+                    plot_populations)
 
     @staticmethod
     def process_bins_arg(bins, dim=2):
@@ -132,6 +135,7 @@ class PDistDataset(Dataset):
 
     def __init__(self, phikey="phi", psikey="psi", zkey="free energy",
         mode="hist", bins=72, bandwidth=5, wrap=True, mask_cutoff=None,
+        calc_populations=False, plot_populations=False,
         verbose=1, debug=0, **kwargs):
         """
         Arguments:
@@ -179,8 +183,8 @@ class PDistDataset(Dataset):
           - Support periodicic kernel density estimate
           - Support variable bandwidth kernel density estimate
         """
-        from os.path import expandvars
         import numpy as np
+        import pandas as pd
         from .myplotspec import multi_get_copy
 
         # Manage arguments
@@ -392,13 +396,72 @@ class PDistDataset(Dataset):
                   np.logical_not(np.isnan(free_energy)),
                   np.ones_like(free_energy))
 
-        # Debug output
-        if debug >= 1:
-            from .myplotspec.debug import db_s
-            db_s("Size {0}".format(probability.size))
-            db_s("Probability min {0}".format(np.nanmin(probability)))
-            db_s("Probability max {0}".format(np.nanmax(probability)))
-            db_s("Free energy min {0}".format(np.nanmin(free_energy)))
-            db_s("Free energy max {0}".format(np.nanmax(free_energy)))
-            db_s("Free energy nan {0}".format(np.sum(np.isnan(free_energy))))
-            db_s("Masked {0}".format(np.sum(self.mask)))
+        # Calculate state populations
+        if calc_populations:
+            states = kwargs.get("states",  [
+              ("β",       -151,  151),
+              ("PPII",     -66,  140),
+              ("ξ",       -145,   55),
+              ("γ'",       -81,   65),
+              ("α",        -70,  -25),
+              ("$L_α$",     55,   45),
+              ("γ",         73,  -35),
+              ("PPII'",     56, -124),
+              ("plateau", -100, -130)])
+            state_radius = kwargs.get("state_radius", 45)
+
+            distances = np.zeros((len(states), len(x_centers), len(y_centers)))
+            xs = []
+            ys = []
+            for i, (state, x, y) in enumerate(states):
+                xs += [x]
+                ys += [y]
+                # There must be a better way to do this, but this works
+                for j, xc in enumerate(x_centers):
+                    for k, yc in enumerate(y_centers):
+                        dx = (xc - x)
+                        if dx <= -180 or dx >= 180:
+                            dx = 360 - dx
+                        else:
+                            dx = dx
+                        dy = (yc - y)
+                        if dy <= -180 or dy >= 180:
+                            dy = 360 - dy
+                        else:
+                            dy = dy
+                        distances[i,j,k] = np.sqrt(dx**2 + dy**2)
+            assignments = np.argmin(distances, axis=0)
+            assignments[np.min(distances, axis=0) >= state_radius] = \
+              len(states) + 1
+
+            index, state_populations = [], []
+            for i, (state, x, y) in enumerate(states):
+                index += [state]
+                state_populations += [(x, y,
+                  np.nansum(probability[assignments==i]))]
+            state_populations = pd.DataFrame(state_populations, index=index,
+              columns=["Φ center", "Ψ center", "population"])
+            self.state_populations = state_populations
+
+            if verbose >= 1:
+                print(state_populations)
+
+            if plot_populations:
+                self.dist = assignments
+                self.mask = np.ma.masked_where(
+                  np.logical_not(assignments == len(states) + 1),
+                  np.ones_like(assignments))
+                self.x = np.array(xs)
+                self.y = np.array(ys)
+                label, label_kw = [], []
+                from .myplotspec import multi_get_copy
+                default_label_kw = multi_get_copy(["default_label_kw",
+                  "label_kw"], kwargs, {})
+                for index, row in state_populations.iterrows():
+                    label += ["{0}\n{1:2d}%".format(index,
+                     int(row["population"]*100))]
+                    label_kw += [default_label_kw.copy()]
+                    label_kw[-1]["x"] = row["Φ center"]
+                    label_kw[-1]["y"] = row["Ψ center"]
+                self.label = label
+                self.label_kw = label_kw
