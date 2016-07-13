@@ -661,7 +661,8 @@ class RamachandranFigureManager(FigureManager):
         class: target
         inherits: presentation
         draw_figure:
-          left:       1.20
+          fig_width: 
+          left:       0.80
           sub_width:  1.50
           wspace:     0.10
           fig_height:
@@ -669,34 +670,41 @@ class RamachandranFigureManager(FigureManager):
           sub_height: 1.50
           hspace:     0.10
           top:        0.30
-          multi_xticklabels: [-180,"",0,"",180]
-          multi_yticklabels: [-180,"",0,"",180]
         draw_subplot:
+          xlabel_kw:
+            horizontalalignment: center
           ylabel_kw:
             rotation: horizontal
             labelpad: 10
           y2label_kw:
             labelpad: 20
+          draw_label: True
+          label_kw:
+            fp: 14r
+            x: null
+            y: null
+            xabs: -0.05
+            yabs:  0.05
+            border_lw: 2
         draw_dataset:
           contour_kw:
             linewidths: 1
           plot_kw:
             ms: 5
-            mew: 1
-            mec: black
+          partner_kw:
+            wspace:    0.10
+            sub_width: 0.10
           colorbar_kw:
             ztick_fp:  14r
             zlabel_fp: 18r
             ztick_params:
               pad: 5
             zlw: 2
+            zlabel_kw:
+              labelpad: 25
           label_kw:
             fp: 14r
             border_lw: 3
-            x: 165
-            y: 165
-            ha: right
-            va: top
       presentation_wide:
         class: target
         inherits: presentation_wide
@@ -707,9 +715,7 @@ class RamachandranFigureManager(FigureManager):
           sub_height: 3.40
           hspace:     0.30
           bottom:     1.20
-          multiplot: True
         draw_subplot:
-          legend: False
           ylabel_kw:
             rotation: horizontal
             labelpad: 10
