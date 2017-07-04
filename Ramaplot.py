@@ -92,6 +92,7 @@ class RamachandranFigureManager(FigureManager):
               top: off
               left: off
               right: off
+              pad: 1
             zlabel: 'ΔG (kcal/mol)'
           contour_kw:
             colors: '0.25'
@@ -569,7 +570,9 @@ class RamachandranFigureManager(FigureManager):
           y2label_kw:
             labelpad: 8
           grid_kw:
+            linewidth: 0.5
             alpha: 0.3
+            color: [0,0,0]
           draw_label: True
           label_kw:
             fp: 7b
